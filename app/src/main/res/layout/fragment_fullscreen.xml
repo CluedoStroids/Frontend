@@ -5,15 +5,15 @@
     android:id="@+id/frameLayout2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/fullscreenBackgroundColor"
-    android:theme="@style/ThemeOverlay.MyApplication.FullscreenContainer"
-    tools:context=".FullscreenFragment">
+    android:background="@drawable/title_image"
+    android:theme="@style/ThemeOverlay.MyApplication.FullscreenContainer">
 
     <Button
         android:id="@+id/connectbtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Connect"
+        android:background="@drawable/basic_element_style"
         app:layout_constraintBottom_toTopOf="@+id/hellobtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -25,6 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Send hello"
+        android:background="@drawable/basic_element_style"
         app:layout_constraintBottom_toTopOf="@+id/jsonbtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -36,6 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Send Json"
+        android:background="@drawable/basic_element_style"
         app:layout_constraintBottom_toTopOf="@+id/response_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -47,6 +49,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="response"
+        android:background="@drawable/basic_element_style"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

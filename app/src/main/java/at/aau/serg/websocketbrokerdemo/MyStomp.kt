@@ -14,7 +14,7 @@ import org.hildan.krossbow.stomp.subscribeText
 import org.hildan.krossbow.websocket.okhttp.OkHttpWebSocketClient
 import org.json.JSONObject
 
-private  val WEBSOCKET_URI = "ws://10.0.2.2:8080/websocket-example-broker";
+private  val WEBSOCKET_URI = "ws://10.0.2.2:8080/cluedo";
 class MyStomp(val callbacks: Callbacks) {
 
     private lateinit var topicFlow: Flow<String>

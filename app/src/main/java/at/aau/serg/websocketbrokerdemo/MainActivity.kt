@@ -22,8 +22,9 @@ class MainActivity : ComponentActivity(), Callbacks {
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.fragment_fullscreen)
         setRequestedOrientation(SCREEN_ORIENTATION_LANDSCAPE);
+        setContentView(R.layout.fragment_fullscreen)
+
 
         findViewById<Button>(R.id.connectbtn).setOnClickListener { mystomp.connect() }
         findViewById<Button>(R.id.hellobtn).setOnClickListener{mystomp.sendHello()}
