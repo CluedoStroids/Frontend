@@ -14,7 +14,9 @@ import org.hildan.krossbow.stomp.subscribeText
 import org.hildan.krossbow.websocket.okhttp.OkHttpWebSocketClient
 import org.json.JSONObject
 
-private  val WEBSOCKET_URI = "ws://10.0.2.2:8080/cluedo"; //localhost port 8080
+private val ip: String = "10.0.2.2"
+private val port: String = "8080" //localhost port 8080
+private val endpoint: String = "cludeo"
 
 class MyStomp(var callbacks: Callbacks) {
 
@@ -36,6 +38,7 @@ class MyStomp(var callbacks: Callbacks) {
     }
 
     fun connect() {
+            val WEBSOCKET_URI = "ws://$ip:$port/$endpoint"
             scope.launch {
                 session=client.connect(WEBSOCKET_URI)
                 Log.e("tag","connected!")
