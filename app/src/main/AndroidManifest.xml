@@ -17,6 +17,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name="at.aau.serg.cluedo.RollingDice"
+            android:exported="false" />
+        <activity
             android:name="at.aau.serg.cluedo.BasicChatActivity"
             android:exported="false" />
         <activity
