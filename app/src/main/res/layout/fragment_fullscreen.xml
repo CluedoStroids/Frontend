@@ -5,51 +5,38 @@
     android:id="@+id/frameLayout2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/fullscreenBackgroundColor"
-    android:theme="@style/ThemeOverlay.MyApplication.FullscreenContainer"
-    tools:context=".FullscreenFragment">
+    android:background="@drawable/title_image"
+    android:theme="@style/ThemeOverlay.MyApplication.FullscreenContainer">
 
     <Button
-        android:id="@+id/connectbtn"
+        android:id="@+id/loginbtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Connect"
-        app:layout_constraintBottom_toTopOf="@+id/hellobtn"
+        android:background="@drawable/basic_element_style"
+        android:text="Login"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.499"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/inputText"
+        app:layout_constraintVertical_bias="0.266" />
 
-    <Button
-        android:id="@+id/hellobtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Send hello"
-        app:layout_constraintBottom_toTopOf="@+id/jsonbtn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/connectbtn" />
-
-    <Button
-        android:id="@+id/jsonbtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Send Json"
-        app:layout_constraintBottom_toTopOf="@+id/response_view"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hellobtn" />
-
-    <TextView
-        android:id="@+id/response_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="response"
+    <EditText
+        android:id="@+id/inputText"
+        android:hint="Username"
+        android:background="@drawable/basic_element_style"
+        android:layout_width="200dp"
+        android:layout_height="30dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/jsonbtn" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
