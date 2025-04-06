@@ -1,11 +1,12 @@
-package at.aau.serg.cluedo.viewmodels
+package at.aau.se2.cluedo.viewmodels
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import at.aau.serg.cluedo.models.CreateLobbyRequest
-import at.aau.serg.cluedo.models.JoinLobbyRequest
-import at.aau.serg.cluedo.models.Lobby
+import at.aau.se2.cluedo.models.CreateLobbyRequest
+import at.aau.se2.cluedo.models.JoinLobbyRequest
+import at.aau.se2.cluedo.models.LeaveLobbyRequest
+import at.aau.se2.cluedo.models.Lobby
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -24,6 +25,7 @@ class LobbyViewModel : ViewModel() {
         private const val TOPIC_LOBBY_UPDATES_PREFIX = "/topic/lobby/"
         private const val APP_CREATE_LOBBY = "/app/createLobby"
         private const val APP_JOIN_LOBBY_PREFIX = "/app/joinLobby/"
+        private const val APP_LEAVE_LOBBY_PREFIX = "/app/leaveLobby/"
     }
 
     private val gson = Gson()
@@ -176,6 +178,24 @@ class LobbyViewModel : ViewModel() {
         val request = JoinLobbyRequest(username)
         val payload = gson.toJson(request)
         val destination = "$APP_JOIN_LOBBY_PREFIX$lobbyId"
+
+        stompClient?.send(destination, payload)?.subscribe()
+    }
+    fun leaveLobby(lobbyId: String, username: String) {
+        if (!_isConnected.value) {
+            emitError("Not connected to server")
+            return
+        }
+        if (lobbyId.isBlank()) {
+            emitError("Lobby ID cannot be empty")
+            return
+        }
+
+        subscribeToLobbyUpdates(lobbyId)
+
+        val request = LeaveLobbyRequest(username)
+        val payload = gson.toJson(request)
+        val destination = "$APP_LEAVE_LOBBY_PREFIX$lobbyId"
 
         stompClient?.send(destination, payload)?.subscribe()
     }

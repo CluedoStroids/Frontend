@@ -1,4 +1,4 @@
-package at.aau.serg.cluedo
+package at.aau.se2.cluedo
 
 import org.junit.Test
 

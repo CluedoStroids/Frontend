@@ -1,4 +1,4 @@
-package at.aau.serg.cluedo.models
+package at.aau.se2.cluedo.models
 
 import com.google.gson.annotations.SerializedName
 
@@ -13,5 +13,9 @@ data class CreateLobbyRequest(
 )
 
 data class JoinLobbyRequest(
+    @SerializedName("username") val username: String
+)
+
+data class LeaveLobbyRequest(
     @SerializedName("username") val username: String
 )

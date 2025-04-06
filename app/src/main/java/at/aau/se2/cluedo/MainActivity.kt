@@ -1,6 +1,5 @@
-package at.aau.serg.cluedo
+package at.aau.se2.cluedo
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.widget.Toast
@@ -8,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import at.aau.serg.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
 import androidx.activity.viewModels
@@ -48,6 +47,15 @@ class MainActivity : AppCompatActivity() {
             val lobbyId = binding.lobbyIdEditText.text.toString().trim()
             if (username.isNotEmpty() && lobbyId.isNotEmpty()) {
                 lobbyViewModel.joinLobby(lobbyId, username)
+            } else {
+                showToast("Please enter username and lobby ID")
+            }
+        }
+        binding.leaveLobbyButton.setOnClickListener {
+            val username = binding.usernameEditText.text.toString().trim()
+            val lobbyId = binding.lobbyIdEditText.text.toString().trim()
+            if (username.isNotEmpty() && lobbyId.isNotEmpty()) {
+                lobbyViewModel.leaveLobby(lobbyId, username)
             } else {
                 showToast("Please enter username and lobby ID")
             }
