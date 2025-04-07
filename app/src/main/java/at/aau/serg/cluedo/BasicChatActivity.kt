@@ -9,13 +9,12 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.platform.ComposeView
-import com.example.myapplication.R
 import com.example.myapplication.databinding.ActivityBaiscChatBinding
 
 @SuppressLint("StaticFieldLeak")
 private lateinit var binding: ActivityBaiscChatBinding
 
-class BasicChatActivity : ComponentActivity(), Callbacks{
+class BaiscChatActivity : ComponentActivity(), Callbacks{
     lateinit var mystomp:MyStomp
     lateinit var outputField: TextView
 

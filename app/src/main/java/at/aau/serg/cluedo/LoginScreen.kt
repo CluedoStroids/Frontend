@@ -1,6 +1,5 @@
 package at.aau.serg.cluedo
 
-
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
