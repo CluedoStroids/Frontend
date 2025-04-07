@@ -5,4 +5,10 @@
     <string name="title_activity_connection_view">ConnectionView</string>
     <string name="title_activity_view">view</string>
     <string name="title_activity_main2">MainActivity2</string>
+
+        <string name="application_name">Cluedo</string>
+        <string name="username_hint">Username</string>
+        <string name="password_hint">Password</string>
+        <string name="login">Login</string>
+        <string name="register">Register</string>
 </resources>

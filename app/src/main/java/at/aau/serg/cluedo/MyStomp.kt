@@ -16,7 +16,7 @@ import org.json.JSONObject
 
 private val ip: String = "10.0.2.2"
 private val port: String = "8080" //localhost port 8080
-private val endpoint: String = "cludeo"
+private val endpoint: String = "cluedo"
 
 class MyStomp(var callbacks: Callbacks) {
 
