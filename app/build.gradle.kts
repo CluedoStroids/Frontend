@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication"
+    namespace = "at.aau.serg.cluedo"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
+        applicationId = "at.aau.serg.cluedo"
         minSdk = 30
         targetSdk = 35
         versionCode = 1
