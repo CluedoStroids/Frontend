@@ -1,26 +1,36 @@
-package at.aau.se2.cluedo
+package at.aau.se2.cluedo.ui.screens
 
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
-import com.example.myapplication.databinding.ActivityMainBinding
+import com.example.myapplication.databinding.FragmentLobbyBinding
 import kotlinx.coroutines.launch
-import androidx.activity.viewModels
 
-class MainActivity : AppCompatActivity() {
+class LobbyFragment : Fragment() {
 
-    private lateinit var binding: ActivityMainBinding
+    private var _binding: FragmentLobbyBinding? = null
+    private val binding get() = _binding!!
     private val lobbyViewModel: LobbyViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentLobbyBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         setupUI()
         observeViewModel()
     }
@@ -63,8 +73,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     lobbyViewModel.isConnected.collect { isConnected ->
                         binding.statusTextView.text = if (isConnected) "Status: Connected" else "Status: Disconnected"
@@ -112,6 +122,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
-        Toast.makeText(this, message, duration).show()
+        Toast.makeText(requireContext(), message, duration).show()
+    }
+
+
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -16,13 +16,19 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name="at.aau.se2.cluedo.MainActivity"
-            android:exported="true">
+            android:name="at.aau.se2.cluedo.ui.screens.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.MyApplication.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="at.aau.se2.cluedo.ui.MainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyApplication.NoActionBar" />
 
     </application>
 

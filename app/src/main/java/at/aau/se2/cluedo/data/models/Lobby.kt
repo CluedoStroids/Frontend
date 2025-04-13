@@ -1,4 +1,4 @@
-package at.aau.se2.cluedo.models
+package at.aau.se2.cluedo.data.models
 
 import com.google.gson.annotations.SerializedName
 
