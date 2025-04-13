@@ -8,4 +8,6 @@
     <string name="join_lobby">Join Lobby</string>
     <string name="sub_text">SE2 Project</string>
     <string name="settings_placeholder">Settings will be available in future updates</string>
+    <string name="dice_roller">Dice Roller</string>
+    <string name="roll_dice">Roll Dice</string>
 </resources>

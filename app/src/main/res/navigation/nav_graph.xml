@@ -20,6 +20,11 @@
             app:destination="@id/settingsFragment"
             app:enterAnim="@android:anim/fade_in"
             app:exitAnim="@android:anim/fade_out" />
+        <action
+            android:id="@+id/action_mainMenuFragment_to_diceRollerFragment"
+            app:destination="@id/diceRollerFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out" />
     </fragment>
 
     <fragment
@@ -33,5 +38,11 @@
         android:name="at.aau.se2.cluedo.ui.screens.SettingsFragment"
         android:label="@string/settings"
         tools:layout="@layout/fragment_settings" />
+
+    <fragment
+        android:id="@+id/diceRollerFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.DiceRollerFragment"
+        android:label="@string/dice_roller"
+        tools:layout="@layout/fragment_dice_roller" />
 
 </navigation>
