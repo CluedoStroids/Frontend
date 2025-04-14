@@ -16,7 +16,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
+        testApplicationId = "com.example.myapplication.test"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -41,7 +41,7 @@ android {
         viewBinding = true
     }
 
-     testOptions {
+    testOptions {
         unitTests {
             all {
                 it.useJUnitPlatform()
@@ -98,14 +98,21 @@ sonar {
         property("sonar.projectKey", "CluedoStroids_Frontend")
         property("sonar.organization", "cluedostroids")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.java.coveragePlugin", "jacoco")
-        property(
-            "sonar.coverage.jacoco.xmlReportPaths",
-            "${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-        )
-        // Additional useful properties
-        property("sonar.sourceEncoding", "UTF-8")
-        property("sonar.qualitygate.wait", true)
+    }
+}
+subprojects {
+    sonar {
+        properties {
+            property(
+                "sonar.coverage.jacoco.xmlReportPaths",
+                "${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+            )
+            property(
+                "sonar.coverage.jacoco.xmlReportPaths",
+                "build/reports/kover/reportKarosBeta.xml"
+            )
+
+        }
     }
 }
 
@@ -129,7 +136,12 @@ dependencies {
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
     implementation(libs.androidx.navigation.runtime.android)
+    // JUnit 4
     testImplementation(libs.junit)
+    // JUnit 5
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.2") // For JUnit 4 compatibility
     androidTestImplementation(libs.androidx.junit.v121)
     androidTestImplementation(libs.androidx.espresso.core.v361)
 }
