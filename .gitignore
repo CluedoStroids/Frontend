@@ -75,3 +75,7 @@ lint/tmp/
 
 # Kotlin
 .kotlin/
+
+# Sonar
+sonar.properties
+.scannerwork/
