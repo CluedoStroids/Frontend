@@ -41,7 +41,7 @@ android {
         viewBinding = true
     }
 
-     testOptions {
+    testOptions {
         unitTests {
             all {
                 it.useJUnitPlatform()
@@ -98,14 +98,21 @@ sonar {
         property("sonar.projectKey", "CluedoStroids_Frontend")
         property("sonar.organization", "cluedostroids")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.java.coveragePlugin", "jacoco")
-        property(
-            "sonar.coverage.jacoco.xmlReportPaths",
-            "${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-        )
-        // Additional useful properties
-        property("sonar.sourceEncoding", "UTF-8")
-        property("sonar.qualitygate.wait", true)
+    }
+}
+subprojects {
+    sonar {
+        properties {
+            property(
+                "sonar.coverage.jacoco.xmlReportPaths",
+                "${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+            )
+            property(
+                "sonar.coverage.jacoco.xmlReportPaths",
+                "build/reports/kover/reportKarosBeta.xml"
+            )
+
+        }
     }
 }
 
