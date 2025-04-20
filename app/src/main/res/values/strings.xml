@@ -10,4 +10,45 @@
     <string name="settings_placeholder">Settings will be available in future updates</string>
     <string name="dice_roller">Dice Roller</string>
     <string name="roll_dice">Roll Dice</string>
+        <string name="suspicion_title">Make a Suspicion</string>
+    <string name="submit_suspicion">Make a Suspicion</string>
+    <string name="cancel">Cancel</string>
+    <string name="cheat_fake_card">CHEAT</string>
+    <string name="suspicion_icon_desc">Suspicion Icon</string>
+
+    <string-array name="suspect_options">
+        <item>Select a suspect</item>
+        <item>Miss Scarlet</item>
+        <item>Professor Plum</item>
+        <item>Colonel Mustard</item>
+        <item>Mrs. Peacock</item>
+    </string-array>
+
+    <string-array name="room_options">
+        <item>Select a room</item>
+        <item>Library</item>
+        <item>Kitchen</item>
+        <item>Ballroom</item>
+        <item>Study</item>
+        <item>Hall</item>
+        <item>Billiard room</item>
+        <item>Dining room</item>
+        <item>Lounge</item>
+        <item>Conservatory</item>
+    </string-array>
+
+    <string-array name="weapon_options">
+        <item>Select a weapon</item>
+        <item>Candlestick</item>
+        <item>Revolver</item>
+        <item>Rope</item>
+        <item>Lead Pipe</item>
+        <item>Wrench</item>
+        <item>Dagger</item>
+    </string-array>
+
+
+
+
+
 </resources>
