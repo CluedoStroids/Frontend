@@ -1,20 +1,20 @@
 [versions]
 agp = "8.9.1"
 androidxJunit = "1.2.1"
-appcompatVersion = "1.6.1"
-constraintlayoutVersion = "2.1.4"
-coreKtxVersion = "1.13.1"
+appcompatVersion = "1.7.0"
+constraintlayoutVersion = "2.2.1"
+coreKtxVersion = "1.16.0"
 espressoCoreVersion = "3.6.1"
-gson = "2.10.1"
+gson = "2.13.1"
 kotlin = "2.0.21"
 coreKtx = "1.10.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
 kotlinxCoroutinesAndroid = "1.8.1"
-kotlinxCoroutinesAndroidVersion = "1.7.3"
+kotlinxCoroutinesAndroidVersion = "1.10.2"
 kotlinxCoroutinesCore = "1.8.1"
-kotlinxCoroutinesCoreVersion = "1.7.3"
+kotlinxCoroutinesCoreVersion = "1.10.2"
 krossbowStompClient = "5.3.0"
 krossbowStompCore = "7.0.0"
 krossbowWebsocketBuiltin = "7.0.0"
@@ -25,14 +25,15 @@ activityCompose = "1.8.0"
 composeBom = "2024.09.00"
 constraintlayout = "2.2.1"
 appcompat = "1.7.0"
-lifecycleRuntimeKtxVersion = "2.8.0"
+lifecycleRuntimeKtxVersion = "2.8.7"
 lifecycleViewmodelKtx = "2.8.7"
 material = "1.12.0"
 okhttp = "4.12.0"
 rxandroid = "2.1.1"
 rxjava = "2.2.21"
 stompprotocolandroid = "1.6.6"
-navigationRuntimeAndroid = "2.9.0-beta01"
+navigationRuntimeAndroid = "2.9.0-rc01"
+cardviewV7 = "28.0.0"
 
 [libraries]
 androidx-appcompat-v161 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
@@ -75,6 +76,7 @@ rxandroid = { module = "io.reactivex.rxjava2:rxandroid", version.ref = "rxandroi
 rxjava = { module = "io.reactivex.rxjava2:rxjava", version.ref = "rxjava" }
 stompprotocolandroid = { module = "com.github.NaikSoftware:StompProtocolAndroid", version.ref = "stompprotocolandroid" }
 androidx-navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
+cardview-v7 = { group = "com.android.support", name = "cardview-v7", version.ref = "cardviewV7" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

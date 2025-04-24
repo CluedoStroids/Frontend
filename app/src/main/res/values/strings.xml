@@ -10,4 +10,6 @@
     <string name="settings_placeholder">Settings will be available in future updates</string>
     <string name="dice_roller">Dice Roller</string>
     <string name="roll_dice">Roll Dice</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

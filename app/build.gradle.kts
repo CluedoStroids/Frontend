@@ -128,20 +128,21 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android.v173)
     implementation("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
     implementation("androidx.activity:activity-ktx:1.10.1")
-    implementation("androidx.fragment:fragment-ktx:1.7.0")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+    implementation("androidx.fragment:fragment-ktx:1.8.6")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.8.9")
+    implementation("androidx.navigation:navigation-ui-ktx:2.8.9")
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation(libs.gson)
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
     implementation(libs.androidx.navigation.runtime.android)
+    implementation(libs.cardview.v7)
     // JUnit 4
     testImplementation(libs.junit)
     // JUnit 5
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.2") // For JUnit 4 compatibility
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.12.2") // For JUnit 4 compatibility
     androidTestImplementation(libs.androidx.junit.v121)
     androidTestImplementation(libs.androidx.espresso.core.v361)
 }
