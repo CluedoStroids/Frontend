@@ -3,6 +3,7 @@ package at.aau.se2.cluedo.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.aau.se2.cluedo.data.models.Lobby
+import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.network.WebSocketService
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,29 +20,36 @@ class LobbyViewModel : ViewModel() {
 
     fun connect() {
         webSocketService.connect()
+        webSocketService.getActiveLobby()
+    }
+
+    fun getActiveLobby() {
+        webSocketService.getActiveLobby()
     }
 
     fun disconnect() {
         webSocketService.disconnect()
     }
 
-    fun createLobby(username: String) {
+    fun createLobby(username: String, character: String = "Red") {
         viewModelScope.launch {
-            webSocketService.createLobby(username)
+            webSocketService.createLobby(username, character)
         }
     }
 
-    fun joinLobby(lobbyId: String, username: String) {
+    fun joinLobby(lobbyId: String, username: String, character: String = "Blue") {
         viewModelScope.launch {
-            webSocketService.joinLobby(lobbyId, username)
+            webSocketService.joinLobby(lobbyId, username, character)
         }
     }
 
-    fun leaveLobby(lobbyId: String, username: String) {
+    fun leaveLobby(lobbyId: String, username: String, character: String = "Blue") {
         viewModelScope.launch {
-            webSocketService.leaveLobby(lobbyId, username)
+            webSocketService.leaveLobby(lobbyId, username, character)
         }
     }
+
+    val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
 
     override fun onCleared() {
         super.onCleared()
