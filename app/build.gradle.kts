@@ -19,6 +19,9 @@ android {
         testApplicationId = "com.example.myapplication.test"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    packaging {
+        resources.excludes.add("META-INF/androidx.cardview_cardview.version")
+    }
 
     buildTypes {
         release {
@@ -137,6 +140,7 @@ dependencies {
     implementation(libs.rxandroid)
     implementation(libs.androidx.navigation.runtime.android)
     implementation(libs.cardview.v7)
+
     // JUnit 4
     testImplementation(libs.junit)
     // JUnit 5
@@ -145,4 +149,5 @@ dependencies {
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.12.2") // For JUnit 4 compatibility
     androidTestImplementation(libs.androidx.junit.v121)
     androidTestImplementation(libs.androidx.espresso.core.v361)
+
 }

@@ -12,6 +12,12 @@
         android:id="@+id/gameBoardIMG"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/gameboard" />
+        android:contentDescription="GameBoardIMG"
+        android:src="@drawable/gameboard"
+        android:visibility="invisible" />
 
+    <at.aau.se2.cluedo.ui.screens.GameBoardFragment
+        android:id="@+id/gameboardView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </FrameLayout>
