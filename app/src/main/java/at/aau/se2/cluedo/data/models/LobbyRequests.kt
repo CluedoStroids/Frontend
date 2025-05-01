@@ -2,6 +2,18 @@ package at.aau.se2.cluedo.data.models
 
 import com.google.gson.annotations.SerializedName
 
+data class CreateLobbyRequest(
+    @SerializedName("player") val player: Player
+)
+
+data class JoinLobbyRequest(
+    @SerializedName("player") val player: Player
+)
+
+data class LeaveLobbyRequest(
+    @SerializedName("player") val player: Player
+)
+
 data class GetActiveLobbiesRequest(
     @SerializedName("dummy") val dummy: String = ""
 )

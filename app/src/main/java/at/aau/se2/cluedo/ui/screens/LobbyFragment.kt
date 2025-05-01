@@ -11,7 +11,6 @@ import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.databinding.FragmentLobbyBinding
 import kotlinx.coroutines.launch
@@ -92,11 +91,11 @@ class LobbyFragment : Fragment() {
                     lobbyViewModel.lobbyState.collect { lobby ->
                         if (lobby != null) {
                             val playersList = lobby.players.joinToString("\n") { player ->
-                                "  - ${player.name} (${player.character})"
+                                "  - ${player.name} (${player.character}, ${player.color})"
                             }
                             binding.lobbyInfoTextView.text = """
                                 Lobby ID: ${lobby.id}
-                                Host: ${lobby.host.name} (${lobby.host.character})
+                                Host: ${lobby.host.name} (${lobby.host.character}, ${lobby.host.color})
                                 Players (${lobby.players.size}):$playersList
                             """.trimIndent()
 

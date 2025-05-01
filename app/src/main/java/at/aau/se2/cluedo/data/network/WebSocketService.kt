@@ -3,7 +3,14 @@ package at.aau.se2.cluedo.data.network
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
-import at.aau.se2.cluedo.data.models.*
+import at.aau.se2.cluedo.data.models.ActiveLobbiesResponse
+import at.aau.se2.cluedo.data.models.CreateLobbyRequest
+import at.aau.se2.cluedo.data.models.GetActiveLobbiesRequest
+import at.aau.se2.cluedo.data.models.JoinLobbyRequest
+import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
+import at.aau.se2.cluedo.data.models.Lobby
+import at.aau.se2.cluedo.data.models.Player
+import at.aau.se2.cluedo.data.models.PlayerColor
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -230,12 +237,12 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    fun createLobby(username: String, character: String = "Red") {
+    fun createLobby(username: String, character: String = "Red", color: PlayerColor = PlayerColor.RED) {
         if (!_isConnected.value) {
             _errorMessages.tryEmit("Not connected to server")
             return
         }
-        val player = Player(name = username, character = character)
+        val player = Player(name = username, character = character, color = color)
         val request = CreateLobbyRequest(player)
         val payload = gson.toJson(request)
 
@@ -255,7 +262,7 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    fun joinLobby(lobbyId: String, username: String, character: String = "Blue") {
+    fun joinLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
         if (!_isConnected.value) {
             _errorMessages.tryEmit("Not connected to server")
             return
@@ -267,7 +274,7 @@ class WebSocketService {
 
         subscribeToLobbyUpdates(lobbyId)
 
-        val player = Player(name = username, character = character)
+        val player = Player(name = username, character = character, color = color)
         val request = JoinLobbyRequest(player)
         val payload = gson.toJson(request)
         val destination = "$APP_JOIN_LOBBY_PREFIX$lobbyId"
@@ -291,7 +298,7 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    fun leaveLobby(lobbyId: String, username: String, character: String = "Blue") {
+    fun leaveLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
         if (!_isConnected.value) {
             _errorMessages.tryEmit("Not connected to server")
             return
@@ -301,7 +308,7 @@ class WebSocketService {
             return
         }
 
-        val player = Player(name = username, character = character)
+        val player = Player(name = username, character = character, color = color)
         val request = LeaveLobbyRequest(player)
         val payload = gson.toJson(request)
         val destination = "$APP_LEAVE_LOBBY_PREFIX$lobbyId"
