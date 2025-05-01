@@ -5,6 +5,7 @@ import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
@@ -21,9 +22,7 @@ class LobbyFragment : Fragment() {
     private val lobbyViewModel: LobbyViewModel by viewModels()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentLobbyBinding.inflate(inflater, container, false)
         return binding.root
@@ -33,41 +32,32 @@ class LobbyFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupUI()
         observeViewModel()
+
+        lobbyViewModel.connect()
     }
 
     private fun setupUI() {
         binding.lobbyInfoTextView.movementMethod = ScrollingMovementMethod()
 
-        binding.connectButton.setOnClickListener {
-            lobbyViewModel.connect()
+        val characterAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            lobbyViewModel.availableCharacters
+        )
+        binding.createCharacterSpinner.adapter = characterAdapter
+
+        val redIndex = lobbyViewModel.availableCharacters.indexOf("Red")
+        if (redIndex >= 0) {
+            binding.createCharacterSpinner.setSelection(redIndex)
         }
-        binding.disconnectButton.setOnClickListener {
-            lobbyViewModel.disconnect()
-        }
+
         binding.createLobbyButton.setOnClickListener {
-            val username = binding.usernameEditText.text.toString().trim()
+            val username = binding.createUsernameEditText.text.toString().trim()
+            val character = binding.createCharacterSpinner.selectedItem.toString()
             if (username.isNotEmpty()) {
-                lobbyViewModel.createLobby(username)
+                lobbyViewModel.createLobby(username, character)
             } else {
                 showToast("Please enter a username")
-            }
-        }
-        binding.joinLobbyButton.setOnClickListener {
-            val username = binding.usernameEditText.text.toString().trim()
-            val lobbyId = binding.lobbyIdEditText.text.toString().trim()
-            if (username.isNotEmpty() && lobbyId.isNotEmpty()) {
-                lobbyViewModel.joinLobby(lobbyId, username)
-            } else {
-                showToast("Please enter username and lobby ID")
-            }
-        }
-        binding.leaveLobbyButton.setOnClickListener {
-            val username = binding.usernameEditText.text.toString().trim()
-            val lobbyId = binding.lobbyIdEditText.text.toString().trim()
-            if (username.isNotEmpty() && lobbyId.isNotEmpty()) {
-                lobbyViewModel.leaveLobby(lobbyId, username)
-            } else {
-                showToast("Please enter username and lobby ID")
             }
         }
     }
@@ -77,35 +67,41 @@ class LobbyFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     lobbyViewModel.isConnected.collect { isConnected ->
-                        binding.statusTextView.text = if (isConnected) "Status: Connected" else "Status: Disconnected"
-                        binding.connectButton.isEnabled = !isConnected
-                        binding.disconnectButton.isEnabled = isConnected
+                        binding.statusTextView.text =
+                            if (isConnected) "Status: Connected" else "Status: Connecting..."
+
                         binding.createLobbyButton.isEnabled = isConnected
-                        binding.joinLobbyButton.isEnabled = isConnected
+
                         if (!isConnected) {
                             binding.lobbyInfoTextView.text = "-"
-                            binding.createdLobbyIdTextView.text = "Created Lobby ID: -"
+                            binding.activeLobbyIdTextView.text = "Active Lobby ID: -"
+                            showToast("Not connected to server. Please check your connection.")
+                        } else {
+                            lobbyViewModel.getActiveLobby()
                         }
                     }
                 }
                 launch {
                     lobbyViewModel.createdLobbyId.collect { lobbyId ->
                         val displayId = lobbyId ?: "-"
-                        binding.createdLobbyIdTextView.text = "Created Lobby ID: $displayId"
-                        if (lobbyId != null) {
-                            binding.lobbyIdEditText.setText(lobbyId)
-                        }
+                        binding.activeLobbyIdTextView.text = "Active Lobby ID: $displayId"
                     }
                 }
                 launch {
                     lobbyViewModel.lobbyState.collect { lobby ->
                         if (lobby != null) {
-                            val participants = lobby.participants.joinToString("\n  - ", prefix = "\n  - ")
+                            val playersList = lobby.players.joinToString("\n") { player ->
+                                "  - ${player.name} (${player.character}, ${player.color})"
+                            }
                             binding.lobbyInfoTextView.text = """
                                 Lobby ID: ${lobby.id}
-                                Host: ${lobby.host}
-                                Participants (${lobby.participants.size}):$participants
+                                Host: ${lobby.host.name} (${lobby.host.character}, ${lobby.host.color})
+                                Players (${lobby.players.size}):$playersList
                             """.trimIndent()
+
+                            if (lobby.id != "Creating...") {
+                                binding.activeLobbyIdTextView.text = "Active Lobby ID: ${lobby.id}"
+                            }
                         } else {
                             binding.lobbyInfoTextView.text = "-"
                         }
@@ -124,7 +120,6 @@ class LobbyFragment : Fragment() {
     private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
         Toast.makeText(requireContext(), message, duration).show()
     }
-
 
 
     override fun onDestroyView() {
