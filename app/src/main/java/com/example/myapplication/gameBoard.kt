@@ -10,8 +10,10 @@ import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
+import at.aau.se2.cluedo.ui.screens.GameBoard
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -25,6 +27,8 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class gameBoard : Fragment() {
+
+    private lateinit var gameBoard: GameBoard
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -45,44 +49,56 @@ class gameBoard : Fragment() {
     }
     private fun init() {
         println("HI")
-        playerBitmap = BitmapFactory.decodeResource(resources, R.drawable.chess_game)
-        // Set initial position (example: center of the view)
-        playerBitmap?.let {
-            playerX =  displayMetrics.widthPixels/ 2f - it.width / 2f
-            playerY = displayMetrics.heightPixels / 2f - it.height / 2f
-        }
+
     }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
+
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_game_board, container, false)
     }
 
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment gameBoard.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            gameBoard().apply {
-                var arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
 
-        private fun gameBoard(): Any {
-            val todo = TODO("Not yet implemented")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        println("gameBoard Hi")
+        gameBoard = view.findViewById(R.id.gameBoardView) as GameBoard
+        gameBoard.init()
+        //println(gameBoard)
+
+        val moveButton = view.findViewById<Button>(R.id.movebutton)
+        val upButton = view.findViewById<Button>(R.id.moveUp)
+        val downButton = view.findViewById<Button>(R.id.moveDown)
+        val leftButton = view.findViewById<Button>(R.id.moveLeft)
+        val rightButton = view.findViewById<Button>(R.id.moveRight)
+
+        moveButton.setOnClickListener {
+
+            moveButton.visibility=View.GONE
+            upButton.visibility=View.VISIBLE
+            downButton.visibility=View.VISIBLE
+            leftButton.visibility=View.VISIBLE
+            rightButton.visibility=View.VISIBLE
+            gameBoard.performMoveClicked()
+
         }
+        upButton.setOnClickListener {
+            gameBoard.moveUp()
+        }
+        downButton.setOnClickListener {
+            gameBoard.moveDown()
+        }
+        leftButton.setOnClickListener {
+            gameBoard.moveLeft()
+        }
+        rightButton.setOnClickListener {
+            gameBoard.moveRight()
+        }
+
+        // andere Button-Listener hier verwalten
     }
 }
