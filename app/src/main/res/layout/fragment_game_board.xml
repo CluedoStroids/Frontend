@@ -8,6 +8,12 @@
 
     <!-- TODO: Update blank fragment layout -->
 
+    <Button
+        android:id="@+id/move"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/movement"/>
+
     <ImageView
         android:id="@+id/gameBoardIMG"
         android:layout_width="wrap_content"
@@ -20,4 +26,5 @@
         android:id="@+id/gameboardView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
 </FrameLayout>
