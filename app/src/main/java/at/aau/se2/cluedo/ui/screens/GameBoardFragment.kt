@@ -21,12 +21,14 @@ class GameBoardFragment(context: Context) : View(context) {
     private var playerY: Float = 0f
     private var boardPosX:Float = 0f
     private var boardPosY:Float = 0f
-    private var sizeX:Int=1000
-    private var sizeY:Int=1000
+    private var sizeX:Int=1080
+    private var sizeY:Int=1080
+    private var gridScale:Float= 0.9f
     private var playerPosX=24
     private var playerPosY=24
-    private var playerSizeX=sizeX/25
-    private var playerSizeY=sizeY/25
+    var gridSize= sizeX*gridScale
+    private var playerSizeX=(gridSize/25).toInt()
+    private var playerSizeY=(gridSize/25).toInt()
 
     //Button
 
@@ -40,21 +42,16 @@ class GameBoardFragment(context: Context) : View(context) {
     }
 
     private fun init() {
+
         println("HI")
         playerBitmap = BitmapFactory.decodeResource(resources, R.drawable.block)
-        gameBoardBitmap = BitmapFactory.decodeResource(resources, R.drawable.gameboard)
         gameBoardBitmap = BitmapFactory.decodeResource(resources, R.drawable.grid)
+
         // Set initial position (example: center of the view)
         playerBitmap= playerBitmap?.let { Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false) }
-        gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,sizeX,sizeY,false) }
-        grid = grid?.let { Bitmap.createScaledBitmap(it,sizeX,sizeY,false) }
+        gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
         gameBoardBitmap?.let {
-            boardPosX =  0f//(it.width - width) / 2f
-            boardPosY = 0f //(it.height - height) / 2f
-        }
-        grid?.let {
-            boardPosX =  0f//(it.width - width) / 2f
-            boardPosY = 0f //(it.height - height) / 2f
+
         }
         playerBitmap?.let {
             playerX = (width - it.width) / 2f
@@ -74,13 +71,13 @@ class GameBoardFragment(context: Context) : View(context) {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         gameBoardBitmap?.let {
+            boardPosX =  (canvas.width - it.width) / 2f
+            boardPosY = (canvas.height - it.height) / 2f
            canvas.drawBitmap(it,boardPosX,boardPosY,null)
-            playerX =((playerPosX*(sizeX/25))+boardPosX)+2
-            playerY = ((playerPosY*(sizeY/25))+boardPosY)
+            playerX =((playerPosX*(gridSize/25))+boardPosX)+2
+            playerY = ((playerPosY*(gridSize/25))+boardPosY)
         }
-        grid?.let {
-            canvas.drawBitmap(it,boardPosX,boardPosY,null)
-        }
+
         playerBitmap?.let {
 
             canvas.drawBitmap(it, playerX, playerY, null) // Draw the bitmap

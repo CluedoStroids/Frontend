@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/frameLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="at.aau.se2.cluedo.ui.screens.GameBoardFragment">
@@ -9,22 +10,23 @@
     <!-- TODO: Update blank fragment layout -->
 
     <Button
-        android:id="@+id/move"
+        android:id="@+id/movebutton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/movement"/>
-
-    <ImageView
-        android:id="@+id/gameBoardIMG"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="GameBoardIMG"
-        android:src="@drawable/gameboard"
-        android:visibility="invisible" />
+        android:layout_marginBottom="56dp"
+        android:text="@string/movement"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <at.aau.se2.cluedo.ui.screens.GameBoardFragment
         android:id="@+id/gameboardView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
