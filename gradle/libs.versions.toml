@@ -8,6 +8,7 @@ appcompatVersion = "1.6.1"
 constraintlayoutVersion = "2.1.4"
 coreKtxVersion = "1.13.1"
 coreSplashscreen = "1.0.1"
+coreTesting = "2.2.0"
 espressoCoreVersion = "3.6.1"
 gson = "2.10.1"
 junitJupiterApi = "5.10.2"
@@ -22,6 +23,7 @@ kotlinxCoroutinesAndroid = "1.8.1"
 kotlinxCoroutinesAndroidVersion = "1.7.3"
 kotlinxCoroutinesCore = "1.8.1"
 kotlinxCoroutinesCoreVersion = "1.7.3"
+kotlinxCoroutinesTest = "1.7.3"
 krossbowStompClient = "5.3.0"
 krossbowStompCore = "7.0.0"
 krossbowWebsocketBuiltin = "7.0.0"
@@ -35,6 +37,8 @@ appcompat = "1.7.0"
 lifecycleRuntimeKtxVersion = "2.8.0"
 lifecycleViewmodelKtx = "2.8.7"
 material = "1.12.0"
+mockitoCore = "5.5.0"
+mockitoKotlin = "5.1.0"
 okhttp = "4.12.0"
 rxandroid = "2.1.1"
 rxjava = "2.2.21"
@@ -48,6 +52,7 @@ androidx-constraintlayout-v214 = { module = "androidx.constraintlayout:constrain
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-ktx-v1131 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
 androidx-espresso-core-v361 = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCoreVersion" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "androidFragmentVersion" }
 androidx-junit-v121 = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
@@ -78,6 +83,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-android-v173 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroidVersion" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
 kotlinx-coroutines-core-v173 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCoreVersion" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 krossbow-stomp-client = { module = "org.hildan.krossbow:krossbow-stomp-client", version.ref = "krossbowStompClient" }
 krossbow-stomp-core = { module = "org.hildan.krossbow:krossbow-stomp-core", version.ref = "krossbowStompCore" }
 krossbow-websocket-builtin = { module = "org.hildan.krossbow:krossbow-websocket-builtin", version.ref = "krossbowWebsocketBuiltin" }
@@ -85,6 +91,8 @@ krossbow-websocket-okhttp = { module = "org.hildan.krossbow:krossbow-websocket-o
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 krossbow-websocket-okhttp-v530 = { module = "org.hildan.krossbow:krossbow-websocket-okhttp", version.ref = "krossbowWebsocketOkhttpVersion" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 rxandroid = { module = "io.reactivex.rxjava2:rxandroid", version.ref = "rxandroid" }
 rxjava = { module = "io.reactivex.rxjava2:rxjava", version.ref = "rxjava" }

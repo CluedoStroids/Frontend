@@ -9,9 +9,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class LobbyViewModel : ViewModel() {
-
-    private val webSocketService = WebSocketService()
+class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService()) : ViewModel() {
 
     val isConnected: StateFlow<Boolean> = webSocketService.isConnected
     val lobbyState: StateFlow<Lobby?> = webSocketService.lobbyState
