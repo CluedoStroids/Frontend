@@ -9,6 +9,7 @@ import at.aau.se2.cluedo.data.models.GetActiveLobbiesRequest
 import at.aau.se2.cluedo.data.models.JoinLobbyRequest
 import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
 import at.aau.se2.cluedo.data.models.Lobby
+import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import com.google.gson.Gson
@@ -172,7 +173,7 @@ class WebSocketService {
     @SuppressLint("CheckResult")
     fun getActiveLobby() {
         if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
+            _errorMessages.tryEmit("Can't get active lobby! Not connected to server")
             return
         }
 
@@ -218,7 +219,7 @@ class WebSocketService {
                     val lobby = gson.fromJson(stompMessage.payload, Lobby::class.java)
                     _lobbyState.value = lobby
 
-                    if (lobby.id.isNotBlank() && lobby.id != "Creating...") {
+                    if (lobby.id.isNotBlank() && lobby.id != LobbyStatus.CREATING.text) {
                         _createdLobbyId.value = lobby.id
                         _errorMessages.tryEmit("Lobby updated: ${lobby.id}")
                     }
@@ -239,7 +240,7 @@ class WebSocketService {
     @SuppressLint("CheckResult")
     fun createLobby(username: String, character: String = "Red", color: PlayerColor = PlayerColor.RED) {
         if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
+            _errorMessages.tryEmit("Can't create lobby! to server")
             return
         }
         val player = Player(name = username, character = character, color = color)
@@ -249,7 +250,7 @@ class WebSocketService {
         stompClient?.send(APP_CREATE_LOBBY, payload)?.subscribe(
             {
                 val tempLobby = Lobby(
-                    id = "Creating...",
+                    id = LobbyStatus.CREATING.text,
                     host = player,
                     players = listOf(player)
                 )
@@ -264,7 +265,7 @@ class WebSocketService {
     @SuppressLint("CheckResult")
     fun joinLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
         if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
+            _errorMessages.tryEmit("Can't join lobby! Not connected to server")
             return
         }
         if (lobbyId.isBlank()) {
@@ -300,7 +301,7 @@ class WebSocketService {
     @SuppressLint("CheckResult")
     fun leaveLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
         if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
+            _errorMessages.tryEmit("Can't leave lobby! Not connected to server")
             return
         }
         if (lobbyId.isBlank()) {
@@ -327,4 +328,5 @@ class WebSocketService {
             }
         )
     }
+
 }

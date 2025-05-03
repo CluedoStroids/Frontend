@@ -112,18 +112,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/joinLobbyButton" />
 
-    <TextView
-        android:id="@+id/lobbyInfoTextView"
+    <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:background="@android:drawable/editbox_background"
         android:padding="8dp"
         android:scrollbars="vertical"
-        android:text="-"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lobbyInfoLabelTextView" />
+        app:layout_constraintTop_toBottomOf="@id/lobbyInfoLabelTextView">
+
+        <TextView
+            android:id="@+id/lobbyInfoTextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:text="-"/>
+
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

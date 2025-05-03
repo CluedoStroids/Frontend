@@ -11,6 +11,7 @@ import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.databinding.FragmentLobbyBinding
 import kotlinx.coroutines.launch
@@ -99,7 +100,7 @@ class LobbyFragment : Fragment() {
                                 Players (${lobby.players.size}):$playersList
                             """.trimIndent()
 
-                            if (lobby.id != "Creating...") {
+                            if (lobby.id != LobbyStatus.CREATING.text) {
                                 binding.activeLobbyIdTextView.text = "Active Lobby ID: ${lobby.id}"
                             }
                         } else {
