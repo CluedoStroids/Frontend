@@ -134,6 +134,8 @@ subprojects {
 }
 
 dependencies {
+    val naikSoftwareVersion = "1.6.6"
+
     implementation(libs.androidx.core.ktx.v1131)
     implementation(libs.androidx.appcompat.v161)
     implementation(libs.material)
@@ -143,12 +145,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.kotlinx.coroutines.core.v173)
     implementation(libs.kotlinx.coroutines.android.v173)
-    implementation("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
-    implementation("androidx.activity:activity-ktx:1.10.1")
-    implementation("androidx.fragment:fragment-ktx:1.7.0")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
-    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("com.github.NaikSoftware:StompProtocolAndroid:$naikSoftwareVersion")
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.gson)
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
@@ -156,9 +158,9 @@ dependencies {
     // JUnit 4
     testImplementation(libs.junit)
     // JUnit 5
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.2") // For JUnit 4 compatibility
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.vintage.engine) // For JUnit 4 compatibility
     androidTestImplementation(libs.androidx.junit.v121)
     androidTestImplementation(libs.androidx.espresso.core.v361)
 }
