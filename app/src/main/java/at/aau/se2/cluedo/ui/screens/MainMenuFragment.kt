@@ -37,7 +37,7 @@ class MainMenuFragment : Fragment() {
         }
 
         binding.joinLobbyCard.setOnClickListener {
-            findNavController().navigate(R.id.action_mainMenuFragment_to_lobbyFragment)
+            findNavController().navigate(R.id.action_mainMenuFragment_to_joinLobbyFragment)
         }
 
         binding.diceRollerCard.setOnClickListener {

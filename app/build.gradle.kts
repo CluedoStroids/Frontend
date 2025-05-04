@@ -44,6 +44,23 @@ android {
         viewBinding = true
     }
 
+    packaging {
+        resources {
+            // Exclude duplicate files from the build
+            excludes.add("META-INF/LICENSE.md")
+            excludes.add("META-INF/LICENSE-notice.md")
+            excludes.add("META-INF/DEPENDENCIES")
+            excludes.add("META-INF/LICENSE")
+            excludes.add("META-INF/LICENSE.txt")
+            excludes.add("META-INF/NOTICE")
+            excludes.add("META-INF/NOTICE.txt")
+
+            // Handle duplicate R classes
+            pickFirsts.add("**/R.class")
+            pickFirsts.add("**/R$*.class")
+        }
+    }
+
     testOptions {
         unitTests {
             all {
