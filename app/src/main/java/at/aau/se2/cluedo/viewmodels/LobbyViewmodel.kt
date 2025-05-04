@@ -7,6 +7,7 @@ import at.aau.se2.cluedo.data.network.WebSocketService
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 
 class LobbyViewModel : ViewModel() {
 
@@ -46,5 +47,19 @@ class LobbyViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         disconnect()
+    }
+
+    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
+        viewModelScope.launch {
+            webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            lobbyState.collectLatest { lobby ->
+                android.util.Log.d("LOBBY_JSON", "Lobby update: $lobby")
+            }
+        }
     }
 }

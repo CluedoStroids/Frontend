@@ -5,8 +5,10 @@ import com.google.gson.annotations.SerializedName
 data class Lobby(
     @SerializedName("id") val id: String = "",
     @SerializedName("host") val host: String = "",
-    @SerializedName("participants") val participants: List<String> = listOf()
+    @SerializedName("participants") val participants: List<String> = listOf(),
+    @SerializedName("players") val players: List<Player> = listOf()
 )
+
 
 data class CreateLobbyRequest(
     @SerializedName("username") val username: String
@@ -19,3 +21,14 @@ data class JoinLobbyRequest(
 data class LeaveLobbyRequest(
     @SerializedName("username") val username: String
 )
+
+
+data class Player(
+    val username: String,
+    val isEliminated: Boolean = false,
+    val hasWon: Boolean = false
+)
+
+
+
+

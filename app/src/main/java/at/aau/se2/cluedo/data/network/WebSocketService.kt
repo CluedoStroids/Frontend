@@ -16,17 +16,21 @@ import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.LifecycleEvent
 import ua.naiksoftware.stomp.dto.StompMessage
+import at.aau.se2.cluedo.data.models.SolveCaseRequest
 
-class WebSocketService {
+class
+WebSocketService {
     companion object {
         private const val SERVER_IP = "10.0.2.2"
-        private const val SERVER_PORT = "8080"
+        private const val SERVER_PORT = "8000"
         private const val CONNECTION_URL = "ws://$SERVER_IP:$SERVER_PORT/ws"
         private const val TOPIC_LOBBY_CREATED = "/topic/lobbyCreated"
         private const val TOPIC_LOBBY_UPDATES_PREFIX = "/topic/lobby/"
         private const val APP_CREATE_LOBBY = "/app/createLobby"
         private const val APP_JOIN_LOBBY_PREFIX = "/app/joinLobby/"
         private const val APP_LEAVE_LOBBY_PREFIX = "/app/leaveLobby/"
+        private const val APP_SOLVE_CASE = "/app/solveCase"
+
     }
 
     private val gson = Gson()
@@ -195,4 +199,24 @@ class WebSocketService {
 
         stompClient?.send(destination, payload)?.subscribe()
     }
+    @SuppressLint("CheckResult")
+    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
+        if (!_isConnected.value) {
+            _errorMessages.tryEmit("Not connected to server")
+            return
+        }
+
+        val request = mapOf(
+            "lobbyId" to lobbyId,
+            "username" to username,
+            "suspect" to suspect,
+            "room" to room,
+            "weapon" to weapon
+        )
+
+        val payload = gson.toJson(request)
+
+        stompClient?.send(APP_SOLVE_CASE, payload)?.subscribe()
+    }
+
 }

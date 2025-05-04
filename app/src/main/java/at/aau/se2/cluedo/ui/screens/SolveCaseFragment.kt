@@ -10,8 +10,16 @@ import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import android.util.Log
 
 class SolveCaseFragment : Fragment() {
+
+    private val lobbyViewModel: LobbyViewModel by viewModels()
 
     private var isPlayerEliminated: Boolean = false
 
@@ -19,8 +27,6 @@ class SolveCaseFragment : Fragment() {
     private lateinit var roomSpinner: Spinner
     private lateinit var weaponSpinner: Spinner
     private lateinit var solveButton: Button
-
-    private val correctSolution = Triple("Professor Plum", "Library", "Candlestick")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,60 +61,51 @@ class SolveCaseFragment : Fragment() {
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        lifecycleScope.launch {
+            lobbyViewModel.lobbyState.collectLatest { lobby ->
+                val currentUsername = lobbyViewModel.createdLobbyId.value
+                val player = lobby?.players?.find { it.username == currentUsername }
+
+                if (player != null) {
+                    if (player.hasWon) {
+                        solveButton.isEnabled = false
+                        Toast.makeText(context, "You won! 🎉", Toast.LENGTH_LONG).show()
+                    } else if (player.isEliminated) {
+                        solveButton.isEnabled = false
+                        isPlayerEliminated = true
+                        Toast.makeText(context, "Wrong guess. You are eliminated! ❌", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+    }
+
     private fun setupSpinners() {
+        val context = requireContext()
+
         val suspectArray = arrayOf(
-            "Select a suspect",
-            "Miss Scarlet",
-            "Professor Plum",
-            "Colonel Mustard",
-            "Mrs. Peacock"
+            "Select a suspect", "Miss Scarlet", "Professor Plum", "Colonel Mustard", "Mrs. Peacock"
         )
 
         val roomArray = arrayOf(
-            "Select a room",
-            "Library",
-            "Kitchen",
-            "Ballroom",
-            "Study",
-            "Hall",
-            "Billiard room",
-            "Dining room",
-            "Lounge",
-            "Conservatory"
+            "Select a room", "Library", "Kitchen", "Ballroom", "Study", "Hall",
+            "Billiard room", "Dining room", "Lounge", "Conservatory"
         )
 
         val weaponArray = arrayOf(
-            "Select a weapon",
-            "Candlestick",
-            "Revolver",
-            "Rope",
-            "Lead Pipe",
-            "Wrench",
-            "Dagger"
+            "Select a weapon", "Candlestick", "Revolver", "Rope", "Lead Pipe", "Wrench", "Dagger"
         )
 
-        val context = requireContext()
+        suspectSpinner.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, suspectArray)
+        roomSpinner.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, roomArray)
+        weaponSpinner.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, weaponArray)
 
-        val suspectAdapter = ArrayAdapter(
-            context,
-            android.R.layout.simple_spinner_dropdown_item,
-            suspectArray
-        )
-        suspectSpinner.adapter = suspectAdapter
-
-        val roomAdapter = ArrayAdapter(
-            context,
-            android.R.layout.simple_spinner_dropdown_item,
-            roomArray
-        )
-        roomSpinner.adapter = roomAdapter
-
-        val weaponAdapter = ArrayAdapter(
-            context,
-            android.R.layout.simple_spinner_dropdown_item,
-            weaponArray
-        )
-        weaponSpinner.adapter = weaponAdapter
+        Log.d("SPINNER_CHECK", "Suspects: ${suspectArray.joinToString()}")
+        Log.d("SPINNER_CHECK", "Rooms: ${roomArray.joinToString()}")
+        Log.d("SPINNER_CHECK", "Weapons: ${weaponArray.joinToString()}")
     }
 
     private fun solveCase() {
@@ -121,20 +118,20 @@ class SolveCaseFragment : Fragment() {
         val selectedRoom = roomSpinner.selectedItem.toString()
         val selectedWeapon = weaponSpinner.selectedItem.toString()
 
-        if (Triple(selectedSuspect, selectedRoom, selectedWeapon) == correctSolution) {
-            endGame()
-        } else {
-            eliminatePlayer()
+        if (selectedSuspect == "Select a suspect" || selectedRoom == "Select a room" || selectedWeapon == "Select a weapon") {
+            Toast.makeText(context, "Please select all options.", Toast.LENGTH_SHORT).show()
+            return
         }
-    }
 
-    private fun endGame() {
-        Toast.makeText(context, "Congratulations! You solved the case and won the game!", Toast.LENGTH_LONG).show()
-    }
+        val lobbyId = lobbyViewModel.lobbyState.value?.id
+        val username = lobbyViewModel.createdLobbyId.value
 
-    private fun eliminatePlayer() {
-        isPlayerEliminated = true
-        Toast.makeText(context, "Wrong guess! You are eliminated. You can still show your cards.", Toast.LENGTH_LONG).show()
+        if (lobbyId.isNullOrBlank() || username.isNullOrBlank()) {
+            Toast.makeText(context, "Missing lobby or username", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lobbyViewModel.solveCase(lobbyId, username, selectedSuspect, selectedRoom, selectedWeapon)
     }
 
     private fun animateAndClose(view: View) {
