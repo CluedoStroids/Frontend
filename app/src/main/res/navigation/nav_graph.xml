@@ -31,7 +31,13 @@
         android:id="@+id/lobbyFragment"
         android:name="at.aau.se2.cluedo.ui.screens.LobbyFragment"
         android:label="@string/lobby"
-        tools:layout="@layout/fragment_lobby" />
+        tools:layout="@layout/fragment_lobby">
+        <action
+            android:id="@+id/action_lobbyFragment_to_solveCaseFragment"
+            app:destination="@id/solveCaseFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out" />
+    </fragment>
 
     <fragment
         android:id="@+id/settingsFragment"
@@ -44,5 +50,11 @@
         android:name="at.aau.se2.cluedo.ui.screens.DiceRollerFragment"
         android:label="@string/dice_roller"
         tools:layout="@layout/fragment_dice_roller" />
+
+    <fragment
+        android:id="@+id/solveCaseFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.SolveCaseFragment"
+        android:label="Solve Case"
+        tools:layout="@layout/fragment_solve_case" />
 
 </navigation>

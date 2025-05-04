@@ -126,13 +126,24 @@ class SolveCaseFragment : Fragment() {
         val lobbyId = lobbyViewModel.lobbyState.value?.id
         val username = lobbyViewModel.createdLobbyId.value
 
-        if (lobbyId.isNullOrBlank() || username.isNullOrBlank()) {
-            Toast.makeText(context, "Missing lobby or username", Toast.LENGTH_SHORT).show()
+        if (lobbyId == null) {
+            Toast.makeText(context, "Lobby ID is missing. Please rejoin the lobby.", Toast.LENGTH_SHORT).show()
+            Log.e("SOLVE_CASE", "Missing lobby ID")
             return
         }
 
+        if (username.isNullOrBlank()) {
+            Toast.makeText(context, "Username is missing. Please set your username.", Toast.LENGTH_SHORT).show()
+            Log.e("SOLVE_CASE", "Missing username")
+            return
+        }
+
+
+        Log.d("SOLVE_CASE", "Attempting solution: $selectedSuspect, $selectedRoom, $selectedWeapon by $username in $lobbyId")
+
         lobbyViewModel.solveCase(lobbyId, username, selectedSuspect, selectedRoom, selectedWeapon)
     }
+
 
     private fun animateAndClose(view: View) {
         val fadeOut = AlphaAnimation(1f, 0f)
