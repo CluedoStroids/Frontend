@@ -34,12 +34,11 @@ class GameBoard @JvmOverloads constructor(
     var move:Boolean=false
     private var playerSizeX=(gridSize/25).toInt()
     private var playerSizeY=(gridSize/25).toInt()
-
     //Button
 
     fun init() {
 
-        playerBitmap = BitmapFactory.decodeResource(resources, R.drawable.block)
+        playerBitmap = BitmapFactory.decodeResource(resources, R.drawable.figure_red)
         gameBoardBitmap = BitmapFactory.decodeResource(resources, R.drawable.grid)
 
         // Set initial position (example: center of the view)
