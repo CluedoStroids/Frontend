@@ -75,6 +75,7 @@ class gameBoard : Fragment() {
         val downButton = view.findViewById<Button>(R.id.moveDown)
         val leftButton = view.findViewById<Button>(R.id.moveLeft)
         val rightButton = view.findViewById<Button>(R.id.moveRight)
+        val doneButton = view.findViewById<Button>(R.id.Done)
 
         moveButton.setOnClickListener {
 
@@ -83,6 +84,7 @@ class gameBoard : Fragment() {
             downButton.visibility=View.VISIBLE
             leftButton.visibility=View.VISIBLE
             rightButton.visibility=View.VISIBLE
+            doneButton.visibility = View.VISIBLE
             gameBoard.performMoveClicked()
 
         }
@@ -98,7 +100,16 @@ class gameBoard : Fragment() {
         rightButton.setOnClickListener {
             gameBoard.moveRight()
         }
+        doneButton.setOnClickListener {
+            gameBoard.done()
+            moveButton.visibility=View.VISIBLE
+            upButton.visibility=View.GONE
+            downButton.visibility=View.GONE
+            leftButton.visibility=View.GONE
+            rightButton.visibility=View.GONE
+            doneButton.visibility = View.GONE
+        }
 
-        // andere Button-Listener hier verwalten
+
     }
 }

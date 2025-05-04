@@ -6,8 +6,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.View
-import android.widget.Button
-import androidx.annotation.Nullable
 import com.example.myapplication.R
 
 class GameBoard @JvmOverloads constructor(
@@ -30,7 +28,10 @@ class GameBoard @JvmOverloads constructor(
     private var gridScale:Float= 0.9f
     private var playerPosX=24
     private var playerPosY=10
+    private var gridPosX=playerPosX
+    private var gridPosY=playerPosY
     var gridSize= sizeX*gridScale
+    var move:Boolean=false
     private var playerSizeX=(gridSize/25).toInt()
     private var playerSizeY=(gridSize/25).toInt()
 
@@ -45,42 +46,76 @@ class GameBoard @JvmOverloads constructor(
         playerBitmap= playerBitmap?.let { Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false) }
         gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
 
-
     }
 
     fun moveUp(){
-        playerPosY--
-        if(playerPosY<=0){
-            playerPosY=0
+        if(move)
+        {
+            gridPosY--
+            if(gridPosY<=0){
+                gridPosY=0
+            }
+        }else{
+            playerPosY--
+            if(playerPosY<=0){
+                playerPosY=0
+            }
         }
+
         invalidate()
     }
     fun moveDown(){
-        playerPosY++
-        if(playerPosY>=24){
-            playerPosY=24
+        if(move)
+        {
+            gridPosY++
+            if(gridPosY<=0){
+                gridPosY=0
+            }
+        }else{
+            playerPosY++
+            if(playerPosY<=0){
+                playerPosY=0
+            }
         }
         invalidate()
     }
     fun moveLeft(){
-        playerPosX--
-        if(playerPosX<=0){
-            playerPosX=0
+        if(move)
+        {
+            gridPosX--
+            if(gridPosX<=0){
+                gridPosX=0
+            }
+        }else{
+            playerPosX--
+            if(playerPosX<=0){
+                playerPosX=0
+            }
         }
         invalidate()
     }
     fun moveRight(){
-        playerPosX++
-        if(playerPosX>=24){
-            playerPosX=24
+        if(move)
+        {
+            gridPosX++
+            if(gridPosX<=0){
+                gridPosX=0
+            }
+        }else{
+            playerPosX++
+            if(playerPosX<=0){
+                playerPosX=0
+            }
         }
         invalidate()
     }
     fun performMoveClicked(){
-        gridScale=2f
+        //gridScale=2f
         calcSize()
+        //move=true
+        gridPosY = playerPosY
+        gridPosX = playerPosX
         invalidate()
-        println("Scaling")
     }
 
 
@@ -99,24 +134,47 @@ class GameBoard @JvmOverloads constructor(
         playerSizeY=(gridSize/25).toInt()
         playerBitmap= playerBitmap?.let { Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false) }
         gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
+    }
+    fun done(){
 
     }
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         calcSize()
-        gameBoardBitmap?.let {
-            boardPosX =  (canvas.width - it.width) / 2f
-            boardPosY = (canvas.height - it.height) / 2f
-           canvas.drawBitmap(it,boardPosX,boardPosY,null)
-            playerX =((playerPosX*(gridSize/25))+boardPosX)
-            playerY = ((playerPosY*(gridSize/25))+boardPosY)
+        if(!move) {
+            gameBoardBitmap?.let {
+                boardPosX = (canvas.width - it.width) / 2f
+                boardPosY = (canvas.height - it.height) / 2f
+                canvas.drawBitmap(it, boardPosX, boardPosY, null)
+                playerX = ((playerPosX * (gridSize / 25)) + boardPosX)
+                playerY = ((playerPosY * (gridSize / 25)) + boardPosY)
+            }
+
+            playerBitmap?.let {
+
+                canvas.drawBitmap(it, playerX, playerY, null) // Draw the bitmap
+
+            }
         }
+        else{
+            gameBoardBitmap?.let {
+                var centerX = (canvas.width - playerSizeX)/2f
+                var centerY = (canvas.width - playerSizeY)/2f
 
-        playerBitmap?.let {
 
-            canvas.drawBitmap(it, playerX, playerY, null) // Draw the bitmap
+                boardPosX = (centerX -(gridPosX * (gridSize / 25)) )
+                boardPosY = (centerY -(gridPosY * (gridSize / 25)) )
+                println((gridSize / 25))
+                println(boardPosX)
+                canvas.drawBitmap(it, boardPosX, boardPosY, null)
+            }
 
+            playerBitmap?.let {
+                playerX = (canvas.width - it.width)/2f
+                playerY = (canvas.height - it.height) / 2f
+                println(playerX)
+                canvas.drawBitmap(it, playerX, playerY, null) // Draw the bitmap
+            }
         }
 
     }
@@ -126,5 +184,9 @@ class GameBoard @JvmOverloads constructor(
         playerX = x
         playerY = y
         invalidate() // Request a redraw of the view
+    }
+
+    fun centeredPlayerMovement(){
+
     }
 }
