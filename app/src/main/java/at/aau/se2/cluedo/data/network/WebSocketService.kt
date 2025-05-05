@@ -73,6 +73,7 @@ class WebSocketService {
                     LifecycleEvent.Type.OPENED -> {
                         _isConnected.value = true
                         subscribeToLobbyCreationTopic()
+                        subscribeToDiceResultTopic()
                     }
 
                     LifecycleEvent.Type.ERROR -> {
@@ -113,6 +114,7 @@ class WebSocketService {
                 _isConnected.value = true
                 _errorMessages.tryEmit("Connection established manually")
                 subscribeToLobbyCreationTopic()
+                subscribeToDiceResultTopic()
             }
         }, 2000)
     }
