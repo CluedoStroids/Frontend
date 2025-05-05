@@ -16,6 +16,8 @@ import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import android.util.Log
+import androidx.navigation.fragment.findNavController
+
 
 class SolveCaseFragment : Fragment() {
 
@@ -55,8 +57,17 @@ class SolveCaseFragment : Fragment() {
         }
 
         cancelButton.setOnClickListener {
-            animateAndClose(view)
+            val navController = findNavController()
+            val destinationId = resources.getIdentifier(
+                "boardPlaceholderFragment", "id", requireContext().packageName
+            )
+            if (destinationId != 0) {
+                navController.navigate(destinationId)
+            } else {
+                Toast.makeText(context, "Board screen not found in navigation graph.", Toast.LENGTH_SHORT).show()
+            }
         }
+
 
         return view
     }
@@ -87,7 +98,7 @@ class SolveCaseFragment : Fragment() {
         val context = requireContext()
 
         val suspectArray = arrayOf(
-            "Select a suspect", "Miss Scarlet", "Professor Plum", "Colonel Mustard", "Mrs. Peacock"
+            "Select a suspect", "Miss Scarlet", "Professor Plum", "Colonel Mustard", "Mrs. Peacock", "Mrs. White", "Mr. Green"
         )
 
         val roomArray = arrayOf(

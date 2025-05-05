@@ -49,17 +49,31 @@ class LobbyViewModel : ViewModel() {
         disconnect()
     }
 
-    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
+    fun solveCase(
+        lobbyId: String,
+        username: String,
+        suspect: String,
+        room: String,
+        weapon: String
+    ) {
         viewModelScope.launch {
             webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
         }
     }
 
-    init {
-        viewModelScope.launch {
-            lobbyState.collectLatest { lobby ->
-                android.util.Log.d("LOBBY_JSON", "Lobby update: $lobby")
-            }
-        }
-    }
+   // init {
+        // viewModelScope.launch {
+            // lobbyState.collectLatest { lobby ->
+                // android.util.Log.d("LOBBY_JSON", "Lobby update: $lobby")
+
+                // val currentUsername = createdLobbyId.value
+                //  val player = lobby?.players?.find { it.username == currentUsername }
+
+              //  android.util.Log.d(
+            //        "PLAYER_STATE",
+          //          "Username=$currentUsername, hasWon=${player?.hasWon}, isEliminated=${player?.isEliminated}"
+        //        )
+       //     }
+     //   }
+    //}
 }
