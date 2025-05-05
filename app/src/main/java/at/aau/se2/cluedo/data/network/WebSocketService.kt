@@ -35,6 +35,9 @@ class WebSocketService {
         private const val APP_LEAVE_LOBBY_PREFIX = "/app/leaveLobby/"
         private const val APP_GET_ACTIVE_LOBBIES = "/app/getActiveLobbies"
         private const val TOPIC_ACTIVE_LOBBIES = "/topic/activeLobbies"
+
+        private const val TOPIC_DICE_RESULT = "/topic/diceResult"
+        private const val APP_ROLL_DICE = "/app/rollDice"
     }
 
     private val gson = Gson()
@@ -326,5 +329,36 @@ class WebSocketService {
                 _errorMessages.tryEmit("Failed to leave lobby: ${error.message}")
             }
         )
+    }
+
+    private val _diceResult = MutableStateFlow<Int?>(null)
+    val diceResult: StateFlow<Int?> = _diceResult.asStateFlow()
+    @SuppressLint("CheckResult")
+    private fun subscribeToDiceResultTopic() {
+        stompClient?.topic(TOPIC_DICE_RESULT)?.subscribe({ stompMessage ->
+            val diceValue = stompMessage.payload.toIntOrNull()
+            if (diceValue != null) {
+                _diceResult.value = diceValue
+                _errorMessages.tryEmit("Würfel-Ergebnis: $diceValue")
+            } else {
+                _errorMessages.tryEmit("Ungültiges Würfel-Ergebnis: ${stompMessage.payload}")
+            }
+        }, {
+            _errorMessages.tryEmit("Fehler beim Abonnieren des Würfel-Topics")
+        })
+    }
+
+    @SuppressLint("CheckResult")
+    fun rollDice() {
+        if (!_isConnected.value) {
+            _errorMessages.tryEmit("Not connected to server")
+            return
+        }
+
+        stompClient?.send(APP_ROLL_DICE, "")?.subscribe({
+            _errorMessages.tryEmit("Würfeln angefordert")
+        }, { error ->
+            _errorMessages.tryEmit("Fehler beim Würfeln: ${error.message}")
+        })
     }
 }
