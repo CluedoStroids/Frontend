@@ -1,5 +1,6 @@
 package at.aau.se2.cluedo.ui.screens
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,7 +18,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import android.util.Log
 import androidx.navigation.fragment.findNavController
-
 
 class SolveCaseFragment : Fragment() {
 
@@ -68,8 +68,12 @@ class SolveCaseFragment : Fragment() {
             }
         }
 
-
         return view
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -149,12 +153,10 @@ class SolveCaseFragment : Fragment() {
             return
         }
 
-
         Log.d("SOLVE_CASE", "Attempting solution: $selectedSuspect, $selectedRoom, $selectedWeapon by $username in $lobbyId")
 
         lobbyViewModel.solveCase(lobbyId, username, selectedSuspect, selectedRoom, selectedWeapon)
     }
-
 
     private fun animateAndClose(view: View) {
         val fadeOut = AlphaAnimation(1f, 0f)
