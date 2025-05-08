@@ -1,7 +1,6 @@
 package at.aau.se2.cluedo.ui.screens
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,14 +10,14 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 
-class WinScreenFragment : Fragment() {
+class EliminationScreenFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val layoutId = requireContext().resources.getIdentifier(
-            "fragment_win_screen", "layout", requireContext().packageName
+            "fragment_elimination_screen", "layout", requireContext().packageName
         )
         return inflater.inflate(layoutId, container, false)
     }
@@ -27,36 +26,39 @@ class WinScreenFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val context = requireContext()
+        val navController = findNavController()
 
-        val winTitleId = context.resources.getIdentifier("winTitle", "id", context.packageName)
-        val winDetailsId = context.resources.getIdentifier("winDetails", "id", context.packageName)
+        val eliminationTextId = context.resources.getIdentifier("eliminationText", "id", context.packageName)
         val backButtonId = context.resources.getIdentifier("button_back_to_lobby", "id", context.packageName)
         val exitButtonId = context.resources.getIdentifier("button_exit_game", "id", context.packageName)
 
-        val winTitle: TextView = view.findViewById(winTitleId)
-        val winDetails: TextView = view.findViewById(winDetailsId)
+        val eliminationText: TextView = view.findViewById(eliminationTextId)
         val backButton: Button = view.findViewById(backButtonId)
         val exitButton: Button = view.findViewById(exitButtonId)
 
         val args = arguments
-        val winnerName = args?.getString("winnerName") ?: "Miss Scarlet"
-        val suspect = args?.getString("suspect") ?: "Colonel Mustard"
-        val room = args?.getString("room") ?: "Study"
-        val weapon = args?.getString("weapon") ?: "Candlestick"
+        val suspect = args?.getString("suspect") ?: "Mrs. White"
+        val room = args?.getString("room") ?: "Kitchen"
+        val weapon = args?.getString("weapon") ?: "Rope"
 
-        Log.d("WinScreenFragment", "Showing result: $winnerName, $suspect, $room, $weapon")
+        val message = """
+            ❌ Your accusation was incorrect.
 
-        winTitle.text = "🔍 $winnerName has cracked the case!"
-        winDetails.text = "\n$suspect — in the $room — with the $weapon.\n\nJustice is served. 🎯"
+            You guessed:
+            $suspect — in the $room — with the $weapon.
 
-        val navController = findNavController()
-        val destId = context.resources.getIdentifier("mainMenuFragment", "id", context.packageName)
+            You are now eliminated from the investigation.
+        """.trimIndent()
+
+        eliminationText.text = message
+
+        val mainMenuId = context.resources.getIdentifier("mainMenuFragment", "id", context.packageName)
 
         backButton.setOnClickListener {
-            if (destId != 0) {
-                navController.navigate(destId)
+            if (mainMenuId != 0) {
+                navController.navigate(mainMenuId)
             } else {
-                Toast.makeText(context, "Main menu not found in nav graph", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Main menu not found.", Toast.LENGTH_SHORT).show()
             }
         }
 

@@ -13,31 +13,23 @@
         android:gravity="center_horizontal">
 
         <TextView
-            android:id="@+id/winTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/you_ve_cracked_the_case"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_marginTop="48dp"
-            android:layout_marginBottom="24dp" />
-
-        <TextView
-            android:id="@+id/winDetails"
+            android:id="@+id/updateText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="20sp"
-            android:gravity="center"
             android:textColor="@color/black"
-            android:layout_marginBottom="32dp" />
+            android:gravity="center"
+            android:textStyle="bold"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="10dp" />
 
         <Button
             android:id="@+id/button_back_to_lobby"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/back_to_lobby"
-            android:layout_marginTop="16dp"
+            android:text="Back to Lobby"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
             android:backgroundTint="@color/purple_500"
             android:textColor="@color/white" />
 
@@ -45,8 +37,8 @@
             android:id="@+id/button_exit_game"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/exit_the_game"
-            android:layout_marginTop="16dp"
+            android:text="Exit Game"
+            android:layout_marginTop="4dp"
             android:backgroundTint="@color/teal_200"
             android:textColor="@color/black" />
     </LinearLayout>

@@ -15,6 +15,9 @@
     <string name="cancel">Cancel</string>
     <string name="cheat_fake_card">CHEAT</string>
     <string name="suspicion_icon_desc">Suspicion Icon</string>
+    <string name="you_ve_cracked_the_case">🔍 You’ve cracked the case!</string>
+    <string name="exit_the_game">Exit the Game</string>
+    <string name="back_to_lobby">Back to Lobby</string>
 
     <string-array name="suspect_options">
         <item>Select a suspect</item>

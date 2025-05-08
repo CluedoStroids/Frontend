@@ -4,5 +4,9 @@ data class SolveCaseRequest(
     val lobbyId: String,
     val suspect: String,
     val room: String,
-    val weapon: String
+    val weapon: String,
+    val username: String
 )
+
+
+

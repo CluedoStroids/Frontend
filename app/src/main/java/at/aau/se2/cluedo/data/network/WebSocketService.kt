@@ -5,21 +5,16 @@ import at.aau.se2.cluedo.data.models.CreateLobbyRequest
 import at.aau.se2.cluedo.data.models.JoinLobbyRequest
 import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
 import at.aau.se2.cluedo.data.models.Lobby
+import at.aau.se2.cluedo.data.models.SolveCaseRequest
 import com.google.gson.Gson
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.LifecycleEvent
 import ua.naiksoftware.stomp.dto.StompMessage
-import at.aau.se2.cluedo.data.models.SolveCaseRequest
 
-class
-WebSocketService {
+class WebSocketService {
+
     companion object {
         private const val SERVER_IP = "10.0.2.2"
         private const val SERVER_PORT = "8000"
@@ -30,7 +25,6 @@ WebSocketService {
         private const val APP_JOIN_LOBBY_PREFIX = "/app/joinLobby/"
         private const val APP_LEAVE_LOBBY_PREFIX = "/app/leaveLobby/"
         private const val APP_SOLVE_CASE = "/app/solveCase"
-
     }
 
     private val gson = Gson()
@@ -55,9 +49,8 @@ WebSocketService {
 
     @SuppressLint("CheckResult")
     private fun setupStompClient() {
-        if (stompClient != null) {
-            return
-        }
+        if (stompClient != null) return
+
         stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, CONNECTION_URL)
 
         stompClient?.lifecycle()?.subscribe(
@@ -67,16 +60,15 @@ WebSocketService {
                         _isConnected.value = true
                         subscribeToLobbyCreationTopic()
                     }
+
                     LifecycleEvent.Type.ERROR -> {
                         _errorMessages.tryEmit("Connection Error: ${lifecycleEvent.exception?.message}")
                         resetConnectionState()
                     }
-                    LifecycleEvent.Type.CLOSED -> {
-                        resetConnectionState()
-                    }
-                    LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT -> {
+
+                    LifecycleEvent.Type.CLOSED -> resetConnectionState()
+                    LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT ->
                         _errorMessages.tryEmit("Server heartbeat failed")
-                    }
                 }
             },
             {
@@ -86,20 +78,14 @@ WebSocketService {
     }
 
     fun connect() {
-        if (stompClient == null) {
-            setupStompClient()
-        }
-        if (_isConnected.value || stompClient?.isConnected == true) {
-            return
-        }
+        if (stompClient == null) setupStompClient()
+        if (_isConnected.value || stompClient?.isConnected == true) return
         stompClient?.connect()
     }
 
     fun disconnect() {
         stompClient?.disconnect()
-        if (_isConnected.value) {
-            resetConnectionState()
-        }
+        if (_isConnected.value) resetConnectionState()
     }
 
     private fun resetConnectionState() {
@@ -112,9 +98,8 @@ WebSocketService {
     @SuppressLint("CheckResult")
     private fun subscribeToLobbyCreationTopic() {
         stompClient?.topic(TOPIC_LOBBY_CREATED)?.subscribe(
-            { stompMessage: StompMessage ->
-                val newLobbyId = stompMessage.payload
-                _createdLobbyId.value = newLobbyId
+            { stompMessage ->
+                _createdLobbyId.value = stompMessage.payload
             },
             {
                 _errorMessages.tryEmit("Error receiving lobby creation confirmation")
@@ -126,13 +111,11 @@ WebSocketService {
     private fun subscribeToLobbyUpdates(lobbyId: String) {
         val topicPath = "$TOPIC_LOBBY_UPDATES_PREFIX$lobbyId"
 
-        if (topicPath == currentLobbySubscriptionId) {
-            return
-        }
+        if (topicPath == currentLobbySubscriptionId) return
         currentLobbySubscriptionId = topicPath
 
         stompClient?.topic(topicPath)?.subscribe(
-            { stompMessage: StompMessage ->
+            { stompMessage ->
                 try {
                     val lobby = gson.fromJson(stompMessage.payload, Lobby::class.java)
                     _lobbyState.value = lobby
@@ -199,6 +182,7 @@ WebSocketService {
 
         stompClient?.send(destination, payload)?.subscribe()
     }
+
     @SuppressLint("CheckResult")
     fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
         if (!_isConnected.value) {
@@ -206,17 +190,9 @@ WebSocketService {
             return
         }
 
-        val request = mapOf(
-            "lobbyId" to lobbyId,
-            "username" to username,
-            "suspect" to suspect,
-            "room" to room,
-            "weapon" to weapon
-        )
-
+        val request = SolveCaseRequest(lobbyId, username, suspect, room, weapon)
         val payload = gson.toJson(request)
 
         stompClient?.send(APP_SOLVE_CASE, payload)?.subscribe()
     }
-
 }

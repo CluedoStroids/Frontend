@@ -58,9 +58,7 @@ class SolveCaseFragment : Fragment() {
 
         cancelButton.setOnClickListener {
             val navController = findNavController()
-            val destinationId = resources.getIdentifier(
-                "boardPlaceholderFragment", "id", requireContext().packageName
-            )
+            val destinationId = resources.getIdentifier("boardPlaceholderFragment", "id", requireContext().packageName)
             if (destinationId != 0) {
                 navController.navigate(destinationId)
             } else {
@@ -85,14 +83,44 @@ class SolveCaseFragment : Fragment() {
                 val player = lobby?.players?.find { it.username == currentUsername }
 
                 if (player != null) {
+                    val navController = findNavController()
+                    val bundle = Bundle().apply {
+                        putString("winnerName", player.characterName ?: currentUsername)
+                        putString("suspect", suspectSpinner.selectedItem.toString())
+                        putString("room", roomSpinner.selectedItem.toString())
+                        putString("weapon", weaponSpinner.selectedItem.toString())
+                    }
+
                     if (player.hasWon) {
                         solveButton.isEnabled = false
                         Toast.makeText(context, "You won! 🎉", Toast.LENGTH_LONG).show()
+
+                        val winScreenId = resources.getIdentifier("winScreenFragment", "id", requireContext().packageName)
+                        if (winScreenId != 0) {
+                            navController.navigate(winScreenId, bundle)
+                        }
+                    } else if (lobby?.winnerUsername != null) {
+                        val updateScreenId = resources.getIdentifier("investigationUpdateFragment", "id", requireContext().packageName)
+                        if (updateScreenId != 0) {
+                            navController.navigate(updateScreenId, bundle)
+                        }
                     } else if (player.isEliminated) {
                         solveButton.isEnabled = false
                         isPlayerEliminated = true
                         Toast.makeText(context, "Wrong guess. You are eliminated! ❌", Toast.LENGTH_LONG).show()
+
+                        val bundle = Bundle().apply {
+                            putString("suspect", suspectSpinner.selectedItem.toString())
+                            putString("room", roomSpinner.selectedItem.toString())
+                            putString("weapon", weaponSpinner.selectedItem.toString())
+                        }
+
+                        val elimScreenId = resources.getIdentifier("eliminationScreenFragment", "id", requireContext().packageName)
+                        if (elimScreenId != 0) {
+                            findNavController().navigate(elimScreenId, bundle)
+                        }
                     }
+
                 }
             }
         }
@@ -101,26 +129,13 @@ class SolveCaseFragment : Fragment() {
     private fun setupSpinners() {
         val context = requireContext()
 
-        val suspectArray = arrayOf(
-            "Select a suspect", "Miss Scarlet", "Professor Plum", "Colonel Mustard", "Mrs. Peacock", "Mrs. White", "Mr. Green"
-        )
-
-        val roomArray = arrayOf(
-            "Select a room", "Library", "Kitchen", "Ballroom", "Study", "Hall",
-            "Billiard room", "Dining room", "Lounge", "Conservatory"
-        )
-
-        val weaponArray = arrayOf(
-            "Select a weapon", "Candlestick", "Revolver", "Rope", "Lead Pipe", "Wrench", "Dagger"
-        )
+        val suspectArray = arrayOf("Select a suspect", "Miss Scarlet", "Professor Plum", "Colonel Mustard", "Mrs. Peacock", "Mrs. White", "Mr. Green")
+        val roomArray = arrayOf("Select a room", "Library", "Kitchen", "Ballroom", "Study", "Hall", "Billiard room", "Dining room", "Lounge", "Conservatory")
+        val weaponArray = arrayOf("Select a weapon", "Candlestick", "Revolver", "Rope", "Lead Pipe", "Wrench", "Dagger")
 
         suspectSpinner.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, suspectArray)
         roomSpinner.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, roomArray)
         weaponSpinner.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, weaponArray)
-
-        Log.d("SPINNER_CHECK", "Suspects: ${suspectArray.joinToString()}")
-        Log.d("SPINNER_CHECK", "Rooms: ${roomArray.joinToString()}")
-        Log.d("SPINNER_CHECK", "Weapons: ${weaponArray.joinToString()}")
     }
 
     private fun solveCase() {
@@ -141,19 +156,10 @@ class SolveCaseFragment : Fragment() {
         val lobbyId = lobbyViewModel.lobbyState.value?.id
         val username = lobbyViewModel.createdLobbyId.value
 
-        if (lobbyId == null) {
-            Toast.makeText(context, "Lobby ID is missing. Please rejoin the lobby.", Toast.LENGTH_SHORT).show()
-            Log.e("SOLVE_CASE", "Missing lobby ID")
+        if (lobbyId == null || username.isNullOrBlank()) {
+            Toast.makeText(context, "Missing lobby or username info. Please rejoin.", Toast.LENGTH_SHORT).show()
             return
         }
-
-        if (username.isNullOrBlank()) {
-            Toast.makeText(context, "Username is missing. Please set your username.", Toast.LENGTH_SHORT).show()
-            Log.e("SOLVE_CASE", "Missing username")
-            return
-        }
-
-        Log.d("SOLVE_CASE", "Attempting solution: $selectedSuspect, $selectedRoom, $selectedWeapon by $username in $lobbyId")
 
         lobbyViewModel.solveCase(lobbyId, username, selectedSuspect, selectedRoom, selectedWeapon)
     }

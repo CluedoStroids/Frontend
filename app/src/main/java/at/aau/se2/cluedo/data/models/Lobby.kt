@@ -6,7 +6,8 @@ data class Lobby(
     @SerializedName("id") val id: String = "",
     @SerializedName("host") val host: String = "",
     @SerializedName("participants") val participants: List<String> = listOf(),
-    @SerializedName("players") val players: List<Player> = listOf()
+    @SerializedName("players") val players: List<Player> = listOf(),
+    @SerializedName("winnerUsername") val winnerUsername: String? = null
 )
 
 
@@ -25,6 +26,7 @@ data class LeaveLobbyRequest(
 
 data class Player(
     val username: String,
+    val characterName: String,
     val isEliminated: Boolean = false,
     val hasWon: Boolean = false
 )
