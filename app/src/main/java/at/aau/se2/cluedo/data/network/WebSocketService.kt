@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import at.aau.se2.cluedo.data.models.ActiveLobbiesResponse
 import at.aau.se2.cluedo.data.models.CreateLobbyRequest
+import at.aau.se2.cluedo.data.models.DiceResult
 import at.aau.se2.cluedo.data.models.GetActiveLobbiesRequest
 import at.aau.se2.cluedo.data.models.JoinLobbyRequest
 import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
@@ -35,6 +36,9 @@ class WebSocketService {
         private const val APP_LEAVE_LOBBY_PREFIX = "/app/leaveLobby/"
         private const val APP_GET_ACTIVE_LOBBIES = "/app/getActiveLobbies"
         private const val TOPIC_ACTIVE_LOBBIES = "/topic/activeLobbies"
+
+        private const val TOPIC_DICE_RESULT = "/topic/diceResult"
+        private const val APP_ROLL_DICE = "/app/rollDice"
     }
 
     private val gson = Gson()
@@ -70,6 +74,7 @@ class WebSocketService {
                     LifecycleEvent.Type.OPENED -> {
                         _isConnected.value = true
                         subscribeToLobbyCreationTopic()
+                        subscribeToDiceResultTopic()
                     }
 
                     LifecycleEvent.Type.ERROR -> {
@@ -110,6 +115,7 @@ class WebSocketService {
                 _isConnected.value = true
                 _errorMessages.tryEmit("Connection established manually")
                 subscribeToLobbyCreationTopic()
+                subscribeToDiceResultTopic()
             }
         }, 2000)
     }
@@ -326,5 +332,40 @@ class WebSocketService {
                 _errorMessages.tryEmit("Failed to leave lobby: ${error.message}")
             }
         )
+    }
+
+    private val _diceOneResult = MutableStateFlow<Int?>(null)
+    private val _diceTwoResult = MutableStateFlow<Int?>(null)
+
+    val diceOneResult: StateFlow<Int?> = _diceOneResult
+    val diceTwoResult: StateFlow<Int?> = _diceTwoResult
+
+    @SuppressLint("CheckResult")
+    private fun subscribeToDiceResultTopic() {
+        stompClient?.topic(TOPIC_DICE_RESULT)?.subscribe({ stompMessage ->
+            try {
+                val result = gson.fromJson(stompMessage.payload, DiceResult::class.java)
+                _diceOneResult.value = result.diceOne
+                _diceTwoResult.value = result.diceTwo
+            } catch (e: Exception) {
+                _errorMessages.tryEmit("Invalid result format: ${e.message}")
+            }
+        }, {
+            _errorMessages.tryEmit("Error subscribing to diceResult topic")
+        })
+    }
+
+    @SuppressLint("CheckResult")
+    fun rollDice() {
+        if (!_isConnected.value) {
+            _errorMessages.tryEmit("Not connected to server")
+            return
+        }
+
+        stompClient?.send(APP_ROLL_DICE, "")?.subscribe({
+            _errorMessages.tryEmit("Dice requested")
+        }, { error ->
+            _errorMessages.tryEmit("Error from rolling the dice: ${error.message}")
+        })
     }
 }
