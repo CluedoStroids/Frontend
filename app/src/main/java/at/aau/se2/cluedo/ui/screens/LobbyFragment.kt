@@ -1,6 +1,7 @@
 package at.aau.se2.cluedo.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.databinding.FragmentLobbyBinding
@@ -61,6 +63,14 @@ class LobbyFragment : Fragment() {
             } else {
                 showToast("Please enter a username")
             }
+        }
+
+        binding.startGameButton.setOnClickListener {
+
+           //todo Intent to Gameboard and all logic needed when starting the game.
+
+            val intent = Intent(requireContext(), GameBoardActivity::class.java)
+            startActivity(intent)
         }
     }
 
