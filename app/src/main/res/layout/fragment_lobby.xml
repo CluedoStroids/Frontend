@@ -20,10 +20,10 @@
         android:id="@+id/createLobbyTitleTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:text="Create New Lobby"
-        android:textStyle="bold"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/statusTextView" />
 
@@ -35,7 +35,7 @@
         android:hint="Enter Username"
         android:inputType="text"
         android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/createCharacterLabelTextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/createLobbyTitleTextView" />
 
@@ -43,38 +43,53 @@
         android:id="@+id/createCharacterLabelTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="Select Character:"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/createUsernameEditText" />
+        app:layout_constraintBottom_toTopOf="@+id/createLobbyButton"
+        app:layout_constraintEnd_toStartOf="@id/createCharacterSpinner"
+        app:layout_constraintStart_toEndOf="@id/createUsernameEditText"
+        app:layout_constraintTop_toBottomOf="@+id/createLobbyTitleTextView"
+        app:layout_constraintVertical_bias="0.25" />
 
     <Spinner
         android:id="@+id/createCharacterSpinner"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:layout_marginStart="8dp"
-        android:minHeight="48dp"
+        android:minHeight="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/createCharacterLabelTextView"
-        app:layout_constraintTop_toTopOf="@id/createCharacterLabelTextView"
-        app:layout_constraintBottom_toBottomOf="@id/createCharacterLabelTextView" />
+        app:layout_constraintTop_toBottomOf="@id/createLobbyTitleTextView" />
 
     <Button
         android:id="@+id/createLobbyButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
+        android:layout_marginEnd="8dp"
         android:text="Create Lobby"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/startGameButton"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/createCharacterSpinner" />
+
+    <Button
+        android:id="@+id/startGameButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Start Game"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/createLobbyButton"
         app:layout_constraintTop_toBottomOf="@id/createCharacterSpinner" />
 
     <TextView
         android:id="@+id/activeLobbyIdTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
         android:text="Active Lobby ID: -"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -84,7 +99,7 @@
         android:id="@+id/lobbyInfoLabelTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:text="Lobby Information:"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textStyle="bold"

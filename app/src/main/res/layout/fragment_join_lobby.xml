@@ -20,10 +20,10 @@
         android:id="@+id/joinLobbyTitleTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:text="Join Existing Lobby"
-        android:textStyle="bold"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/statusTextView" />
 
@@ -43,19 +43,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Refresh"
+        app:layout_constraintBottom_toBottomOf="@id/activeLobbyIdTextView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/activeLobbyIdTextView"
-        app:layout_constraintBottom_toBottomOf="@id/activeLobbyIdTextView" />
+        app:layout_constraintTop_toTopOf="@id/activeLobbyIdTextView" />
 
     <EditText
         android:id="@+id/joinUsernameEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:hint="Enter Username"
         android:inputType="text"
         android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/joinCharacterLabelTextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/activeLobbyIdTextView" />
 
@@ -63,28 +63,32 @@
         android:id="@+id/joinCharacterLabelTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:text="Select Character:"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/joinUsernameEditText" />
+        app:layout_constraintBottom_toTopOf="@+id/joinLobbyButton"
+        app:layout_constraintEnd_toStartOf="@+id/joinCharacterSpinner"
+        app:layout_constraintStart_toEndOf="@+id/joinUsernameEditText"
+        app:layout_constraintTop_toBottomOf="@+id/activeLobbyIdTextView"
+        app:layout_constraintVertical_bias="0.25" />
 
     <Spinner
         android:id="@+id/joinCharacterSpinner"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/joinCharacterLabelTextView"
-        app:layout_constraintTop_toTopOf="@id/joinCharacterLabelTextView"
-        app:layout_constraintBottom_toBottomOf="@id/joinCharacterLabelTextView" />
+        app:layout_constraintTop_toBottomOf="@id/activeLobbyIdTextView" />
 
     <Button
         android:id="@+id/joinLobbyButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="8dp"
         android:text="Join Lobby"
         app:layout_constraintEnd_toStartOf="@+id/leaveLobbyButton"
@@ -95,7 +99,7 @@
         android:id="@+id/leaveLobbyButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:text="Leave Lobby"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/joinLobbyButton"
@@ -105,7 +109,7 @@
         android:id="@+id/lobbyInfoLabelTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
         android:text="Lobby Information:"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textStyle="bold"
@@ -129,7 +133,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="16dp"
-            android:text="-"/>
+            android:text="-" />
 
     </ScrollView>
 
