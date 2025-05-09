@@ -1,4 +1,4 @@
-package at.aau.se2.cluedo.ui.screens
+package at.aau.se2.cluedo.viewmodels
 
 import android.content.Context
 import android.graphics.Bitmap

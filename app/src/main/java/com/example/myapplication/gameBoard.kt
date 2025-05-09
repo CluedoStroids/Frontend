@@ -1,19 +1,14 @@
 package com.example.myapplication
 
-import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
 import android.os.Bundle
-import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
-import at.aau.se2.cluedo.ui.screens.GameBoard
+import at.aau.se2.cluedo.viewmodels.GameBoard
 
 
 // TODO: Rename parameter arguments, choose names that match

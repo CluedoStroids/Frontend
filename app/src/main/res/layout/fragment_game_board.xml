@@ -5,9 +5,7 @@
     android:id="@+id/gameBoardRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="at.aau.se2.cluedo.ui.screens.GameBoardFragment">
-
-    <!-- TODO: Update blank fragment layout -->
+    tools:context="at.aau.se2.cluedo.viewmodels.GameBoard">
 
     <Button
         android:id="@+id/movebutton"
@@ -21,7 +19,7 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <at.aau.se2.cluedo.ui.screens.GameBoard
+    <at.aau.se2.cluedo.viewmodels.GameBoard
         android:id="@+id/gameBoardView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

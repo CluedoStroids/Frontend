@@ -56,7 +56,7 @@
         tools:layout="@layout/fragment_dice_roller" />
     <fragment
         android:id="@+id/gameBoardIMG"
-        android:name="com.example.myapplication.gameBoard"
+        android:name="at.aau.se2.cluedo.ui.screens.gameBoardFragment"
         android:label="fragment_game_board"
         tools:layout="@layout/fragment_game_board" />
 
