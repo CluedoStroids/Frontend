@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import at.aau.se2.cluedo.data.models.ActiveLobbiesResponse
 import at.aau.se2.cluedo.data.models.CreateLobbyRequest
+import at.aau.se2.cluedo.data.models.DiceResult
 import at.aau.se2.cluedo.data.models.GetActiveLobbiesRequest
 import at.aau.se2.cluedo.data.models.JoinLobbyRequest
 import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
@@ -333,20 +334,24 @@ class WebSocketService {
         )
     }
 
-    private val _diceResult = MutableStateFlow<Int?>(null)
-    val diceResult: StateFlow<Int?> = _diceResult.asStateFlow()
+    private val _diceOneResult = MutableStateFlow<Int?>(null)
+    private val _diceTwoResult = MutableStateFlow<Int?>(null)
+
+    val diceOneResult: StateFlow<Int?> = _diceOneResult
+    val diceTwoResult: StateFlow<Int?> = _diceTwoResult
+
     @SuppressLint("CheckResult")
     private fun subscribeToDiceResultTopic() {
         stompClient?.topic(TOPIC_DICE_RESULT)?.subscribe({ stompMessage ->
-            val diceValue = stompMessage.payload.toIntOrNull()
-            if (diceValue != null) {
-                _diceResult.value = diceValue
-                _errorMessages.tryEmit("Würfel-Ergebnis: $diceValue")
-            } else {
-                _errorMessages.tryEmit("Ungültiges Würfel-Ergebnis: ${stompMessage.payload}")
+            try {
+                val result = gson.fromJson(stompMessage.payload, DiceResult::class.java)
+                _diceOneResult.value = result.diceOne
+                _diceTwoResult.value = result.diceTwo
+            } catch (e: Exception) {
+                _errorMessages.tryEmit("Invalid result format: ${e.message}")
             }
         }, {
-            _errorMessages.tryEmit("Fehler beim Abonnieren des Würfel-Topics")
+            _errorMessages.tryEmit("Error subscribing to diceResult topic")
         })
     }
 
@@ -358,9 +363,9 @@ class WebSocketService {
         }
 
         stompClient?.send(APP_ROLL_DICE, "")?.subscribe({
-            _errorMessages.tryEmit("Würfeln angefordert")
+            _errorMessages.tryEmit("Dice requested")
         }, { error ->
-            _errorMessages.tryEmit("Fehler beim Würfeln: ${error.message}")
+            _errorMessages.tryEmit("Error from rolling the dice: ${error.message}")
         })
     }
 }

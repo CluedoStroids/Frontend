@@ -36,9 +36,18 @@ class DiceRollerFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            webSocketService.diceResult.collect { diceValue ->
-                diceValue?.let {
-                    binding.diceValueTextView.text = it.toString()
+            launch {
+                webSocketService.diceOneResult.collect { value ->
+                    value?.let {
+                        binding.diceOneValueTextView.text = it.toString()
+                    }
+                }
+            }
+            launch {
+                webSocketService.diceTwoResult.collect { value ->
+                    value?.let {
+                        binding.diceTwoValueTextView.text = it.toString()
+                    }
                 }
             }
         }
