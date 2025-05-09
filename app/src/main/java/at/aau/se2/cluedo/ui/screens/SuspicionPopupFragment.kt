@@ -15,7 +15,7 @@ class SuspicionPopupFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.layout_suspicion_popup, container, false)
+        return inflater.inflate(R.layout.fragment_suspicion_popup, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
