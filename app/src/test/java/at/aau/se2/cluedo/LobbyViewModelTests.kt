@@ -5,7 +5,6 @@ import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -18,12 +17,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.whenever
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
-class LobbyViewModelUnitTests {
+class LobbyViewModelTests {
     private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var mockWebSocketService: WebSocketService
@@ -46,8 +40,6 @@ class LobbyViewModelUnitTests {
 
     @Test
     fun testConnect() {
-        whenever(mockWebSocketService.isConnected).thenReturn(MutableStateFlow(false))
-
         viewModel.connect()
 
         verify(mockWebSocketService, times(1)).connect()
@@ -56,8 +48,6 @@ class LobbyViewModelUnitTests {
 
     @Test
     fun testgetActiveLobby() {
-        whenever(mockWebSocketService.isConnected).thenReturn(MutableStateFlow(false))
-
         viewModel.getActiveLobby()
 
         verify(mockWebSocketService, times(1)).getActiveLobby()
@@ -65,8 +55,6 @@ class LobbyViewModelUnitTests {
 
     @Test
     fun testDisconnect() {
-        whenever(mockWebSocketService.isConnected).thenReturn(MutableStateFlow(true))
-
         viewModel.disconnect()
 
         verify(mockWebSocketService, times(1)).disconnect()
@@ -106,5 +94,4 @@ class LobbyViewModelUnitTests {
 
         verify(mockWebSocketService).leaveLobby(lobbyId, username, character, PlayerColor.BLUE)
     }
-
 }

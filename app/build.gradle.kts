@@ -22,13 +22,14 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -60,6 +61,8 @@ android {
 
     testOptions {
         unitTests {
+            isIncludeAndroidResources = true
+
             all {
                 it.useJUnitPlatform()
                 it.finalizedBy(tasks.named("jacocoTestReport"))
@@ -134,6 +137,7 @@ subprojects {
 }
 
 dependencies {
+    implementation(libs.androidx.activity)
     val naikSoftwareVersion = "1.6.6"
 
     implementation(libs.androidx.core.ktx.v1131)
@@ -157,12 +161,17 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.android)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockito.mockito.inline)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.core.testing)
+    testImplementation(libs.robolectric.robolectric)
+    testImplementation(libs.turbine)
     // JUnit 4
     testImplementation(libs.junit)
     // JUnit 5
     testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.powermock.module.junit4)
+    testImplementation(libs.powermock.api.mockito2)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.junit.vintage.engine) // For JUnit 4 compatibility
     androidTestImplementation(libs.androidx.junit.v121)

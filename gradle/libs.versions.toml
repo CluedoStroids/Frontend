@@ -9,6 +9,7 @@ constraintlayoutVersion = "2.1.4"
 coreKtxVersion = "1.13.1"
 coreSplashscreen = "1.0.1"
 coreTesting = "2.2.0"
+coreTestingVersion = "2.1.0"
 espressoCoreVersion = "3.6.1"
 gson = "2.10.1"
 junitJupiterApi = "5.10.2"
@@ -38,12 +39,18 @@ lifecycleRuntimeKtxVersion = "2.8.0"
 lifecycleViewmodelKtx = "2.8.7"
 material = "1.12.0"
 mockitoCore = "5.5.0"
+mockitoInlineVersion = "4.8.1"
 mockitoKotlin = "5.1.0"
 okhttp = "4.12.0"
+powermockApiMockito2 = "2.0.9"
+powermockModuleJunit4 = "2.0.9"
+robolectricVersion = "4.10.3"
 rxandroid = "2.1.1"
 rxjava = "2.2.21"
 stompprotocolandroid = "1.6.6"
 navigationRuntimeAndroid = "2.9.0-beta01"
+activity = "1.10.1"
+turbine = "1.0.0"
 
 [libraries]
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "androidActivtyVersion" }
@@ -53,6 +60,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-core-ktx-v1131 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
+androidx-core-testing-v210 = { module = "androidx.arch.core:core-testing", version.ref = "coreTestingVersion" }
 androidx-espresso-core-v361 = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCoreVersion" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "androidFragmentVersion" }
 androidx-junit-v121 = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
@@ -93,11 +101,17 @@ krossbow-websocket-okhttp-v530 = { module = "org.hildan.krossbow:krossbow-websoc
 material = { module = "com.google.android.material:material", version.ref = "material" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+mockito-mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoInlineVersion" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+powermock-api-mockito2 = { module = "org.powermock:powermock-api-mockito2", version.ref = "powermockApiMockito2" }
+powermock-module-junit4 = { module = "org.powermock:powermock-module-junit4", version.ref = "powermockModuleJunit4" }
+robolectric-robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectricVersion" }
 rxandroid = { module = "io.reactivex.rxjava2:rxandroid", version.ref = "rxandroid" }
 rxjava = { module = "io.reactivex.rxjava2:rxjava", version.ref = "rxjava" }
 stompprotocolandroid = { module = "com.github.NaikSoftware:StompProtocolAndroid", version.ref = "stompprotocolandroid" }
 androidx-navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

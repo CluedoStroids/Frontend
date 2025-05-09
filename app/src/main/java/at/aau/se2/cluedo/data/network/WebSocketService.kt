@@ -41,12 +41,11 @@ class WebSocketService {
     val gson = Gson()
     var stompClient: StompClient? = null
     var currentLobbySubscriptionId: String? = null
-    var player: Player? = null
 
-    private val _isConnected = MutableStateFlow(false)
+    val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
-    private val _lobbyState = MutableStateFlow<Lobby?>(null)
+    val _lobbyState = MutableStateFlow<Lobby?>(null)
     val lobbyState: StateFlow<Lobby?> = _lobbyState.asStateFlow()
 
     private val _createdLobbyId = MutableStateFlow<String?>(null)
