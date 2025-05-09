@@ -2,6 +2,7 @@ package at.aau.se2.cluedo.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.Lobby
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.network.WebSocketService
@@ -17,6 +18,9 @@ class LobbyViewModel : ViewModel() {
     val lobbyState: StateFlow<Lobby?> = webSocketService.lobbyState
     val createdLobbyId: StateFlow<String?> = webSocketService.createdLobbyId
     val errorMessages: SharedFlow<String> = webSocketService.errorMessages
+    val canStartGame: StateFlow<Boolean> = webSocketService.canStartGame
+    val gameStarted: StateFlow<Boolean> = webSocketService.gameStarted
+    val gameState: StateFlow<GameStartedResponse?> = webSocketService.gameState
 
     fun connect() {
         webSocketService.connect()
@@ -52,17 +56,26 @@ class LobbyViewModel : ViewModel() {
         }
     }
 
+    fun checkCanStartGame(lobbyId: String) {
+        viewModelScope.launch {
+            webSocketService.checkCanStartGame(lobbyId)
+        }
+    }
+
+    fun startGame(lobbyId: String, username: String, character: String) {
+        viewModelScope.launch {
+            val color = getColorForCharacter(character)
+            webSocketService.startGame(lobbyId, username, character, color)
+        }
+    }
+
     val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
 
     private fun getColorForCharacter(character: String): PlayerColor {
-        return when (character) {
-            "Red" -> PlayerColor.RED
-            "Blue" -> PlayerColor.BLUE
-            "Green" -> PlayerColor.GREEN
-            "Yellow" -> PlayerColor.YELLOW
-            "Purple" -> PlayerColor.PURPLE
-            "White" -> PlayerColor.WHITE
-            else -> PlayerColor.RED
+        return try {
+            PlayerColor.valueOf(character.uppercase())
+        } catch (e: IllegalArgumentException) {
+            PlayerColor.RED
         }
     }
 

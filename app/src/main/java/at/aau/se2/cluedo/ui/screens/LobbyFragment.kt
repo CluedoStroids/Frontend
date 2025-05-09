@@ -11,7 +11,9 @@ import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentLobbyBinding
 import kotlinx.coroutines.launch
 
@@ -19,7 +21,7 @@ class LobbyFragment : Fragment() {
 
     private var _binding: FragmentLobbyBinding? = null
     private val binding get() = _binding!!
-    private val lobbyViewModel: LobbyViewModel by viewModels()
+    private val lobbyViewModel: LobbyViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -60,6 +62,30 @@ class LobbyFragment : Fragment() {
                 showToast("Please enter a username")
             }
         }
+
+        binding.startGameButton.setOnClickListener {
+            val username = binding.createUsernameEditText.text.toString().trim()
+            val character = binding.createCharacterSpinner.selectedItem.toString()
+            val lobbyId = lobbyViewModel.createdLobbyId.value
+
+            if (username.isEmpty()) {
+                showToast("Please enter a username")
+                return@setOnClickListener
+            }
+
+            if (lobbyId.isNullOrBlank()) {
+                showToast("No active lobby found")
+                return@setOnClickListener
+            }
+
+            if (!lobbyViewModel.canStartGame.value) {
+                showToast(getString(R.string.not_enough_players))
+                return@setOnClickListener
+            }
+
+            lobbyViewModel.startGame(lobbyId, username, character)
+            showToast("Starting game...")
+        }
     }
 
     private fun observeViewModel() {
@@ -67,29 +93,24 @@ class LobbyFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     lobbyViewModel.isConnected.collect { isConnected ->
-                        binding.statusTextView.text =
-                            if (isConnected) "Status: Connected" else "Status: Connecting..."
-
                         binding.createLobbyButton.isEnabled = isConnected
-
-                        if (!isConnected) {
-                            binding.lobbyInfoTextView.text = "-"
-                            binding.activeLobbyIdTextView.text = "Active Lobby ID: -"
-                            showToast("Not connected to server. Please check your connection.")
-                        } else {
+                        if (isConnected) {
                             lobbyViewModel.getActiveLobby()
                         }
                     }
                 }
+
                 launch {
                     lobbyViewModel.createdLobbyId.collect { lobbyId ->
                         val displayId = lobbyId ?: "-"
                         binding.activeLobbyIdTextView.text = "Active Lobby ID: $displayId"
                     }
                 }
+
                 launch {
                     lobbyViewModel.lobbyState.collect { lobby ->
                         if (lobby != null) {
+                            // Update lobby info display
                             val playersList = lobby.players.joinToString("\n") { player ->
                                 "  - ${player.name} (${player.character}, ${player.color})"
                             }
@@ -99,18 +120,37 @@ class LobbyFragment : Fragment() {
                                 Players (${lobby.players.size}):$playersList
                             """.trimIndent()
 
-                            if (lobby.id != "Creating...") {
-                                binding.activeLobbyIdTextView.text = "Active Lobby ID: ${lobby.id}"
+                            if (lobby.id != "Creating..." && lobby.players.size >= 3) {
+                                lobbyViewModel.checkCanStartGame(lobby.id)
+                            } else {
+                                binding.startGameButton.isEnabled = false
                             }
                         } else {
                             binding.lobbyInfoTextView.text = "-"
+                            binding.startGameButton.isEnabled = false
                         }
                         binding.lobbyInfoTextView.scrollTo(0, 0)
                     }
                 }
+
                 launch {
                     lobbyViewModel.errorMessages.collect { errorMessage ->
-                        showToast(errorMessage, Toast.LENGTH_LONG)
+                        showToast(errorMessage, Toast.LENGTH_SHORT)
+                    }
+                }
+
+                launch {
+                    lobbyViewModel.canStartGame.collect { canStart ->
+                        binding.startGameButton.isEnabled = canStart
+                    }
+                }
+
+                launch {
+                    lobbyViewModel.gameStarted.collect { gameStarted ->
+                        if (gameStarted) {
+                            showToast(getString(R.string.game_started))
+                            findNavController().navigate(R.id.action_lobbyFragment_to_gameFragment)
+                        }
                     }
                 }
             }
