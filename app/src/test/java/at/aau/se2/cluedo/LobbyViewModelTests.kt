@@ -4,6 +4,7 @@ import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -24,33 +25,20 @@ import org.mockito.kotlin.whenever
  */
 class LobbyViewModelUnitTests {
     private val testDispatcher = StandardTestDispatcher()
+
     private lateinit var mockWebSocketService: WebSocketService
     private lateinit var viewModel: LobbyViewModel
 
-    private val lobbyStateFlow = MutableStateFlow(null as at.aau.se2.cluedo.data.models.Lobby?)
-    private val createdLobbyIdFlow = MutableStateFlow(null as String?)
-    private val errorMessagesFlow = MutableSharedFlow<String>()
-
+    @OptIn(ExperimentalCoroutinesApi::class)
     @BeforeEach
     fun setup() {
         Dispatchers.setMain(testDispatcher)
 
         mockWebSocketService = mock(WebSocketService::class.java)
-
-        /*
-           mockWebSocketService = mock {
-
-            on { lobbyState } doReturn lobbyStateFlow
-            on { createdLobbyId } doReturn createdLobbyIdFlow
-            on { errorMessages } doReturn errorMessagesFlow
-        }
-
-
-         */
-
         viewModel = LobbyViewModel(mockWebSocketService)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @AfterEach
     fun tearDown() {
         Dispatchers.resetMain()
