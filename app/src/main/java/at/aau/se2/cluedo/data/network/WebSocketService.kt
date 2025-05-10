@@ -4,17 +4,24 @@ import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
 import at.aau.se2.cluedo.data.models.ActiveLobbiesResponse
+import at.aau.se2.cluedo.data.models.CanStartGameResponse
 import at.aau.se2.cluedo.data.models.CreateLobbyRequest
 import at.aau.se2.cluedo.data.models.DiceResult
+import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.GetActiveLobbiesRequest
 import at.aau.se2.cluedo.data.models.JoinLobbyRequest
 import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
 import at.aau.se2.cluedo.data.models.Lobby
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
-import at.aau.se2.cluedo.data.models.*
+import at.aau.se2.cluedo.data.models.StartGameRequest
 import com.google.gson.Gson
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.LifecycleEvent
@@ -23,7 +30,7 @@ import ua.naiksoftware.stomp.dto.StompMessage
 class WebSocketService {
     companion object {
         private const val SERVER_IP = "10.0.2.2"
-        private const val SERVER_PORT = "8080"
+        private const val SERVER_PORT = "8321"
         private const val CONNECTION_URL = "ws://$SERVER_IP:$SERVER_PORT/ws"
         private const val TOPIC_LOBBY_CREATED = "/topic/lobbyCreated"
         private const val TOPIC_LOBBY_UPDATES_PREFIX = "/topic/lobby/"
@@ -39,6 +46,17 @@ class WebSocketService {
 
         private const val TOPIC_DICE_RESULT = "/topic/diceResult"
         private const val APP_ROLL_DICE = "/app/rollDice"
+        private const val TOPIC_GET_PLAYERS = "/topic/players"
+        private const val APP_GET_PLAYERS = "/app/players"
+        private const val APP_PERFORM_MOVE = "/app/performMovement"
+        private var instance: WebSocketService? = null
+        fun getInstance(): WebSocketService {
+
+            if (instance == null) {
+                instance = WebSocketService()
+            }
+            return instance!!
+        }
     }
 
     private val gson = Gson()
@@ -70,12 +88,21 @@ class WebSocketService {
         setupStompClient()
     }
 
+    private var me: Player? = null
+    public fun getMe(): Player? {
+        if (me == null) {
+            me = Player(name = "Dave", character = "PORTZ", color = PlayerColor.GREEN)
+        }
+        return me
+    }
+
     @SuppressLint("CheckResult")
     private fun setupStompClient() {
         if (stompClient != null && _isConnected.value == true) return
         stompClient?.disconnect()
 
         stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, CONNECTION_URL)
+
         stompClient?.lifecycle()?.subscribe(
             { lifecycleEvent ->
                 when (lifecycleEvent.type) {
@@ -85,7 +112,15 @@ class WebSocketService {
                         _createdLobbyId.value?.takeIf { it.isNotBlank() }?.let { lobbyId ->
                             subscribeToSpecificLobbyTopics(lobbyId)
                         }
+                        subscribeToDiceResultTopic()
+                        subscribePlayersResult()
                     }
+
+                    LifecycleEvent.Type.ERROR -> {
+                        _errorMessages.tryEmit("Connection Error: ${lifecycleEvent.exception?.message}")
+                        resetConnectionState()
+                    }
+
                     LifecycleEvent.Type.ERROR,
                     LifecycleEvent.Type.CLOSED,
                     LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT -> resetConnectionState()
@@ -247,9 +282,14 @@ class WebSocketService {
         )
     }
 
-    fun createLobby(username: String, character: String = "Red", color: PlayerColor = PlayerColor.RED) {
+    fun createLobby(
+        username: String,
+        character: String = "Red",
+        color: PlayerColor = PlayerColor.RED
+    ) {
         if (!_isConnected.value) return
         val player = Player(name = username, character = character, color = color)
+        me = player
         val request = CreateLobbyRequest(player)
         val payload = gson.toJson(request)
 
@@ -258,7 +298,12 @@ class WebSocketService {
         sendRequest(APP_CREATE_LOBBY, payload)
     }
 
-    fun joinLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
+    fun joinLobby(
+        lobbyId: String,
+        username: String,
+        character: String = "Blue",
+        color: PlayerColor = PlayerColor.BLUE
+    ) {
         if (!_isConnected.value || lobbyId.isBlank()) return
 
         _createdLobbyId.value = lobbyId
@@ -277,7 +322,12 @@ class WebSocketService {
         sendRequest(destination, payload)
     }
 
-    fun leaveLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
+    fun leaveLobby(
+        lobbyId: String,
+        username: String,
+        character: String = "Blue",
+        color: PlayerColor = PlayerColor.BLUE
+    ) {
         if (!_isConnected.value || lobbyId.isBlank()) return
         val player = Player(name = username, character = character, color = color)
         val request = LeaveLobbyRequest(player)
@@ -386,6 +436,61 @@ class WebSocketService {
             _errorMessages.tryEmit("Error from rolling the dice: ${error.message}")
         })
     }
+
+    private var playerList: List<Player>? = null
+    public fun getPlayers(): List<Player>? {
+        return playerList;
+    }
+
+    @SuppressLint("CheckResult")
+    private fun subscribePlayersResult() {
+        stompClient?.topic(TOPIC_GET_PLAYERS)?.subscribe({ stompMessage ->
+            try {
+                val result = gson.fromJson(stompMessage.payload, List::class.java)
+                playerList = result as? List<Player>
+            } catch (e: Exception) {
+                _errorMessages.tryEmit("Invalid result format: ${e.message}")
+            }
+        }, {
+            _errorMessages.tryEmit("Error subscribing to diceResult topic")
+        })
+    }
+
+    @SuppressLint("CheckResult")
+    fun players() {
+        println("Get Players")
+        if (!_isConnected.value) {
+            _errorMessages.tryEmit("Not connected to server")
+            return
+        }
+        stompClient?.send(APP_GET_PLAYERS, "")?.subscribe(
+            {
+                _errorMessages.tryEmit("Players Requested")
+            },
+            { error -> _errorMessages.tryEmit("Error from trying to get all Players: ${error.message}") })
+
+    }
+
+    @SuppressLint("CheckResult")
+    fun performMovement(moves: List<String>) {
+        println("Movein")
+        if (!_isConnected.value) {
+            _errorMessages.tryEmit("Not connected to server")
+            return
+        }
+        stompClient?.send(APP_GET_PLAYERS, "")?.subscribe(
+            {
+                _errorMessages.tryEmit("Players Requested")
+            },
+            { error -> _errorMessages.tryEmit("Error from trying to get all Players: ${error.message}") })
+
+    }
+
+    @SuppressLint("CheckResult")
+    fun updateGameboard() {
+
+    }
+
 
     /**
      * Check if a game has started for the current lobby

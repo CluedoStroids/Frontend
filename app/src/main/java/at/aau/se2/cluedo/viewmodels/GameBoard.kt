@@ -6,7 +6,11 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.View
+import androidx.lifecycle.lifecycleScope
+import at.aau.se2.cluedo.data.models.Player
+import at.aau.se2.cluedo.data.network.WebSocketService
 import com.example.myapplication.R
+import kotlinx.coroutines.launch
 
 class GameBoard @JvmOverloads constructor(
     context: Context,
@@ -17,6 +21,7 @@ class GameBoard @JvmOverloads constructor(
     //Bitmaps
     private var playerBitmap: Bitmap? = null
     private var gameBoardBitmap:Bitmap? = null
+    private val playersBitmap= arrayListOf<Bitmap>()
 
     //Player and Board variables
     private var playerX: Float = 0f
@@ -34,11 +39,28 @@ class GameBoard @JvmOverloads constructor(
     var move:Boolean=false
     private var playerSizeX=(gridSize/25).toInt()
     private var playerSizeY=(gridSize/25).toInt()
+
+    private var players:List<Player>?= ArrayList()
+    private var moves= arrayListOf<String>()
     //Button
 
     fun init() {
+        WebSocketService.getInstance().players()
 
-        playerBitmap = BitmapFactory.decodeResource(resources, R.drawable.figure_red)
+        players=WebSocketService.getInstance().getPlayers()
+        if(players!=null) {
+            for (i in 0..players?.size!!) {
+                if (players!!.get(i).name != WebSocketService.getInstance().getMe()?.name) {
+                    playersBitmap.add(
+                        BitmapFactory.decodeResource(
+                            resources,
+                            players?.get(i)?.color?.img!!
+                        )
+                    )
+                }
+            }
+        }
+        playerBitmap = BitmapFactory.decodeResource(resources, WebSocketService.getInstance().getMe()?.color?.img!!)
         gameBoardBitmap = BitmapFactory.decodeResource(resources, R.drawable.grid)
 
         // Set initial position (example: center of the view)
@@ -54,13 +76,14 @@ class GameBoard @JvmOverloads constructor(
             if(gridPosY<=0){
                 gridPosY=0
             }
+
         }else{
             playerPosY--
             if(playerPosY<=0){
                 playerPosY=0
             }
         }
-
+        moves.add("W")
         invalidate()
     }
     fun moveDown(){
@@ -70,12 +93,14 @@ class GameBoard @JvmOverloads constructor(
             if(gridPosY<=0){
                 gridPosY=0
             }
+
         }else{
             playerPosY++
             if(playerPosY<=0){
                 playerPosY=0
             }
         }
+        moves.add("S")
         invalidate()
     }
     fun moveLeft(){
@@ -91,6 +116,7 @@ class GameBoard @JvmOverloads constructor(
                 playerPosX=0
             }
         }
+        moves.add("A")
         invalidate()
     }
     fun moveRight(){
@@ -106,6 +132,7 @@ class GameBoard @JvmOverloads constructor(
                 playerPosX=0
             }
         }
+        moves.add("D")
         invalidate()
     }
     fun performMoveClicked(){
@@ -114,6 +141,7 @@ class GameBoard @JvmOverloads constructor(
         //move=true
         gridPosY = playerPosY
         gridPosX = playerPosX
+        moves=ArrayList()
         invalidate()
     }
 
@@ -126,6 +154,7 @@ class GameBoard @JvmOverloads constructor(
             playerX = (width - it.width) / 2f
             playerY = (height - it.height) / 2f
         }
+
     }
     fun calcSize(){
         gridSize= sizeX*gridScale
@@ -135,7 +164,7 @@ class GameBoard @JvmOverloads constructor(
         gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
     }
     fun done(){
-
+        WebSocketService.getInstance().performMovement(moves)
     }
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -154,6 +183,7 @@ class GameBoard @JvmOverloads constructor(
                 canvas.drawBitmap(it, playerX, playerY, null) // Draw the bitmap
 
             }
+
         }
         else{
             gameBoardBitmap?.let {

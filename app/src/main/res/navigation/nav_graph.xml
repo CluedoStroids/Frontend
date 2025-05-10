@@ -26,11 +26,6 @@
             app:enterAnim="@android:anim/fade_in"
             app:exitAnim="@android:anim/fade_out" />
         <action
-            android:id="@+id/action_mainMenuFragment_to_diceRollerFragment"
-            app:destination="@id/diceRollerFragment"
-            app:enterAnim="@android:anim/fade_in"
-            app:exitAnim="@android:anim/fade_out" />
-        <action
             android:id="@+id/action_mainMenuFragment_to_gameBoard"
             app:destination="@id/gameBoardIMG"
             app:enterAnim="@android:anim/fade_in"
@@ -60,12 +55,22 @@
         android:id="@+id/diceRollerFragment"
         android:name="at.aau.se2.cluedo.ui.screens.DiceRollerFragment"
         android:label="@string/dice_roller"
-        tools:layout="@layout/fragment_dice_roller" />
+        tools:layout="@layout/fragment_dice_roller" >
+        <action
+            android:id="@+id/action_diceRollerFragment_pop"
+            app:popUpTo="@id/diceRollerFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
     <fragment
         android:id="@+id/gameBoardIMG"
-        android:name="at.aau.se2.cluedo.ui.screens.gameBoardFragment"
-        android:label="fragment_game_board"
-        tools:layout="@layout/fragment_game_board" />
+        android:name="at.aau.se2.cluedo.ui.screens.GameBoard"
+        android:label="fragment_game_board">
+        <action
+            android:id="@+id/action_gameBoardIMG_to_diceRollerFragment5"
+            app:destination="@id/diceRollerFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out" />
+    </fragment>
 
     <fragment
         android:id="@+id/joinLobbyFragment"
