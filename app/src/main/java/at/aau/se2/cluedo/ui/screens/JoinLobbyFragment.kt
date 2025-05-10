@@ -22,11 +22,10 @@ class JoinLobbyFragment : Fragment() {
     private var _binding: FragmentJoinLobbyBinding? = null
     private val binding get() = _binding!!
     private val lobbyViewModel: LobbyViewModel by viewModels()
+    private var activeLobbyId: String? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentJoinLobbyBinding.inflate(inflater, container, false)
         return binding.root
@@ -36,18 +35,16 @@ class JoinLobbyFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupUI()
         observeViewModel()
-
         lobbyViewModel.connect()
 
+        // Check if a game has already started
         view.postDelayed({
-            lobbyViewModel.getActiveLobby()
-            checkAndEnableButtons()
+            lobbyViewModel.checkGameStarted()
         }, 1000)
     }
 
     private fun setupUI() {
         binding.lobbyInfoTextView.movementMethod = ScrollingMovementMethod()
-
         val characterAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_dropdown_item,
@@ -61,7 +58,6 @@ class JoinLobbyFragment : Fragment() {
             binding.joinCharacterSpinner.setSelection(blueIndex)
         }
 
-
         binding.joinLobbyButton.setOnClickListener {
             val username = binding.joinUsernameEditText.text.toString().trim()
             val character = binding.joinCharacterSpinner.selectedItem.toString()
@@ -71,64 +67,40 @@ class JoinLobbyFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            hasShownLobbyFoundToast = false
-            lobbyViewModel.getActiveLobby()
+            // Show a toast to indicate we're checking for active lobbies
+            showToast("Checking for active lobbies...")
 
+            // Request active lobbies from the server
+            lobbyViewModel.getActiveLobbies()
+
+            // Wait a moment for the server to respond
             binding.root.postDelayed({
-                val activeLobbyId = lobbyViewModel.createdLobbyId.value
-                val lobbyStateId = lobbyViewModel.lobbyState.value?.id
+                // Check if we have an active lobby ID
+                val currentLobbyId = lobbyViewModel.createdLobbyId.value
 
-                when {
-                    activeLobbyId != null && activeLobbyId.isNotBlank() -> {
-                        showToast("Joining lobby: $activeLobbyId")
-                        lobbyViewModel.joinLobby(activeLobbyId, username, character)
-                    }
+                if (currentLobbyId != null && currentLobbyId.isNotBlank()) {
+                    // We found an active lobby, update the UI
+                    showToast("Found active lobby: $currentLobbyId")
+                    activeLobbyId = currentLobbyId
 
-                    lobbyStateId != null && lobbyStateId.isNotBlank() && lobbyStateId != "Creating..." -> {
-                        showToast("Joining lobby from state: $lobbyStateId")
-                        lobbyViewModel.joinLobby(lobbyStateId, username, character)
-                    }
+                    // Update the UI with the lobby information
+                    updateLobbyInfoUI()
 
-                    else -> {
-                        showToast("No active lobby found. Please create a new lobby first.")
-                    }
+                    // Join the lobby
+                    showToast("Joining lobby: $currentLobbyId")
+                    lobbyViewModel.joinLobby(currentLobbyId, username, character)
+                } else {
+                    // No active lobby found
+                    showToast("No active lobby found. Please create a new lobby first.")
                 }
-
-                checkAndEnableButtons()
-            }, 500)
+            }, 1000) // Increased delay to give more time for server response
         }
 
         binding.leaveLobbyButton.setOnClickListener {
             val username = binding.joinUsernameEditText.text.toString().trim()
             val character = binding.joinCharacterSpinner.selectedItem.toString()
-
-            if (username.isEmpty()) {
-                showToast("Please enter a username")
-                return@setOnClickListener
-            }
-
-            val activeLobbyId = lobbyViewModel.createdLobbyId.value
-            val lobbyStateId = lobbyViewModel.lobbyState.value?.id
-
-            when {
-                activeLobbyId != null && activeLobbyId.isNotBlank() -> {
-                    showToast("Leaving lobby: $activeLobbyId")
-                    lobbyViewModel.leaveLobby(activeLobbyId, username, character)
-                }
-
-                lobbyStateId != null && lobbyStateId.isNotBlank() && lobbyStateId != "Creating..." -> {
-                    showToast("Leaving lobby from state: $lobbyStateId")
-                    lobbyViewModel.leaveLobby(lobbyStateId, username, character)
-                }
-
-                else -> {
-                    // Try to refresh lobby information first
-                    lobbyViewModel.getActiveLobby()
-                    binding.root.postDelayed({
-                        checkAndEnableButtons()
-                    }, 500)
-                    showToast("No active lobby found. You need to join a lobby before leaving it.")
-                }
+            if (activeLobbyId != null) {
+                lobbyViewModel.leaveLobby(activeLobbyId!!, username, character)
             }
         }
     }
@@ -138,9 +110,6 @@ class JoinLobbyFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     lobbyViewModel.isConnected.collect { isConnected ->
-                        if (isConnected) {
-                            lobbyViewModel.getActiveLobby()
-                        }
                         checkAndEnableButtons()
                     }
                 }
@@ -150,7 +119,6 @@ class JoinLobbyFragment : Fragment() {
                         checkAndEnableButtons()
                     }
                 }
-
 
                 launch {
                     lobbyViewModel.lobbyState.collect { lobby ->
@@ -162,7 +130,7 @@ class JoinLobbyFragment : Fragment() {
                                 Lobby ID: ${lobby.id}
                                 Host: ${lobby.host.name} (${lobby.host.character}, ${lobby.host.color})
                                 Players (${lobby.players.size}):
-$playersList
+                                $playersList
                             """.trimIndent()
                         } else {
                             binding.lobbyInfoTextView.text = "-"
@@ -181,9 +149,25 @@ $playersList
                 launch {
                     lobbyViewModel.gameStarted.collect { gameStarted ->
                         if (gameStarted) {
-                            showToast(getString(R.string.game_started))
-                            // Navigate to the game screen
-                            findNavController().navigate(R.id.action_joinLobbyFragment_to_gameFragment)
+                            showToast("Game started! Navigating to game screen...")
+                            try {
+                                findNavController().navigate(R.id.action_joinLobbyFragment_to_gameFragment)
+                            } catch (e: Exception) {
+                                showToast("Error navigating to game: ${e.message}")
+                            }
+                        }
+                    }
+                }
+
+                // Also check the game state directly
+                launch {
+                    lobbyViewModel.gameState.collect { gameState ->
+                        if (gameState != null) {
+                            showToast("Game state received with ${gameState.players.size} players")
+                            if (!lobbyViewModel.gameStarted.value) {
+                                // If we have a game state but gameStarted is false, set it to true
+                                lobbyViewModel.setGameStarted(true)
+                            }
                         }
                     }
                 }
@@ -195,30 +179,70 @@ $playersList
         Toast.makeText(requireContext(), message, duration).show()
     }
 
-    private var hasShownLobbyFoundToast = false
+    private fun updateLobbyInfoUI() {
+        val lobby = lobbyViewModel.lobbyState.value
+        if (lobby != null) {
+            val playersList = lobby.players.joinToString("\n") { player ->
+                "  - ${player.name} (${player.character}, ${player.color})"
+            }
+            binding.lobbyInfoTextView.text = """
+                Lobby ID: ${lobby.id}
+                Host: ${lobby.host.name} (${lobby.host.character}, ${lobby.host.color})
+                Players (${lobby.players.size}):
+                $playersList
+            """.trimIndent()
+
+            // Auto-fill the username field with a unique name if it's empty
+            if (binding.joinUsernameEditText.text.isNullOrBlank()) {
+                val existingNames = lobby.players.map { it.name }
+                val baseName = "Player"
+                var counter = lobby.players.size + 1
+                var newName = "$baseName$counter"
+
+                // Make sure the name is unique
+                while (existingNames.contains(newName)) {
+                    counter++
+                    newName = "$baseName$counter"
+                }
+
+                binding.joinUsernameEditText.setText(newName)
+            }
+
+            // Select a character that's not already taken
+            val availableCharacters = lobbyViewModel.availableCharacters
+            val usedCharacters = lobby.players.map { it.character }
+            val availableCharacter = availableCharacters.firstOrNull { !usedCharacters.contains(it) } ?: availableCharacters.first()
+
+            val adapter = binding.joinCharacterSpinner.adapter
+            if (adapter is ArrayAdapter<*>) {
+                val position = (adapter as ArrayAdapter<String>).getPosition(availableCharacter)
+                if (position >= 0) {
+                    binding.joinCharacterSpinner.setSelection(position)
+                }
+            }
+        }
+    }
 
     private fun checkAndEnableButtons() {
-        val currentLobbyId = lobbyViewModel.createdLobbyId.value
-        val currentLobbyState = lobbyViewModel.lobbyState.value
+        val createdId = lobbyViewModel.createdLobbyId.value
+        val lobbyId = lobbyViewModel.lobbyState.value?.id
         val isConnected = lobbyViewModel.isConnected.value
 
-
-        val lobbyId = when {
-            currentLobbyId != null && currentLobbyId.isNotBlank() -> currentLobbyId
-            currentLobbyState != null && currentLobbyState.id.isNotBlank() && currentLobbyState.id != "Creating..." -> currentLobbyState.id
+        // Check both createdLobbyId and lobbyState.id
+        activeLobbyId = when {
+            createdId != null && createdId.isNotBlank() -> createdId
+            lobbyId != null && lobbyId.isNotBlank() && lobbyId != "Creating..." -> lobbyId
             else -> null
         }
 
-        if (lobbyId != null) {
-            if (!hasShownLobbyFoundToast) {
-                showToast("Found active lobby: $lobbyId")
-                hasShownLobbyFoundToast = true
-            }
+        // Update UI based on whether we have an active lobby
+        if (activeLobbyId != null) {
             binding.joinLobbyButton.isEnabled = isConnected
             binding.leaveLobbyButton.isEnabled = isConnected
-            binding.activeLobbyIdTextView.text = "Active Lobby ID: $lobbyId"
+            binding.activeLobbyIdTextView.text = "Active Lobby ID: $activeLobbyId"
         } else {
-            binding.joinLobbyButton.isEnabled = false
+            // If we're connected but don't have a lobby, we should still enable the join button
+            binding.joinLobbyButton.isEnabled = isConnected
             binding.leaveLobbyButton.isEnabled = false
             binding.activeLobbyIdTextView.text = "Active Lobby ID: -"
         }

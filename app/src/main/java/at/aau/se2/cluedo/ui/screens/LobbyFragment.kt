@@ -95,7 +95,7 @@ class LobbyFragment : Fragment() {
                     lobbyViewModel.isConnected.collect { isConnected ->
                         binding.createLobbyButton.isEnabled = isConnected
                         if (isConnected) {
-                            lobbyViewModel.getActiveLobby()
+                            lobbyViewModel.getActiveLobbies()
                         }
                     }
                 }
@@ -148,8 +148,25 @@ class LobbyFragment : Fragment() {
                 launch {
                     lobbyViewModel.gameStarted.collect { gameStarted ->
                         if (gameStarted) {
-                            showToast(getString(R.string.game_started))
-                            findNavController().navigate(R.id.action_lobbyFragment_to_gameFragment)
+                            showToast("Game started! Navigating to game screen...")
+                            try {
+                                findNavController().navigate(R.id.action_lobbyFragment_to_gameFragment)
+                            } catch (e: Exception) {
+                                showToast("Error navigating to game: ${e.message}")
+                            }
+                        }
+                    }
+                }
+
+                // Also check the game state directly
+                launch {
+                    lobbyViewModel.gameState.collect { gameState ->
+                        if (gameState != null) {
+                            showToast("Game state received with ${gameState.players.size} players")
+                            if (!lobbyViewModel.gameStarted.value) {
+                                // If we have a game state but gameStarted is false, set it to true
+                                lobbyViewModel.setGameStarted(true)
+                            }
                         }
                     }
                 }

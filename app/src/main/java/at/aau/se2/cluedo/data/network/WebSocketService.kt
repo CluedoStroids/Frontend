@@ -1,6 +1,8 @@
 package at.aau.se2.cluedo.data.network
 
 import android.annotation.SuppressLint
+import android.os.Handler
+import android.os.Looper
 import at.aau.se2.cluedo.data.models.*
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.*
@@ -48,7 +50,7 @@ class WebSocketService {
     private val _gameState = MutableStateFlow<GameStartedResponse?>(null)
     val gameState: StateFlow<GameStartedResponse?> = _gameState.asStateFlow()
 
-    private val _errorMessages = MutableSharedFlow<String>()
+    private val _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
     val errorMessages: SharedFlow<String> = _errorMessages.asSharedFlow()
 
     init {
@@ -128,41 +130,107 @@ class WebSocketService {
 
     @SuppressLint("CheckResult")
     fun getActiveLobbies() {
-        if (!_isConnected.value) return
+        if (!_isConnected.value) {
+            _errorMessages.tryEmit("Not connected to server")
+            return
+        }
+
+        // If we have a saved lobby ID, we subscribe to it
         _createdLobbyId.value?.takeIf { it.isNotBlank() }?.let { lobbyId ->
             subscribeToSpecificLobbyTopics(lobbyId)
             return
         }
+
+        // Otherwise, request active lobby
         val request = GetActiveLobbiesRequest()
         val payload = gson.toJson(request)
-        stompClient?.send(APP_GET_ACTIVE_LOBBIES, payload)?.subscribe({}, {})
+        sendRequest(APP_GET_ACTIVE_LOBBIES, payload)
     }
 
     @SuppressLint("CheckResult")
     private fun subscribeToSpecificLobbyTopics(lobbyId: String) {
+        logMessage("Subscribing to topics for lobby: $lobbyId")
+
+        // Subscribe to lobby updates
         val lobbyUpdateTopicPath = "$TOPIC_LOBBY_UPDATES_PREFIX$lobbyId"
         stompClient?.topic(lobbyUpdateTopicPath)?.subscribe({ stompMessage: StompMessage ->
-            val lobby = gson.fromJson(stompMessage.payload, Lobby::class.java)
-            _lobbyState.value = lobby
-            if (lobby.id.isNotBlank() && lobby.id != "Creating...") {
-                _createdLobbyId.value = lobby.id
-            }
-        }, {})
+            try {
+                val lobby = gson.fromJson(stompMessage.payload, Lobby::class.java)
+                _lobbyState.value = lobby
+                logMessage("Received lobby update for ${lobby.id} with ${lobby.players.size} players")
 
+                if (lobby.id.isNotBlank() && lobby.id != "Creating...") {
+                    _createdLobbyId.value = lobby.id
+
+                    // Check if we need to subscribe to game started topic
+                    subscribeToGameStartedTopic(lobby.id)
+                }
+            } catch (e: Exception) {
+                logMessage("Error parsing lobby update: ${e.message}")
+            }
+        }, { error ->
+            logMessage("Error in lobby subscription: ${error.message}")
+        })
+
+        // Always subscribe to game started topic
+        subscribeToGameStartedTopic(lobbyId)
+    }
+
+    @SuppressLint("CheckResult")
+    private fun subscribeToGameStartedTopic(lobbyId: String) {
         val gameStartedTopicPath = "$TOPIC_GAME_STARTED_PREFIX$lobbyId"
+        logMessage("Subscribing to game started topic: $gameStartedTopicPath")
+
         stompClient?.topic(gameStartedTopicPath)?.subscribe({ stompMessage: StompMessage ->
-            val response = gson.fromJson(stompMessage.payload, GameStartedResponse::class.java)
-            _gameState.value = response
-            _gameStarted.value = true
-        }, {})
+            try {
+                val response = gson.fromJson(stompMessage.payload, GameStartedResponse::class.java)
+                logMessage("Received game started event for lobby ${response.lobbyId} with ${response.players.size} players")
+
+                // Update game state for all players
+                _gameState.value = response
+                _gameStarted.value = true
+
+                // Log all players in the game
+                response.players.forEach { player ->
+                    logMessage("Player in game: ${player.name} (${player.character})")
+                }
+
+                // Force a delay to ensure UI updates before navigation
+                Handler(Looper.getMainLooper()).postDelayed({
+                    // Double-check that we're still in the game state
+                    if (_gameStarted.value) {
+                        logMessage("Confirming game started state after delay")
+                    }
+                }, 500)
+            } catch (e: Exception) {
+                logMessage("Error parsing game started message: ${e.message}")
+            }
+        }, { error ->
+            logMessage("Error in game started subscription: ${error.message}")
+        })
+    }
+
+    fun logMessage(message: String) {
+        _errorMessages.tryEmit(message)
+    }
+
+    fun setGameStarted(started: Boolean) {
+        _gameStarted.value = started
+        logMessage("Game started state set to: $started")
     }
 
     @SuppressLint("CheckResult")
     private fun sendRequest(destination: String, payload: String, onSuccess: (() -> Unit)? = null) {
-        if (!_isConnected.value) return
+        if (!_isConnected.value) {
+            _errorMessages.tryEmit("Cannot send request: Not connected")
+            return
+        }
         stompClient?.send(destination, payload)?.subscribe(
-            { onSuccess?.invoke() },
-            { _errorMessages.tryEmit("Failed to send STOMP message to $destination") }
+            {
+                onSuccess?.invoke()
+                _errorMessages.tryEmit("Successfully sent message to $destination")
+            },
+            { error -> _errorMessages.tryEmit("Failed to send STOMP message to $destination: ${error.message}") }
         )
     }
 
@@ -231,13 +299,85 @@ class WebSocketService {
     }
 
     fun startGame(lobbyId: String, username: String, character: String, color: PlayerColor) {
-        if (!_isConnected.value || lobbyId.isBlank()) return
+        if (!_isConnected.value || lobbyId.isBlank()) {
+            _errorMessages.tryEmit("Cannot start game: Not connected or invalid lobby ID")
+            return
+        }
+
+        // Make sure we're subscribed to the game started topic for this lobby
+        subscribeToSpecificLobbyTopics(lobbyId)
+
         val player = Player(name = username, character = character, color = color)
         val request = StartGameRequest(player)
         val payload = gson.toJson(request)
         val destination = "$APP_START_GAME_PREFIX$lobbyId"
 
-        _errorMessages.tryEmit("Sending start game request for lobby: $lobbyId")
-        sendRequest(destination, payload)
+        logMessage("Sending start game request for lobby: $lobbyId")
+
+        // Create a temporary game state with the current lobby players
+        // This helps ensure all players see the game state even if they miss the server message
+        _lobbyState.value?.let { lobby ->
+            if (lobby.players.size >= 3) {
+                logMessage("Creating temporary game state with ${lobby.players.size} players")
+                val tempGameState = GameStartedResponse(
+                    lobbyId = lobbyId,
+                    players = lobby.players
+                )
+                _gameState.value = tempGameState
+                _gameStarted.value = true  // Set this to true immediately for all players
+
+                // Broadcast to all players
+                broadcastGameStarted(tempGameState)
+            }
+        }
+
+        sendRequest(destination, payload) {
+            logMessage("Game start request sent successfully")
+        }
+    }
+
+    /**
+     * Check if a game has started for the current lobby
+     * This is especially useful for non-host players
+     */
+    fun checkGameStarted() {
+        if (!_isConnected.value) {
+            logMessage("Cannot check game started: Not connected")
+            return
+        }
+
+        // If we already have a game state, use it
+        if (_gameState.value != null) {
+            _gameStarted.value = true
+            return
+        }
+
+        // Try to use the lobby state
+        _lobbyState.value?.let { lobby ->
+            if (lobby.id.isNotBlank() && lobby.id != "Creating...") {
+                logMessage("Checking if game has started for lobby: ${lobby.id}")
+
+                // Make sure we're subscribed to the game started topic
+                subscribeToGameStartedTopic(lobby.id)
+
+                // Request the current game state
+                val destination = "$APP_CAN_START_GAME_PREFIX${lobby.id}"
+                sendRequest(destination, "") {
+                    logMessage("Sent request to check if game has started")
+                }
+            }
+        }
+    }
+
+    /**
+     * Broadcast game started event to all players
+     * This is a helper method to ensure all players receive the game state
+     */
+    private fun broadcastGameStarted(gameState: GameStartedResponse) {
+        logMessage("Broadcasting game started to all players")
+
+        // Set the game state for all players
+        _gameState.value = gameState
+        _gameStarted.value = true
     }
 }
