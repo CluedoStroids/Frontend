@@ -16,7 +16,6 @@ import androidx.lifecycle.lifecycleScope
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import android.util.Log
 import androidx.navigation.fragment.findNavController
 
 class SolveCaseFragment : Fragment() {
@@ -109,18 +108,11 @@ class SolveCaseFragment : Fragment() {
                         isPlayerEliminated = true
                         Toast.makeText(context, "Wrong guess. You are eliminated! ❌", Toast.LENGTH_LONG).show()
 
-                        val bundle = Bundle().apply {
-                            putString("suspect", suspectSpinner.selectedItem.toString())
-                            putString("room", roomSpinner.selectedItem.toString())
-                            putString("weapon", weaponSpinner.selectedItem.toString())
-                        }
-
                         val elimScreenId = resources.getIdentifier("eliminationScreenFragment", "id", requireContext().packageName)
                         if (elimScreenId != 0) {
                             findNavController().navigate(elimScreenId, bundle)
                         }
                     }
-
                 }
             }
         }

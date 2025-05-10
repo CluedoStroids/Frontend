@@ -69,6 +69,7 @@
         android:label="Win Screen"
         tools:layout="@layout/fragment_win_screen" />
 
+
     <fragment
         android:id="@+id/investigationUpdateFragment"
         android:name="at.aau.se2.cluedo.ui.screens.InvestigationUpdateFragment"
@@ -81,5 +82,9 @@
         android:label="Elimination"
         tools:layout="@layout/fragment_elimination_screen" />
 
-
+    <fragment
+        android:id="@+id/suspiciousPopupFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.SuspicionPopupFragment"
+        android:label="Suspicion Result"
+        tools:layout="@layout/fragment_suspicion_popup" />
 </navigation>
