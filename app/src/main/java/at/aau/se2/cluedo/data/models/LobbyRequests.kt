@@ -27,3 +27,16 @@ data class ActiveLobbiesResponse(
         @SerializedName("playerCount") val playerCount: Int = 0
     )
 }
+
+data class StartGameRequest(
+    @SerializedName("player") val player: Player
+)
+
+data class CanStartGameResponse(
+    @SerializedName("canStart") val canStart: Boolean = false
+)
+
+data class GameStartedResponse(
+    @SerializedName("lobbyId") val lobbyId: String = "",
+    @SerializedName("players") val players: List<Player> = listOf()
+)

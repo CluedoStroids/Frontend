@@ -10,4 +10,16 @@
     <string name="settings_placeholder">Settings will be available in future updates</string>
     <string name="dice_roller">Dice Roller</string>
     <string name="roll_dice">Roll Dice</string>
+    <string name="start_game">Start Game</string>
+    <string name="game_started">Game Started</string>
+    <string name="not_enough_players">Not enough players to start the game. Need at least 3 players.</string>
+    <string name="can_start_game">Game can be started! You have enough players.</string>
+    <string name="game">Game</string>
+    <string name="game_in_progress">Game in progress…</string>
+    <string name="players">Players:</string>
+    <string name="game_info">Game Information:</string>
+    <string name="dice_result">Dice: %1$d</string>
+    <string name="waiting_for_turn">Game started. Waiting for your turn…</string>
+    <string name="current_turn">Current turn: %1$s</string>
+    <string name="you_rolled">You rolled a %1$d. Move your character.</string>
 </resources>
