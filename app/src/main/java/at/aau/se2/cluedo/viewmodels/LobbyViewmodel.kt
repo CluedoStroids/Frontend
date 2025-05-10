@@ -24,11 +24,11 @@ class LobbyViewModel : ViewModel() {
 
     fun connect() {
         webSocketService.connect()
-        webSocketService.getActiveLobby()
+        webSocketService.getActiveLobbies()
     }
 
     fun getActiveLobby() {
-        webSocketService.getActiveLobby()
+        webSocketService.getActiveLobbies()
     }
 
     fun disconnect() {
