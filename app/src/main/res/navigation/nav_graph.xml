@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@+id/mainMenuFragment">
+    app:startDestination="@id/mainMenuFragment">
 
     <fragment
         android:id="@+id/mainMenuFragment"
@@ -31,13 +31,7 @@
         android:id="@+id/lobbyFragment"
         android:name="at.aau.se2.cluedo.ui.screens.LobbyFragment"
         android:label="@string/lobby"
-        tools:layout="@layout/fragment_lobby">
-        <action
-            android:id="@+id/action_lobbyFragment_to_solveCaseFragment"
-            app:destination="@id/solveCaseFragment"
-            app:enterAnim="@android:anim/fade_in"
-            app:exitAnim="@android:anim/fade_out" />
-    </fragment>
+        tools:layout="@layout/fragment_lobby" />
 
     <fragment
         android:id="@+id/settingsFragment"
@@ -50,48 +44,5 @@
         android:name="at.aau.se2.cluedo.ui.screens.DiceRollerFragment"
         android:label="@string/dice_roller"
         tools:layout="@layout/fragment_dice_roller" />
-
-    <fragment
-        android:id="@+id/solveCaseFragment"
-        android:name="at.aau.se2.cluedo.ui.screens.SolveCaseFragment"
-        android:label="Solve Case"
-        tools:layout="@layout/fragment_solve_case">
-        <action
-            android:id="@+id/action_solveCaseFragment_to_winScreenFragment"
-            app:destination="@id/winScreenFragment"
-            app:enterAnim="@android:anim/fade_in"
-            app:exitAnim="@android:anim/fade_out" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/winScreenFragment"
-        android:name="at.aau.se2.cluedo.ui.screens.WinScreenFragment"
-        android:label="Win Screen"
-        tools:layout="@layout/fragment_win_screen" />
-
-
-    <fragment
-        android:id="@+id/investigationUpdateFragment"
-        android:name="at.aau.se2.cluedo.ui.screens.InvestigationUpdateFragment"
-        android:label="Investigation Update"
-        tools:layout="@layout/fragment_investigation_update" />
-
-    <fragment
-        android:id="@+id/eliminationScreenFragment"
-        android:name="at.aau.se2.cluedo.ui.screens.EliminationScreenFragment"
-        android:label="Elimination"
-        tools:layout="@layout/fragment_elimination_screen" />
-
-    <fragment
-        android:id="@+id/suspiciousPopupFragment"
-        android:name="at.aau.se2.cluedo.ui.screens.SuspicionPopupFragment"
-        android:label="Suspicion Result"
-        tools:layout="@layout/fragment_suspicion_popup" />
-
-    <fragment
-        android:id="@+id/notesFragment"
-        android:name="at.aau.se2.cluedo.ui.screens.NotesFragment"
-        android:label="Notes" />
-
 
 </navigation>

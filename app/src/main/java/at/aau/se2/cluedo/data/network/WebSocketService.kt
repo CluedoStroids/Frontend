@@ -1,11 +1,7 @@
 package at.aau.se2.cluedo.data.network
 
 import android.annotation.SuppressLint
-import at.aau.se2.cluedo.data.models.CreateLobbyRequest
-import at.aau.se2.cluedo.data.models.JoinLobbyRequest
-import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
-import at.aau.se2.cluedo.data.models.Lobby
-import at.aau.se2.cluedo.data.models.SolveCaseRequest
+import at.aau.se2.cluedo.data.models.*
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.*
 import ua.naiksoftware.stomp.Stomp
@@ -14,17 +10,15 @@ import ua.naiksoftware.stomp.dto.LifecycleEvent
 import ua.naiksoftware.stomp.dto.StompMessage
 
 class WebSocketService {
-
     companion object {
         private const val SERVER_IP = "10.0.2.2"
-        private const val SERVER_PORT = "8000"
+        private const val SERVER_PORT = "8080"
         private const val CONNECTION_URL = "ws://$SERVER_IP:$SERVER_PORT/ws"
         private const val TOPIC_LOBBY_CREATED = "/topic/lobbyCreated"
         private const val TOPIC_LOBBY_UPDATES_PREFIX = "/topic/lobby/"
         private const val APP_CREATE_LOBBY = "/app/createLobby"
         private const val APP_JOIN_LOBBY_PREFIX = "/app/joinLobby/"
         private const val APP_LEAVE_LOBBY_PREFIX = "/app/leaveLobby/"
-        private const val APP_SOLVE_CASE = "/app/solveCase"
     }
 
     private val gson = Gson()
@@ -60,15 +54,12 @@ class WebSocketService {
                         _isConnected.value = true
                         subscribeToLobbyCreationTopic()
                     }
-
                     LifecycleEvent.Type.ERROR -> {
                         _errorMessages.tryEmit("Connection Error: ${lifecycleEvent.exception?.message}")
                         resetConnectionState()
                     }
-
                     LifecycleEvent.Type.CLOSED -> resetConnectionState()
-                    LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT ->
-                        _errorMessages.tryEmit("Server heartbeat failed")
+                    LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT -> _errorMessages.tryEmit("Server heartbeat failed")
                 }
             },
             {
@@ -98,8 +89,9 @@ class WebSocketService {
     @SuppressLint("CheckResult")
     private fun subscribeToLobbyCreationTopic() {
         stompClient?.topic(TOPIC_LOBBY_CREATED)?.subscribe(
-            { stompMessage ->
-                _createdLobbyId.value = stompMessage.payload
+            { stompMessage: StompMessage ->
+                val newLobbyId = stompMessage.payload
+                _createdLobbyId.value = newLobbyId
             },
             {
                 _errorMessages.tryEmit("Error receiving lobby creation confirmation")
@@ -110,7 +102,6 @@ class WebSocketService {
     @SuppressLint("CheckResult")
     private fun subscribeToLobbyUpdates(lobbyId: String) {
         val topicPath = "$TOPIC_LOBBY_UPDATES_PREFIX$lobbyId"
-
         if (topicPath == currentLobbySubscriptionId) return
         currentLobbySubscriptionId = topicPath
 
@@ -134,19 +125,21 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    fun createLobby(username: String) {
+    fun createLobby(username: String, character: String = "Red", color: PlayerColor = PlayerColor.RED) {
         if (!_isConnected.value) {
             _errorMessages.tryEmit("Not connected to server")
             return
         }
-        val request = CreateLobbyRequest(username)
+
+        val player = Player(name = username, character = character, color = color)
+        val request = CreateLobbyRequest(player)
         val payload = gson.toJson(request)
 
         stompClient?.send(APP_CREATE_LOBBY, payload)?.subscribe()
     }
 
     @SuppressLint("CheckResult")
-    fun joinLobby(lobbyId: String, username: String) {
+    fun joinLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
         if (!_isConnected.value) {
             _errorMessages.tryEmit("Not connected to server")
             return
@@ -158,7 +151,8 @@ class WebSocketService {
 
         subscribeToLobbyUpdates(lobbyId)
 
-        val request = JoinLobbyRequest(username)
+        val player = Player(name = username, character = character, color = color)
+        val request = JoinLobbyRequest(player)
         val payload = gson.toJson(request)
         val destination = "$APP_JOIN_LOBBY_PREFIX$lobbyId"
 
@@ -166,7 +160,7 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    fun leaveLobby(lobbyId: String, username: String) {
+    fun leaveLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
         if (!_isConnected.value) {
             _errorMessages.tryEmit("Not connected to server")
             return
@@ -176,23 +170,11 @@ class WebSocketService {
             return
         }
 
-        val request = LeaveLobbyRequest(username)
+        val player = Player(name = username, character = character, color = color)
+        val request = LeaveLobbyRequest(player)
         val payload = gson.toJson(request)
         val destination = "$APP_LEAVE_LOBBY_PREFIX$lobbyId"
 
         stompClient?.send(destination, payload)?.subscribe()
-    }
-
-    @SuppressLint("CheckResult")
-    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
-        if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
-            return
-        }
-
-        val request = SolveCaseRequest(lobbyId, username, suspect, room, weapon)
-        val payload = gson.toJson(request)
-
-        stompClient?.send(APP_SOLVE_CASE, payload)?.subscribe()
     }
 }
