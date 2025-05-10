@@ -40,12 +40,13 @@ class MainMenuFragment : Fragment() {
             findNavController().navigate(R.id.action_mainMenuFragment_to_joinLobbyFragment)
         }
 
-        binding.diceRollerCard.setOnClickListener {
-            findNavController().navigate(R.id.action_mainMenuFragment_to_diceRollerFragment)
-        }
+
 
         binding.settingsCard.setOnClickListener {
             findNavController().navigate(R.id.action_mainMenuFragment_to_settingsFragment)
+        }
+        binding.gameboardCard.setOnClickListener {
+            findNavController().navigate(R.id.action_mainMenuFragment_to_gameBoard)
         }
     }
 

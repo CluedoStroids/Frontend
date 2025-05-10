@@ -22,4 +22,5 @@
     <string name="waiting_for_turn">Game started. Waiting for your turn…</string>
     <string name="current_turn">Current turn: %1$s</string>
     <string name="you_rolled">You rolled a %1$d. Move your character.</string>
+    <string name="movement">Perform movement</string>
 </resources>

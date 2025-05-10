@@ -15,7 +15,7 @@ class DiceRollerFragment : Fragment() {
     private var _binding: FragmentDiceRollerBinding? = null
     private val binding get() = _binding!!
 
-    private val webSocketService = WebSocketService()
+    private val webSocketService = WebSocketService.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater,
