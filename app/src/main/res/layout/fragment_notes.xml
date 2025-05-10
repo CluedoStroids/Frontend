@@ -10,6 +10,15 @@
         android:orientation="vertical"
         android:padding="8dp">
 
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_revert"
+            android:background="@android:color/transparent"
+            android:contentDescription="Back"
+            android:layout_marginBottom="8dp" />
+
         <TableLayout
             android:id="@+id/tableSuspects"
             android:layout_width="match_parent"
