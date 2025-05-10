@@ -3,6 +3,15 @@ package at.aau.se2.cluedo.data.network
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
+import at.aau.se2.cluedo.data.models.ActiveLobbiesResponse
+import at.aau.se2.cluedo.data.models.CreateLobbyRequest
+import at.aau.se2.cluedo.data.models.DiceResult
+import at.aau.se2.cluedo.data.models.GetActiveLobbiesRequest
+import at.aau.se2.cluedo.data.models.JoinLobbyRequest
+import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
+import at.aau.se2.cluedo.data.models.Lobby
+import at.aau.se2.cluedo.data.models.Player
+import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.models.*
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.*
@@ -27,10 +36,14 @@ class WebSocketService {
         private const val TOPIC_CAN_START_GAME_PREFIX = "/topic/canStartGame/"
         private const val APP_START_GAME_PREFIX = "/app/startGame/"
         private const val TOPIC_GAME_STARTED_PREFIX = "/topic/gameStarted/"
+
+        private const val TOPIC_DICE_RESULT = "/topic/diceResult"
+        private const val APP_ROLL_DICE = "/app/rollDice"
     }
 
     private val gson = Gson()
     private var stompClient: StompClient? = null
+    private var currentLobbySubscriptionId: String? = null
 
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
@@ -330,10 +343,48 @@ class WebSocketService {
                 broadcastGameStarted(tempGameState)
             }
         }
+        stompClient?.send(destination, payload)?.subscribe(
+            {
+            },
+            { error ->
+                _errorMessages.tryEmit("Failed to leave lobby: ${error.message}")
+            }
+        )
+    }
 
-        sendRequest(destination, payload) {
-            logMessage("Game start request sent successfully")
+    private val _diceOneResult = MutableStateFlow<Int?>(null)
+    private val _diceTwoResult = MutableStateFlow<Int?>(null)
+
+    val diceOneResult: StateFlow<Int?> = _diceOneResult
+    val diceTwoResult: StateFlow<Int?> = _diceTwoResult
+
+    @SuppressLint("CheckResult")
+    private fun subscribeToDiceResultTopic() {
+        stompClient?.topic(TOPIC_DICE_RESULT)?.subscribe({ stompMessage ->
+            try {
+                val result = gson.fromJson(stompMessage.payload, DiceResult::class.java)
+                _diceOneResult.value = result.diceOne
+                _diceTwoResult.value = result.diceTwo
+            } catch (e: Exception) {
+                _errorMessages.tryEmit("Invalid result format: ${e.message}")
+            }
+        }, {
+            _errorMessages.tryEmit("Error subscribing to diceResult topic")
+        })
+    }
+
+    @SuppressLint("CheckResult")
+    fun rollDice() {
+        if (!_isConnected.value) {
+            _errorMessages.tryEmit("Not connected to server")
+            return
         }
+
+        stompClient?.send(APP_ROLL_DICE, "")?.subscribe({
+            _errorMessages.tryEmit("Dice requested")
+        }, { error ->
+            _errorMessages.tryEmit("Error from rolling the dice: ${error.message}")
+        })
     }
 
     /**
