@@ -5,104 +5,97 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    tools:context="at.aau.se2.cluedo.ui.screens.JoinLobbyFragment">
+    tools:context="at.aau.se2.cluedo.ui.screens.GameFragment">
 
     <TextView
-        android:id="@+id/joinLobbyTitleTextView"
+        android:id="@+id/gameTitleTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Join Existing Lobby"
+        android:text="@string/game"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/activeLobbyIdTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Active Lobby ID: -"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/joinLobbyTitleTextView" />
-
-    <EditText
-        android:id="@+id/joinUsernameEditText"
+        android:id="@+id/gameStatusTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Enter Username"
-        android:inputType="text"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/activeLobbyIdTextView" />
-
-    <TextView
-        android:id="@+id/joinCharacterLabelTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Select Character:"
+        android:text="@string/game_in_progress"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/joinUsernameEditText" />
-
-    <Spinner
-        android:id="@+id/joinCharacterSpinner"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/joinCharacterLabelTextView"
-        app:layout_constraintTop_toTopOf="@id/joinCharacterLabelTextView"
-        app:layout_constraintBottom_toBottomOf="@id/joinCharacterLabelTextView" />
-
-    <Button
-        android:id="@+id/joinLobbyButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="8dp"
-        android:text="Join Lobby"
-        app:layout_constraintEnd_toStartOf="@+id/leaveLobbyButton"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/joinCharacterSpinner" />
-
-    <Button
-        android:id="@+id/leaveLobbyButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Leave Lobby"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/joinLobbyButton"
-        app:layout_constraintTop_toBottomOf="@id/joinCharacterSpinner" />
+        app:layout_constraintTop_toBottomOf="@id/gameTitleTextView" />
 
     <TextView
-        android:id="@+id/lobbyInfoLabelTextView"
+        android:id="@+id/playersLabelTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Lobby Information:"
+        android:text="@string/players"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/joinLobbyButton" />
+        app:layout_constraintTop_toBottomOf="@id/gameStatusTextView" />
 
     <TextView
-        android:id="@+id/lobbyInfoTextView"
+        android:id="@+id/playersListTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@android:drawable/editbox_background"
+        android:padding="8dp"
+        android:scrollbars="vertical"
+        android:text="-"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/playersLabelTextView" />
+
+    <Button
+        android:id="@+id/rollDiceButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/roll_dice"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/playersListTextView" />
+
+    <TextView
+        android:id="@+id/diceResultTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/dice_result"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rollDiceButton" />
+
+    <TextView
+        android:id="@+id/gameInfoLabelTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/game_info"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/diceResultTextView" />
+
+    <TextView
+        android:id="@+id/gameInfoTextView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:background="@android:drawable/editbox_background"
         android:padding="8dp"
         android:scrollbars="vertical"
-        android:text="-"
+        android:text="@string/waiting_for_turn"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lobbyInfoLabelTextView" />
+        app:layout_constraintTop_toBottomOf="@id/gameInfoLabelTextView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

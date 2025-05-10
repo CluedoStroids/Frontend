@@ -8,24 +8,14 @@
     tools:context="at.aau.se2.cluedo.ui.screens.LobbyFragment">
 
     <TextView
-        android:id="@+id/statusTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Status: Connecting..."
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
         android:id="@+id/createLobbyTitleTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:text="Create New Lobby"
-        android:textStyle="bold"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/statusTextView" />
+        tools:layout_editor_absoluteY="56dp" />
 
     <EditText
         android:id="@+id/createUsernameEditText"
@@ -80,6 +70,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/createLobbyButton" />
 
+    <Button
+        android:id="@+id/startGameButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/start_game"
+        android:enabled="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/activeLobbyIdTextView" />
+
     <TextView
         android:id="@+id/lobbyInfoLabelTextView"
         android:layout_width="wrap_content"
@@ -89,7 +90,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/activeLobbyIdTextView" />
+        app:layout_constraintTop_toBottomOf="@id/startGameButton" />
 
     <TextView
         android:id="@+id/lobbyInfoTextView"
