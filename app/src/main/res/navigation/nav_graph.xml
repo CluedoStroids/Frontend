@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mainMenuFragment">
+    app:startDestination="@+id/mainMenuFragment">
 
     <fragment
         android:id="@+id/mainMenuFragment"
@@ -87,4 +87,11 @@
         android:name="at.aau.se2.cluedo.ui.screens.SuspicionPopupFragment"
         android:label="Suspicion Result"
         tools:layout="@layout/fragment_suspicion_popup" />
+
+    <fragment
+        android:id="@+id/notesFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.NotesFragment"
+        android:label="Notes" />
+
+
 </navigation>

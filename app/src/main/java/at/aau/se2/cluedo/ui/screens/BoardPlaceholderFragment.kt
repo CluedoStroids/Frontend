@@ -17,5 +17,9 @@ class BoardPlaceholderFragment : Fragment() {
             container,
             false
         )
+
+
     }
+
+
 }
