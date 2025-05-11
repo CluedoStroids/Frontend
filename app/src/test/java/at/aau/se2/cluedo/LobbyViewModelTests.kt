@@ -43,14 +43,14 @@ class LobbyViewModelTests {
         viewModel.connect()
 
         verify(mockWebSocketService, times(1)).connect()
-        verify(mockWebSocketService, times(1)).getActiveLobby()
+        verify(mockWebSocketService, times(1)).getActiveLobbies()
     }
 
     @Test
     fun testgetActiveLobby() {
-        viewModel.getActiveLobby()
+        viewModel.getActiveLobbies()
 
-        verify(mockWebSocketService, times(1)).getActiveLobby()
+        verify(mockWebSocketService, times(1)).getActiveLobbies()
     }
 
     @Test

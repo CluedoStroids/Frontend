@@ -21,7 +21,7 @@ class DynamicGridHelper(private val context: Context) {
         // Convert min column width from dp to pixels
         val metrics = DisplayMetrics()
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getMetrics(metrics)
+        windowManager.currentWindowMetrics
 
         val minColumnWidthPx = dpToPx(minColumnWidth.toFloat(), metrics)
 

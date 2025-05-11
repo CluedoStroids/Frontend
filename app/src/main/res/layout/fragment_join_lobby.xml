@@ -30,34 +30,37 @@
         android:id="@+id/joinUsernameEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:hint="Enter Username"
         android:inputType="text"
         android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/activeLobbyIdTextView" />
+        app:layout_constraintTop_toBottomOf="@id/activeLobbyIdTextView"
+        app:layout_constraintWidth_percent="0.5" />
 
     <TextView
         android:id="@+id/joinCharacterLabelTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="10dp"
         android:text="Select Character:"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/joinUsernameEditText" />
+        app:layout_constraintBottom_toTopOf="@+id/leaveLobbyButton"
+        app:layout_constraintStart_toEndOf="@+id/joinUsernameEditText"
+        app:layout_constraintTop_toBottomOf="@+id/joinLobbyTitleTextView"
+        app:layout_constraintVertical_bias="0.5" />
 
     <Spinner
         android:id="@+id/joinCharacterSpinner"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:minHeight="48dp"
+        android:layout_marginTop="10dp"
+        android:minHeight="32dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/joinCharacterLabelTextView"
-        app:layout_constraintTop_toTopOf="@id/joinCharacterLabelTextView"
-        app:layout_constraintBottom_toBottomOf="@id/joinCharacterLabelTextView" />
+        app:layout_constraintTop_toBottomOf="@id/activeLobbyIdTextView" />
 
     <Button
         android:id="@+id/joinLobbyButton"
@@ -84,7 +87,7 @@
         android:id="@+id/lobbyInfoLabelTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="8dp"
         android:text="Lobby Information:"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textStyle="bold"
@@ -104,5 +107,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/lobbyInfoLabelTextView" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="20dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

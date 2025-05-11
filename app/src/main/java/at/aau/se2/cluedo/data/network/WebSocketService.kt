@@ -39,6 +39,14 @@ class WebSocketService {
 
         private const val TOPIC_DICE_RESULT = "/topic/diceResult"
         private const val APP_ROLL_DICE = "/app/rollDice"
+
+        @Volatile private var instance: WebSocketService? = null
+
+        fun getInstance() =
+            instance ?: synchronized(this) {
+                instance ?: WebSocketService().also { instance = it }
+            }
+
     }
 
     private val gson = Gson()
@@ -48,8 +56,11 @@ class WebSocketService {
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
-    private val _lobbyState = MutableStateFlow<Lobby?>(null)
+    val _lobbyState = MutableStateFlow<Lobby?>(null)
     val lobbyState: StateFlow<Lobby?> = _lobbyState.asStateFlow()
+
+    val _player = MutableStateFlow<Player?>(null)           //Client player object
+    val player: StateFlow<Player?> = _player.asStateFlow()  //Client player object
 
     private val _createdLobbyId = MutableStateFlow<String?>(null)
     val createdLobbyId: StateFlow<String?> = _createdLobbyId.asStateFlow()
@@ -172,7 +183,7 @@ class WebSocketService {
                 _lobbyState.value = lobby
                 logMessage("Received lobby update for ${lobby.id} with ${lobby.players.size} players")
 
-                if (lobby.id.isNotBlank() && lobby.id != "Creating...") {
+                if (lobby.id.isNotBlank() && lobby.id != LobbyStatus.CREATING.text) {
                     _createdLobbyId.value = lobby.id
 
                     // Check if we need to subscribe to game started topic
@@ -253,7 +264,8 @@ class WebSocketService {
         val request = CreateLobbyRequest(player)
         val payload = gson.toJson(request)
 
-        _lobbyState.value = Lobby(id = "Creating...", host = player, players = listOf(player))
+        _lobbyState.value = Lobby(id = LobbyStatus.CREATING.text, host = player, players = listOf(player))
+        _player.value = player;
         _createdLobbyId.value = null
         sendRequest(APP_CREATE_LOBBY, payload)
     }
@@ -274,6 +286,7 @@ class WebSocketService {
                 _lobbyState.value = currentLobby.copy(players = currentLobby.players + player)
             }
         }
+        _player.value = player
         sendRequest(destination, payload)
     }
 
@@ -311,6 +324,7 @@ class WebSocketService {
         sendRequest(destination, "")
     }
 
+    @SuppressLint("CheckResult")
     fun startGame(lobbyId: String, username: String, character: String, color: PlayerColor) {
         if (!_isConnected.value || lobbyId.isBlank()) {
             _errorMessages.tryEmit("Cannot start game: Not connected or invalid lobby ID")
@@ -405,7 +419,7 @@ class WebSocketService {
 
         // Try to use the lobby state
         _lobbyState.value?.let { lobby ->
-            if (lobby.id.isNotBlank() && lobby.id != "Creating...") {
+            if (lobby.id.isNotBlank() && lobby.id != LobbyStatus.CREATING.text) {
                 logMessage("Checking if game has started for lobby: ${lobby.id}")
 
                 // Make sure we're subscribed to the game started topic
