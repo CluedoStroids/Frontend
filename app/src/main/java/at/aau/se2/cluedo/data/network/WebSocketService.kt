@@ -177,4 +177,9 @@ class WebSocketService {
 
         stompClient?.send(destination, payload)?.subscribe()
     }
+
+    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
+
+    }
 }
+

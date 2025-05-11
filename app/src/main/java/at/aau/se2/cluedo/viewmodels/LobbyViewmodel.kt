@@ -19,14 +19,14 @@ class LobbyViewModel : ViewModel() {
     val createdLobbyId: StateFlow<String?> = webSocketService.createdLobbyId
     val errorMessages: SharedFlow<String> = webSocketService.errorMessages
 
-    fun connect() {
-        webSocketService.connect()
-        webSocketService.getActiveLobby()
-    }
+   // fun connect() {
+      //  webSocketService.connect()
+      //  webSocketService.getActiveLobby()
+ //   }
 
-    fun getActiveLobby() {
-        webSocketService.getActiveLobby()
-    }
+  //  fun getActiveLobby() {
+      //  webSocketService.getActiveLobby()
+  //  }
 
     fun disconnect() {
         webSocketService.disconnect()
@@ -83,20 +83,4 @@ class LobbyViewModel : ViewModel() {
             webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
         }
     }
-
-   // init {
-        // viewModelScope.launch {
-            // lobbyState.collectLatest { lobby ->
-                // android.util.Log.d("LOBBY_JSON", "Lobby update: $lobby")
-
-                // val currentUsername = createdLobbyId.value
-                //  val player = lobby?.players?.find { it.username == currentUsername }
-
-              //  android.util.Log.d(
-            //        "PLAYER_STATE",
-          //          "Username=$currentUsername, hasWon=${player?.hasWon}, isEliminated=${player?.isEliminated}"
-        //        )
-       //     }
-     //   }
-    //}
 }
