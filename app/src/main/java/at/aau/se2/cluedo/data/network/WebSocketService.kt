@@ -3,6 +3,7 @@ package at.aau.se2.cluedo.data.network
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import at.aau.se2.cluedo.data.models.ActiveLobbiesResponse
 import at.aau.se2.cluedo.data.models.CreateLobbyRequest
 import at.aau.se2.cluedo.data.models.DiceResult
@@ -203,12 +204,12 @@ class WebSocketService {
     @SuppressLint("CheckResult")
     private fun subscribeToGameStartedTopic(lobbyId: String) {
         val gameStartedTopicPath = "$TOPIC_GAME_STARTED_PREFIX$lobbyId"
-        logMessage("Subscribing to game started topic: $gameStartedTopicPath")
+        Log.i("START","Subscribing to game started topic: $gameStartedTopicPath")
 
         stompClient?.topic(gameStartedTopicPath)?.subscribe({ stompMessage: StompMessage ->
             try {
                 val response = gson.fromJson(stompMessage.payload, GameStartedResponse::class.java)
-                logMessage("Received game started event for lobby ${response.lobbyId} with ${response.players.size} players")
+                Log.i("START","Received game started event for lobby ${response.lobbyId} with ${response.players.size} players")
 
                 // Update game state for all players
                 _gameState.value = response
@@ -216,21 +217,24 @@ class WebSocketService {
 
                 // Log all players in the game
                 response.players.forEach { player ->
-                    logMessage("Player in game: ${player.name} (${player.character})")
+                    if(player.name.equals(_player.value?.name)){
+                        _player.value = player
+                    }
+                    Log.i("START","Player in game: ${player.name} (${player.character})")
                 }
 
                 // Force a delay to ensure UI updates before navigation
                 Handler(Looper.getMainLooper()).postDelayed({
                     // Double-check that we're still in the game state
                     if (_gameStarted.value) {
-                        logMessage("Confirming game started state after delay")
+                        Log.e("START","Confirming game started state after delay")
                     }
                 }, 500)
             } catch (e: Exception) {
-                logMessage("Error parsing game started message: ${e.message}")
+                Log.e("START","Error parsing game started message: ${e.message}")
             }
         }, { error ->
-            logMessage("Error in game started subscription: ${error.message}")
+            Log.e("START","Error in game started subscription: ${error.message}")
         })
     }
 
