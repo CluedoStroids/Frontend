@@ -36,7 +36,14 @@
         android:id="@+id/lobbyFragment"
         android:name="at.aau.se2.cluedo.ui.screens.LobbyFragment"
         android:label="@string/lobby"
-        tools:layout="@layout/fragment_lobby" />
+        tools:layout="@layout/fragment_lobby">
+        <action
+            android:id="@+id/action_lobbyFragment_to_gameFragment"
+            app:destination="@id/gameFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"
+            app:popUpTo="@id/mainMenuFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/settingsFragment"
@@ -54,6 +61,19 @@
         android:id="@+id/joinLobbyFragment"
         android:name="at.aau.se2.cluedo.ui.screens.JoinLobbyFragment"
         android:label="@string/join_lobby"
-        tools:layout="@layout/fragment_join_lobby" />
+        tools:layout="@layout/fragment_join_lobby">
+        <action
+            android:id="@+id/action_joinLobbyFragment_to_gameFragment"
+            app:destination="@id/gameFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"
+            app:popUpTo="@id/mainMenuFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/gameFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.GameFragment"
+        android:label="Game"
+        tools:layout="@layout/fragment_game" />
 
 </navigation>
