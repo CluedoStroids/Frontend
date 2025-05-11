@@ -1,10 +1,13 @@
 package at.aau.se2.cluedo.viewmodels
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.media.MediaDrm.LogMessage
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import at.aau.se2.cluedo.data.GameData
 import at.aau.se2.cluedo.data.models.Player
@@ -50,6 +53,17 @@ class GameBoard @JvmOverloads constructor(
         //WebSocketService.getInstance().players()
         var id = WebSocketService.getInstance().lobbyState.value?.id
         var player = WebSocketService.getInstance().getPlayer()
+        WebSocketService.getInstance().subscribeGetGameData(id!!) { gameData ->
+            post {
+                updateGameData(gameData)
+            }
+        }
+        WebSocketService.getInstance().subscribeToMovementUpdates(id!!) { gameData ->
+            post {
+                updateGameData(gameData)
+            }
+        }
+
         if (player != null&&id!=null) {
             WebSocketService.getInstance().gameData(id,player)
         }
@@ -73,7 +87,6 @@ class GameBoard @JvmOverloads constructor(
             }
         }
 
-
         if(WebSocketService.getInstance().getPlayer()!=null) {
             playerBitmap = BitmapFactory.decodeResource(
                 resources,
@@ -81,7 +94,7 @@ class GameBoard @JvmOverloads constructor(
             )
         }
 
-        gameBoardBitmap = BitmapFactory.decodeResource(resources, R.drawable.grid)
+        gameBoardBitmap = BitmapFactory.decodeResource(resources, R.drawable.gameboard)
 
         // Set initial position (example: center of the view)
         playerBitmap= playerBitmap?.let { Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false) }
@@ -92,71 +105,106 @@ class GameBoard @JvmOverloads constructor(
 
     }
 
-    fun moveUp(){
-        if(move)
-        {
-            gridPosY--
-            if(gridPosY<=0){
-                gridPosY=0
+    @SuppressLint("SuspiciousIndentation")
+    fun moveUp() {
+        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
+        playerPosY--
+
+        // Grenzen prüfen
+        if (playerPosY < 0) {
+            playerPosY = 0
+            invalidate()
+            return
+        }
+
+        // Wand-Abfrage auslösen
+        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
+
+        // Einmalige Antwort verarbeiten
+        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
+            if (isWall) {
+                playerPosY++ // Bewegung rückgängig machen
+            } else {
+                moves.add("W") // Bewegung merken
             }
 
-        }else{
-            playerPosY--
-            if(playerPosY<=0){
-                playerPosY=0
-            }
+            invalidate() // Zeichenfläche aktualisieren
         }
-        moves.add("W")
-        invalidate()
     }
     fun moveDown(){
-        if(move)
-        {
-            gridPosY++
-            if(gridPosY<=0){
-                gridPosY=0
+        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
+        playerPosY++
+
+        // Grenzen prüfen
+        if (playerPosY > 25) {
+            playerPosY = 24
+            invalidate()
+            return
+        }
+
+        // Wand-Abfrage auslösen
+        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
+
+        // Einmalige Antwort verarbeiten
+        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
+            if (isWall) {
+                playerPosY-- // Bewegung rückgängig machen
+            } else {
+                moves.add("S") // Bewegung merken
             }
 
-        }else{
-            playerPosY++
-            if(playerPosY<=0){
-                playerPosY=0
-            }
+            invalidate() // Zeichenfläche aktualisieren
         }
-        moves.add("S")
-        invalidate()
     }
     fun moveLeft(){
-        if(move)
-        {
-            gridPosX--
-            if(gridPosX<=0){
-                gridPosX=0
-            }
-        }else{
-            playerPosX--
-            if(playerPosX<=0){
-                playerPosX=0
-            }
+        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
+        playerPosX--
+
+        // Grenzen prüfen
+        if (playerPosX < 0) {
+            playerPosX = 0
+            invalidate()
+            return
         }
-        moves.add("A")
-        invalidate()
+
+        // Wand-Abfrage auslösen
+        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
+
+        // Einmalige Antwort verarbeiten
+        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
+            if (isWall) {
+                playerPosX++ // Bewegung rückgängig machen
+            } else {
+                moves.add("A") // Bewegung merken
+            }
+
+            invalidate() // Zeichenfläche aktualisieren
+        }
     }
     fun moveRight(){
-        if(move)
-        {
-            gridPosX++
-            if(gridPosX<=0){
-                gridPosX=0
-            }
-        }else{
-            playerPosX++
-            if(playerPosX<=0){
-                playerPosX=0
-            }
+        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
+        playerPosX++
+
+        // Grenzen prüfen
+        if (playerPosX > 25) {
+            playerPosX = 24
+            invalidate()
+            return
         }
-        moves.add("D")
-        invalidate()
+
+        // Wand-Abfrage auslösen
+        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
+
+        // Einmalige Antwort verarbeiten
+        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
+            if (isWall) {
+                playerPosX-- // Bewegung rückgängig machen
+            } else {
+                moves.add("D") // Bewegung merken
+            }
+
+            invalidate() // Zeichenfläche aktualisieren
+        }
     }
     fun performMoveClicked(){
         //gridScale=2f
@@ -195,13 +243,17 @@ class GameBoard @JvmOverloads constructor(
 
         if (id != null) {
             WebSocketService.getInstance().performMovement(id,moves)
-            WebSocketService.getInstance().subscribeGetGameData(id)
         }
 
         invalidate()
     }
     fun updateGameData(gameData: GameData?) {
         this.players = gameData?.players ?: emptyList()
+        if(firstRound&& players != null && players!!.isNotEmpty()) {
+            playerPosX = players!!.get(playerArrPos).x
+            playerPosY = players!!.get(playerArrPos).y
+            firstRound=false
+        }
         // ggf. Bitmap aktualisieren oder andere Werte setzen
         invalidate()
     }
@@ -209,11 +261,7 @@ class GameBoard @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         calcSize()
-        if(firstRound) {
-            playerPosX = players!!.get(playerArrPos).x
-            playerPosY = players!!.get(playerArrPos).y
-            firstRound=false
-        }
+
 
             gameBoardBitmap?.let {
                 boardPosX = (canvas.width - it.width) / 2f

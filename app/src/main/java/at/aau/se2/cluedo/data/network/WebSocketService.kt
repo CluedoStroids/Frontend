@@ -3,6 +3,7 @@ package at.aau.se2.cluedo.data.network
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import at.aau.se2.cluedo.data.GameData
 import at.aau.se2.cluedo.data.models.ActiveLobbiesResponse
 import at.aau.se2.cluedo.data.models.CanStartGameResponse
@@ -10,6 +11,7 @@ import at.aau.se2.cluedo.data.models.CreateLobbyRequest
 import at.aau.se2.cluedo.data.models.DiceResult
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.GetActiveLobbiesRequest
+import at.aau.se2.cluedo.data.models.IsWallRequest
 import at.aau.se2.cluedo.data.models.JoinLobbyRequest
 import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
 import at.aau.se2.cluedo.data.models.Lobby
@@ -18,6 +20,8 @@ import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.models.StartGameRequest
 import com.google.gson.Gson
+import io.reactivex.disposables.Disposable
+import io.reactivex.disposables.Disposables
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -47,6 +51,9 @@ class WebSocketService {
         private const val TOPIC_GAME_STARTED_PREFIX = "/topic/gameStarted/"
         private const val TOPIC_GAME_DATA_PREFIX = "/topic/gameData/"
         private const val APP_GET_GAME_DATA="/app/getGameData/"
+
+        private const val APP_IS_WALL="/app/isWall/"
+        private const val TOPIC_IS_WALL="/topic/isWall/"
 
         private const val TOPIC_DICE_RESULT = "/topic/diceResult"
         private const val APP_ROLL_DICE = "/app/rollDice"
@@ -496,8 +503,18 @@ class WebSocketService {
                 _errorMessages.tryEmit("PerformMovement")
             },
             { error -> _errorMessages.tryEmit("Error from trying to get all Players: ${error.message}") })
-        subscribeGetGameData(lobbyId)
+        //subscribeGetGameData(lobbyId)
 
+    }
+    fun subscribeToMovementUpdates(lobbyId: String,callback: (GameData) -> Unit) {
+        val topic = "/topic/performMovement/$lobbyId"
+
+        stompClient?.topic(topic)?.subscribe { stompMessage ->
+            val payload = stompMessage.payload
+            val gameData = gson.fromJson(payload, GameData::class.java)
+            callback(gameData)
+            Log.d("STOMP", "Received movement update: $gameData")
+        }
     }
 
     @SuppressLint("CheckResult")
@@ -561,7 +578,7 @@ class WebSocketService {
         val request = StartGameRequest(player)
         val payload = gson.toJson(request)
         val destination = "$APP_GET_GAME_DATA$lobbyId"
-        subscribeGetGameData(lobbyId)
+        //subscribeGetGameData(lobbyId)
         logMessage("Sending get game Data request for lobby: $lobbyId")
 
         // Create a temporary game state with the current lobby players
@@ -584,9 +601,47 @@ class WebSocketService {
         )
     }
 
+    @SuppressLint("CheckResult")
+    fun isWall(lobbyId:String, x:Int, y:Int) {
+
+        val request = IsWallRequest(x,y)
+        val payload = gson.toJson(request)
+        val destination = "$APP_IS_WALL$lobbyId"
+        stompClient?.send(destination, payload)?.subscribe(
+            {
+
+            },
+            { error ->
+                _errorMessages.tryEmit("Failed to leave lobby: ${error.message}")
+            }
+        )
+    }
 
     @SuppressLint("CheckResult")
-    fun subscribeGetGameData(lobbyId: String) {
+    fun subscribeIsWall(lobbyId: String, onResult: (Boolean) -> Unit) {
+        val source = "$TOPIC_IS_WALL$lobbyId"
+        var disposable: Disposable? = null
+            disposable=stompClient?.topic(source)?.subscribe({ stompMessage ->
+            try {
+                val response = gson.fromJson(stompMessage.payload, Boolean::class.java)
+                Log.d("Debug", "Wall: $response")
+                onResult(response)
+            } catch (e: Exception) {
+                logMessage("Error parsing isWall message: ${e.message}")
+                onResult(false)
+            } finally {
+                // Abo nach *einer* Nachricht entfernen
+                disposable?.dispose()
+            }
+        }, { error ->
+            logMessage("Error in isWall subscription: ${error.message}")
+            onResult(false)
+            disposable?.dispose()
+        })
+        }
+
+    @SuppressLint("CheckResult")
+    fun subscribeGetGameData(lobbyId: String,callback: (GameData) -> Unit) {
         val gameStartedTopicPath = "$TOPIC_GAME_DATA_PREFIX$lobbyId"
         logMessage("Subscribing to game started topic: $gameStartedTopicPath")
 
@@ -596,6 +651,7 @@ class WebSocketService {
                 logMessage("Received game started event for lobby ${response.players} with  players")
 
                 // Update game state for all players
+                callback(response)
                 _gameDataState.value=response // Log all players in the game
                 _gameState.value?.players=response.players
                 _lobbyState.value?.players =response.players

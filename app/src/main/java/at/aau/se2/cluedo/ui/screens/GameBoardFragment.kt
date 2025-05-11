@@ -1,18 +1,14 @@
 package at.aau.se2.cluedo.ui.screens
 
-import android.graphics.Bitmap
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.viewmodels.GameBoard
@@ -26,7 +22,7 @@ import kotlinx.coroutines.launch
  * Use the [gameBoard.newInstance] factory method to
  * create an instance of this fragment.
  */
-class GameBoard : Fragment() {
+class GameBoardFragment : Fragment() {
 
     private lateinit var gameBoard: GameBoard
     var webSocketService:WebSocketService?=null
@@ -169,13 +165,7 @@ class GameBoard : Fragment() {
 
     }
     private fun updatePlayers(){
-        lifecycleScope.launch {
-            WebSocketService.getInstance().gameDataState.collect { gameData ->
-                gameBoard.updateGameData(gameData)
-                WebSocketService.getInstance().subscribeGetGameData(WebSocketService.getInstance().lobbyState.value?.id!!)
-                //updatePlayers()
-            }
-        }
+
     }
 
     private fun updatePlayersUI(gameState: GameStartedResponse) {

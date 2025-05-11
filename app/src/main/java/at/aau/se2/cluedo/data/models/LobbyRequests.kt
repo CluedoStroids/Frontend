@@ -44,3 +44,7 @@ data class PerformMoveResponse(
     @SerializedName("player") var player:Player = Player(),
     @SerializedName("moves") var moves:List<String> = arrayListOf<String>()
 )
+data class IsWallRequest(
+    @SerializedName("x") var x:Int =0,
+    @SerializedName("y") var y:Int=0
+)
