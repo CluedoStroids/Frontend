@@ -38,5 +38,9 @@ data class CanStartGameResponse(
 
 data class GameStartedResponse(
     @SerializedName("lobbyId") val lobbyId: String = "",
-    @SerializedName("players") val players: List<Player> = listOf()
+    @SerializedName("players") var players: List<Player> = listOf()
+)
+data class PerformMoveResponse(
+    @SerializedName("player") var player:Player = Player(),
+    @SerializedName("moves") var moves:List<String> = arrayListOf<String>()
 )

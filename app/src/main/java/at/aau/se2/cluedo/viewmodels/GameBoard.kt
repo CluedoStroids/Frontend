@@ -6,11 +6,10 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.View
-import androidx.lifecycle.lifecycleScope
+import at.aau.se2.cluedo.data.GameData
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.network.WebSocketService
 import com.example.myapplication.R
-import kotlinx.coroutines.launch
 
 class GameBoard @JvmOverloads constructor(
     context: Context,
@@ -42,15 +41,25 @@ class GameBoard @JvmOverloads constructor(
 
     private var players:List<Player>?= ArrayList()
     private var moves= arrayListOf<String>()
+
+    private var playerArrPos:Int=0
+    private var firstRound:Boolean=true
     //Button
 
     fun init() {
-        WebSocketService.getInstance().players()
+        //WebSocketService.getInstance().players()
+        var id = WebSocketService.getInstance().lobbyState.value?.id
+        var player = WebSocketService.getInstance().getPlayer()
+        if (player != null&&id!=null) {
+            WebSocketService.getInstance().gameData(id,player)
+        }
 
-        players=WebSocketService.getInstance().getPlayers()
+
+        players=WebSocketService.getInstance().gameDataState.value?.players
+
         if(players!=null) {
-            for (i in 0..players?.size!!) {
-                if (players!!.get(i).name != WebSocketService.getInstance().getMe()?.name) {
+            for (i in 0..(players?.size!!-1)) {
+                if (players!!.get(i).name != WebSocketService.getInstance().getPlayer()?.name) {
                     playersBitmap.add(
                         BitmapFactory.decodeResource(
                             resources,
@@ -58,13 +67,27 @@ class GameBoard @JvmOverloads constructor(
                         )
                     )
                 }
+                else{
+                    playerArrPos=i
+                }
             }
         }
-        playerBitmap = BitmapFactory.decodeResource(resources, WebSocketService.getInstance().getMe()?.color?.img!!)
+
+
+        if(WebSocketService.getInstance().getPlayer()!=null) {
+            playerBitmap = BitmapFactory.decodeResource(
+                resources,
+                WebSocketService.getInstance().getPlayer()?.color?.img!!
+            )
+        }
+
         gameBoardBitmap = BitmapFactory.decodeResource(resources, R.drawable.grid)
 
         // Set initial position (example: center of the view)
         playerBitmap= playerBitmap?.let { Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false) }
+        for(b in 0..(playersBitmap.size-1)){
+            playersBitmap[b]=playersBitmap.get(b).let { Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false) }
+        }
         gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
 
     }
@@ -139,8 +162,6 @@ class GameBoard @JvmOverloads constructor(
         //gridScale=2f
         calcSize()
         //move=true
-        gridPosY = playerPosY
-        gridPosX = playerPosX
         moves=ArrayList()
         invalidate()
     }
@@ -160,52 +181,68 @@ class GameBoard @JvmOverloads constructor(
         gridSize= sizeX*gridScale
         playerSizeX=(gridSize/25).toInt()
         playerSizeY=(gridSize/25).toInt()
-        playerBitmap= playerBitmap?.let { Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false) }
+
+        playerBitmap= playerBitmap?.let {Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false)}
+        playerBitmap= playerBitmap?.let {Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false)}
+
+        for(b in 0..(playersBitmap.size-1)){
+            playersBitmap[b]=playersBitmap.get(b).let { Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false) }
+        }
         gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
     }
     fun done(){
-        WebSocketService.getInstance().performMovement(moves)
+        var id = WebSocketService.getInstance().lobbyState.value?.id
+
+        if (id != null) {
+            WebSocketService.getInstance().performMovement(id,moves)
+            WebSocketService.getInstance().subscribeGetGameData(id)
+        }
+
+        invalidate()
     }
+    fun updateGameData(gameData: GameData?) {
+        this.players = gameData?.players ?: emptyList()
+        // ggf. Bitmap aktualisieren oder andere Werte setzen
+        invalidate()
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         calcSize()
-        if(!move) {
+        if(firstRound) {
+            playerPosX = players!!.get(playerArrPos).x
+            playerPosY = players!!.get(playerArrPos).y
+            firstRound=false
+        }
+
             gameBoardBitmap?.let {
                 boardPosX = (canvas.width - it.width) / 2f
                 boardPosY = (canvas.height - it.height) / 2f
+
                 canvas.drawBitmap(it, boardPosX, boardPosY, null)
                 playerX = ((playerPosX * (gridSize / 25)) + boardPosX)
                 playerY = ((playerPosY * (gridSize / 25)) + boardPosY)
             }
 
             playerBitmap?.let {
-
-                canvas.drawBitmap(it, playerX, playerY, null) // Draw the bitmap
-
-            }
-
-        }
-        else{
-            gameBoardBitmap?.let {
-                var centerX = (canvas.width - playerSizeX)/2f
-                var centerY = (canvas.width - playerSizeY)/2f
-
-
-                boardPosX = (centerX -(gridPosX * (gridSize / 25)) )
-                boardPosY = (centerY -(gridPosY * (gridSize / 25)) )
-                println((gridSize / 25))
-                println(boardPosX)
-                canvas.drawBitmap(it, boardPosX, boardPosY, null)
-            }
-
-            playerBitmap?.let {
-                playerX = (canvas.width - it.width)/2f
-                playerY = (canvas.height - it.height) / 2f
-                println(playerX)
                 canvas.drawBitmap(it, playerX, playerY, null) // Draw the bitmap
             }
-        }
 
+
+            for (i in 0..(playersBitmap.size-1)){
+                var playersx:Float=0f
+                var playersy:Float=0f
+                if(playerArrPos>i){
+                    playersx=((players?.get(i)?.x!! * (gridSize / 25)) + boardPosX)
+                    playersy = ((players?.get(i)?.y!! * (gridSize / 25)) + boardPosY)
+                }else{
+                    playersx=((players?.get(i+1)?.x!! * (gridSize / 25)) + boardPosX)
+                    playersy = ((players?.get(i+1)?.y!! * (gridSize / 25)) + boardPosY)
+                }
+                playersBitmap.get(i).let {
+                    canvas.drawBitmap(it, playersx, playersy, null) // Draw the bitmap
+                }
+            }
     }
 
     // Method to update player position (example)
@@ -215,7 +252,4 @@ class GameBoard @JvmOverloads constructor(
         invalidate() // Request a redraw of the view
     }
 
-    fun centeredPlayerMovement(){
-
-    }
 }
