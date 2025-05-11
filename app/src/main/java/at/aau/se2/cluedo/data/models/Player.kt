@@ -12,5 +12,7 @@ data class Player(
     @SerializedName("isCurrentPlayer") val isCurrentPlayer: Boolean = false,
     @SerializedName("isActive") val isActive: Boolean = true,
     @SerializedName("hasWon") val hasWon: Boolean = false,
-    @SerializedName("color") val color: PlayerColor = PlayerColor.RED
+    @SerializedName("color") val color: PlayerColor = PlayerColor.RED,
+    @SerializedName("cards") val cards: List<BasicCard> = emptyList<BasicCard>()
 )
+

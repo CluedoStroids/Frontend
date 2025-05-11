@@ -14,10 +14,13 @@ import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBinding
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class GameFragment : Fragment() {
+
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
 
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
@@ -32,6 +35,9 @@ class GameFragment : Fragment() {
         return binding.root
     }
 
+    /**
+     * Actions happening when View is created.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUI()
@@ -70,8 +76,12 @@ class GameFragment : Fragment() {
             // Try to check if a game has started
             lobbyViewModel.checkGameStarted()
         }
+
     }
 
+    /**
+     * UI setup comes here
+     */
     private fun setupUI() {
         binding.playersListTextView.movementMethod = ScrollingMovementMethod()
         binding.gameInfoTextView.movementMethod = ScrollingMovementMethod()
@@ -85,6 +95,34 @@ class GameFragment : Fragment() {
         if (gameState != null) {
             updatePlayersUI(gameState)
         }
+
+        //BottomSheet to show cards
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+
+        binding.cardsOpenButton.setOnClickListener {
+            toggleBottomSheet()
+        }
+
+        //Change Icon of FloatingActionButton (openCardsButton) depending on state of BottomSheet
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        binding.cardsOpenButton.setImageResource(R.drawable.cards_close_icon)
+                    }
+                    BottomSheetBehavior.STATE_HIDDEN -> {
+                        binding.cardsOpenButton.setImageResource(R.drawable.cards_open_icon)
+                    }
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                // not needed but must be overridden
+            }
+
+        })
+
     }
 
     private fun updatePlayersUI(gameState: GameStartedResponse) {
@@ -164,6 +202,17 @@ class GameFragment : Fragment() {
         }
     }
 
+    /**
+     * Toggles Bottom Sheet Open/Close
+     */
+    private fun toggleBottomSheet() {
+        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        } else {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        }
+    }
+
     private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
         Toast.makeText(requireContext(), message, duration).show()
     }
@@ -172,4 +221,5 @@ class GameFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
 }

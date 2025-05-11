@@ -7,3 +7,7 @@ data class Lobby(
     @SerializedName("host") val host: Player = Player(),
     @SerializedName("players") val players: List<Player> = listOf()
 )
+
+enum class LobbyStatus(val text: String) {
+    CREATING("Creating..."),
+}

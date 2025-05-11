@@ -1,5 +1,6 @@
 package at.aau.se2.cluedo.ui.screens
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentJoinLobbyBinding
@@ -105,6 +107,7 @@ class JoinLobbyFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -179,6 +182,7 @@ class JoinLobbyFragment : Fragment() {
         Toast.makeText(requireContext(), message, duration).show()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateLobbyInfoUI() {
         val lobby = lobbyViewModel.lobbyState.value
         if (lobby != null) {
@@ -215,9 +219,13 @@ class JoinLobbyFragment : Fragment() {
 
             val adapter = binding.joinCharacterSpinner.adapter
             if (adapter is ArrayAdapter<*>) {
-                val position = (adapter as ArrayAdapter<String>).getPosition(availableCharacter)
-                if (position >= 0) {
-                    binding.joinCharacterSpinner.setSelection(position)
+                // Type-safe approach: use adapter.getItem() to get actual items and compare them
+                for (i in 0 until adapter.count) {
+                    val item = adapter.getItem(i)
+                    if (item is String && item == availableCharacter) {
+                        binding.joinCharacterSpinner.setSelection(i)
+                        break
+                    }
                 }
             }
         }
@@ -231,7 +239,7 @@ class JoinLobbyFragment : Fragment() {
         // Check both createdLobbyId and lobbyState.id
         activeLobbyId = when {
             createdId != null && createdId.isNotBlank() -> createdId
-            lobbyId != null && lobbyId.isNotBlank() && lobbyId != "Creating..." -> lobbyId
+            lobbyId != null && lobbyId.isNotBlank() && lobbyId != LobbyStatus.CREATING.text -> lobbyId
             else -> null
         }
 
