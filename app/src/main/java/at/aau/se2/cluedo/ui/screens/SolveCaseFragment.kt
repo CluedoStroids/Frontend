@@ -13,10 +13,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import androidx.navigation.fragment.findNavController
 
 class SolveCaseFragment : Fragment() {
 
@@ -49,8 +49,6 @@ class SolveCaseFragment : Fragment() {
         solveButton = view.findViewById(solveButtonId)
         val cancelButton: Button = view.findViewById(cancelButtonId)
 
-        setupSpinners()
-
         solveButton.setOnClickListener {
             solveCase()
         }
@@ -76,41 +74,47 @@ class SolveCaseFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupSpinners()
+
         lifecycleScope.launch {
             lobbyViewModel.lobbyState.collectLatest { lobby ->
                 val currentUsername = lobbyViewModel.createdLobbyId.value
-                val player = lobby?.players?.find { it.username == currentUsername }
+                val player = lobby?.players?.find { it.name == currentUsername }
 
                 if (player != null) {
                     val navController = findNavController()
                     val bundle = Bundle().apply {
-                        putString("winnerName", player.characterName ?: currentUsername)
+                        putString("winnerName", player.character.ifBlank { currentUsername })
                         putString("suspect", suspectSpinner.selectedItem.toString())
                         putString("room", roomSpinner.selectedItem.toString())
                         putString("weapon", weaponSpinner.selectedItem.toString())
                     }
 
-                    if (player.hasWon) {
-                        solveButton.isEnabled = false
-                        Toast.makeText(context, "You won! 🎉", Toast.LENGTH_LONG).show()
+                    when {
+                        player.hasWon -> {
+                            solveButton.isEnabled = false
+                            Toast.makeText(context, "You won! 🎉", Toast.LENGTH_LONG).show()
 
-                        val winScreenId = resources.getIdentifier("winScreenFragment", "id", requireContext().packageName)
-                        if (winScreenId != 0) {
-                            navController.navigate(winScreenId, bundle)
+                            val winScreenId = resources.getIdentifier("winScreenFragment", "id", requireContext().packageName)
+                            if (winScreenId != 0) {
+                                navController.navigate(winScreenId, bundle)
+                            }
                         }
-                    } else if (lobby?.winnerUsername != null) {
-                        val updateScreenId = resources.getIdentifier("investigationUpdateFragment", "id", requireContext().packageName)
-                        if (updateScreenId != 0) {
-                            navController.navigate(updateScreenId, bundle)
+                        lobby?.winnerUsername != null -> {
+                            val updateScreenId = resources.getIdentifier("investigationUpdateFragment", "id", requireContext().packageName)
+                            if (updateScreenId != 0) {
+                                navController.navigate(updateScreenId, bundle)
+                            }
                         }
-                    } else if (player.isEliminated) {
-                        solveButton.isEnabled = false
-                        isPlayerEliminated = true
-                        Toast.makeText(context, "Wrong guess. You are eliminated! ❌", Toast.LENGTH_LONG).show()
+                        !player.isActive -> {
+                            solveButton.isEnabled = false
+                            isPlayerEliminated = true
+                            Toast.makeText(context, "Wrong guess. You are eliminated! ❌", Toast.LENGTH_LONG).show()
 
-                        val elimScreenId = resources.getIdentifier("eliminationScreenFragment", "id", requireContext().packageName)
-                        if (elimScreenId != 0) {
-                            findNavController().navigate(elimScreenId, bundle)
+                            val elimScreenId = resources.getIdentifier("eliminationScreenFragment", "id", requireContext().packageName)
+                            if (elimScreenId != 0) {
+                                navController.navigate(elimScreenId, bundle)
+                            }
                         }
                     }
                 }

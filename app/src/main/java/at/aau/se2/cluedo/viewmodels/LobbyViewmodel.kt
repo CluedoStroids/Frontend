@@ -8,7 +8,6 @@ import at.aau.se2.cluedo.data.network.WebSocketService
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.collectLatest
 
 class LobbyViewModel : ViewModel() {
 
@@ -19,14 +18,14 @@ class LobbyViewModel : ViewModel() {
     val createdLobbyId: StateFlow<String?> = webSocketService.createdLobbyId
     val errorMessages: SharedFlow<String> = webSocketService.errorMessages
 
-   // fun connect() {
-      //  webSocketService.connect()
-      //  webSocketService.getActiveLobby()
- //   }
+    fun connect() {
+        webSocketService.connect()
+        webSocketService.getActiveLobby()
+    }
 
-  //  fun getActiveLobby() {
-      //  webSocketService.getActiveLobby()
-  //  }
+    fun getActiveLobby() {
+        webSocketService.getActiveLobby()
+    }
 
     fun disconnect() {
         webSocketService.disconnect()
@@ -70,17 +69,5 @@ class LobbyViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         disconnect()
-    }
-
-    fun solveCase(
-        lobbyId: String,
-        username: String,
-        suspect: String,
-        room: String,
-        weapon: String
-    ) {
-        viewModelScope.launch {
-            webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
-        }
     }
 }
