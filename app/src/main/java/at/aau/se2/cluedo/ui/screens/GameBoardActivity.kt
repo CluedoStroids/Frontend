@@ -3,12 +3,16 @@ package at.aau.se2.cluedo.ui.screens
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import at.aau.se2.cluedo.viewmodels.DynamicGridHelper
 import com.example.myapplication.R
 import com.example.myapplication.databinding.ActivityGameBoardBinding
 import com.example.myapplication.databinding.ActivityMainBinding
@@ -22,8 +26,11 @@ class GameBoardActivity : AppCompatActivity() {
 
     private lateinit var gameBoardBinding: ActivityGameBoardBinding
     private lateinit var gameBoardNavController: NavController
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var gridHelper: DynamicGridHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         gameBoardBinding = ActivityGameBoardBinding.inflate(layoutInflater)
         setContentView(gameBoardBinding.root)
@@ -35,10 +42,12 @@ class GameBoardActivity : AppCompatActivity() {
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
         // Set up expand button
-
         gameBoardBinding.cardsOpenButton.setOnClickListener {
             toggleBottomSheet()
         }
+
+        //setupRecyclerView()
+
         bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
@@ -53,16 +62,20 @@ class GameBoardActivity : AppCompatActivity() {
                 }
             }
 
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                // Optional: Implement any animation during sliding
+            }
+
         })
     }
 
+    /*
     private fun setupRecyclerView() {
-        recyclerView = findViewById(R.id.player_cards_recyclerview)
 
         // Determine optimal number of columns based on number of cards
         val columnCount = gridHelper.getColumnCountForPlayerCards(playerCards.size)
 
-        recyclerView.layoutManager = GridLayoutManager(this, columnCount)
+        gameBoardBinding.playerCardsRecyclerview.layoutManager = GridLayoutManager(this, columnCount)
 
         // Create and set adapter
         adapter = PlayerCardAdapter(playerCards) { playerCard ->
@@ -73,8 +86,10 @@ class GameBoardActivity : AppCompatActivity() {
             // For example, show details, highlight the selected card, etc.
         }
 
-        recyclerView.adapter = adapter
+        gameBoardBinding.playerCardsRecyclerview.adapter = adapter
     }
+
+     */
 
     private fun toggleBottomSheet() {
         if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN) {
