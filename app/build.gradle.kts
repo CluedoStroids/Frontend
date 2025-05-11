@@ -22,13 +22,14 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -60,6 +61,8 @@ android {
 
     testOptions {
         unitTests {
+            isIncludeAndroidResources = true
+
             all {
                 it.useJUnitPlatform()
                 it.finalizedBy(tasks.named("jacocoTestReport"))
@@ -134,6 +137,9 @@ subprojects {
 }
 
 dependencies {
+    implementation(libs.androidx.activity)
+    val naikSoftwareVersion = "1.6.6"
+
     implementation(libs.androidx.core.ktx.v1131)
     implementation(libs.androidx.appcompat.v161)
     implementation(libs.material)
@@ -143,22 +149,31 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.kotlinx.coroutines.core.v173)
     implementation(libs.kotlinx.coroutines.android.v173)
-    implementation("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
-    implementation("androidx.activity:activity-ktx:1.10.1")
-    implementation("androidx.fragment:fragment-ktx:1.7.0")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
-    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("com.github.NaikSoftware:StompProtocolAndroid:$naikSoftwareVersion")
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.gson)
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
     implementation(libs.androidx.navigation.runtime.android)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockito.mockito.inline)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.core.testing)
+    testImplementation(libs.robolectric.robolectric)
+    testImplementation(libs.turbine)
     // JUnit 4
     testImplementation(libs.junit)
     // JUnit 5
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.2") // For JUnit 4 compatibility
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.powermock.module.junit4)
+    testImplementation(libs.powermock.api.mockito2)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.vintage.engine) // For JUnit 4 compatibility
     androidTestImplementation(libs.androidx.junit.v121)
     androidTestImplementation(libs.androidx.espresso.core.v361)
 }
