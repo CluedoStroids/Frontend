@@ -9,53 +9,45 @@ import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.myapplication.R
+import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 
 class SuspicionPopupFragment : Fragment() {
+
+    private val lobbyViewModel: LobbyViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.fragment_suspicion_popup, container, false)
+        val layoutId = resources.getIdentifier("fragment_suspicion_popup", "layout", requireContext().packageName)
+        return inflater.inflate(layoutId, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val suspectSpinner: Spinner = view.findViewById(R.id.suspectSpinner)
-        val roomSpinner: Spinner = view.findViewById(R.id.roomSpinner)
-        val weaponSpinner: Spinner = view.findViewById(R.id.weaponSpinner)
-        val makeSuspicionButton: Button = view.findViewById(R.id.button_make_suspicion)
-        val cancelButton: Button = view.findViewById(R.id.button_cancel)
+        val currentPlayer = lobbyViewModel.lobbyState.value?.players?.find {
+            it.name == lobbyViewModel.createdLobbyId.value
+        }
+        val isInRoom = currentPlayer?.x == -1 && currentPlayer.y == -1
 
-        ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.suspect_options,
-            R.layout.spinner_item
-        ).also {
-            it.setDropDownViewResource(R.layout.spinner_item)
-            suspectSpinner.adapter = it
+        if (!isInRoom) {
+            Toast.makeText(context, "You must be in a room to make a suspicion!", Toast.LENGTH_LONG).show()
+            findNavController().navigateUp()
+            return
         }
 
-        ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.room_options,
-            R.layout.spinner_item
-        ).also {
-            it.setDropDownViewResource(R.layout.spinner_item)
-            roomSpinner.adapter = it
-        }
+        val suspectSpinner: Spinner = view.findViewById(getId("suspectSpinner"))
+        val roomSpinner: Spinner = view.findViewById(getId("roomSpinner"))
+        val weaponSpinner: Spinner = view.findViewById(getId("weaponSpinner"))
+        val makeSuspicionButton: Button = view.findViewById(getId("button_make_suspicion"))
+        val cancelButton: Button = view.findViewById(getId("button_cancel"))
 
-        ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.weapon_options,
-            R.layout.spinner_item
-        ).also {
-            it.setDropDownViewResource(R.layout.spinner_item)
-            weaponSpinner.adapter = it
-        }
+        setUpSpinner(suspectSpinner, "suspect_options")
+        setUpSpinner(roomSpinner, "room_options")
+        setUpSpinner(weaponSpinner, "weapon_options")
 
         makeSuspicionButton.setOnClickListener {
             val suspect = suspectSpinner.selectedItem.toString()
@@ -67,21 +59,33 @@ class SuspicionPopupFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val bundle = Bundle().apply {
-                putString("revealedCard", weapon)
-                putString("revealedBy", "Player 3")
-            }
+            val suspicion = "$suspect — in the $room — with the $weapon"
+            lobbyViewModel.addSuspicionNote(suspicion)
 
-            val popupId = resources.getIdentifier("suspiciousPopupFragment", "id", requireContext().packageName)
-            if (popupId != 0) {
-                findNavController().navigate(popupId, bundle)
-            } else {
-                Toast.makeText(context, "Suspicious popup not found", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(context, "Suspicion saved to notes.", Toast.LENGTH_SHORT).show()
+            findNavController().navigateUp()
         }
 
         cancelButton.setOnClickListener {
             findNavController().navigateUp()
         }
+    }
+
+    private fun setUpSpinner(spinner: Spinner, arrayName: String) {
+        val arrayId = resources.getIdentifier(arrayName, "array", requireContext().packageName)
+        val itemLayout = resources.getIdentifier("spinner_item", "layout", requireContext().packageName)
+
+        ArrayAdapter.createFromResource(
+            requireContext(),
+            arrayId,
+            itemLayout
+        ).also {
+            it.setDropDownViewResource(itemLayout)
+            spinner.adapter = it
+        }
+    }
+
+    private fun getId(idName: String): Int {
+        return resources.getIdentifier(idName, "id", requireContext().packageName)
     }
 }

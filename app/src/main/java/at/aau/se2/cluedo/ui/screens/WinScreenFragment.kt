@@ -46,8 +46,8 @@ class WinScreenFragment : Fragment() {
 
         Log.d("WinScreenFragment", "Showing result: $winnerName, $suspect, $room, $weapon")
 
-        winTitle.text = "🔍 $winnerName has cracked the case!"
-        winDetails.text = "\n$suspect — in the $room — with the $weapon.\n\nJustice is served. 🎯"
+        winTitle.text = " $winnerName has cracked the case!"
+        winDetails.text = "\n$suspect — in the $room — with the $weapon.\n\nJustice is served. "
 
         val navController = findNavController()
         val destId = context.resources.getIdentifier("mainMenuFragment", "id", context.packageName)

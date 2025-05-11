@@ -42,7 +42,7 @@ class EliminationScreenFragment : Fragment() {
         val weapon = args?.getString("weapon") ?: "Rope"
 
         val message = """
-            ❌ Your accusation was incorrect.
+            Your accusation was incorrect.
 
             You guessed:
             $suspect — in the $room — with the $weapon.

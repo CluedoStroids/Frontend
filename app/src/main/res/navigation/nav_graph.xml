@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mainMenuFragment">
+    app:startDestination="@+id/notesFragment">
 
     <fragment
         android:id="@+id/mainMenuFragment"
@@ -44,5 +44,49 @@
         android:name="at.aau.se2.cluedo.ui.screens.DiceRollerFragment"
         android:label="@string/dice_roller"
         tools:layout="@layout/fragment_dice_roller" />
+
+    <fragment
+        android:id="@+id/notesFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.NotesFragment"
+        android:label="Notes"
+        tools:layout="@layout/fragment_notes" />
+
+    <fragment
+        android:id="@+id/suspicionPopupFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.SuspicionPopupFragment"
+        android:label="Suspicion"
+        tools:layout="@layout/fragment_suspicion_popup" />
+
+    <fragment
+        android:id="@+id/solveCaseFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.SolveCaseFragment"
+        android:label="Solve Case"
+        tools:layout="@layout/fragment_solve_case" />
+
+    <fragment
+        android:id="@+id/winScreenFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.WinScreenFragment"
+        android:label="You Win"
+        tools:layout="@layout/fragment_win_screen" />
+
+    <fragment
+        android:id="@+id/eliminationScreenFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.EliminationScreenFragment"
+        android:label="You Are Eliminated"
+        tools:layout="@layout/fragment_elimination_screen" />
+
+    <fragment
+        android:id="@+id/eliminationUpdateFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.EliminationUpdateFragment"
+        android:label="Eliminated Update"
+        tools:layout="@layout/fragment_elimination_update" />
+
+    <fragment
+        android:id="@+id/investigationUpdateFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.InvestigationUpdateFragment"
+        android:label="Investigation Result"
+        tools:layout="@layout/fragment_investigation_update" />
+
+
 
 </navigation>

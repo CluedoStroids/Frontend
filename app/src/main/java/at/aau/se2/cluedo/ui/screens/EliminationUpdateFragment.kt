@@ -43,7 +43,7 @@ class EliminationUpdateFragment : Fragment() {
         val weapon = args?.getString("weapon") ?: "Rope"
 
         val message = """
-            📢 Investigation Update:
+            Investigation Update:
 
             $player made a false accusation:
 

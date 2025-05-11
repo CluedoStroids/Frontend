@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.example.myapplication.R
 
 class CheatDetectionFragment : Fragment() {
 
@@ -14,15 +13,15 @@ class CheatDetectionFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout
-        return inflater.inflate(R.layout.fragment_cheat_detection, container, false)
+        val layoutId = resources.getIdentifier("fragment_cheat_detection", "layout", requireContext().packageName)
+        return inflater.inflate(layoutId, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Reference the TextView
-        val textView = view.findViewById<TextView>(R.id.cheatDetectionText)
+        val textViewId = resources.getIdentifier("cheatDetectionText", "id", requireContext().packageName)
+        val textView = view.findViewById<TextView>(textViewId)
         textView.text = "Cheat Detection In Progress\nComing in Sprint 3"
     }
 }

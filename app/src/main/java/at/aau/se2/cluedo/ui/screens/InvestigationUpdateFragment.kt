@@ -43,13 +43,13 @@ class InvestigationUpdateFragment : Fragment() {
         val weapon = args?.getString("weapon") ?: "Candlestick"
 
         val message = """
-            📢 Investigation Update:
+            Investigation Update:
             
             $winner has solved the case!
             
             $suspect — in the $room — with the $weapon.
             
-            Game over. 🕵️‍♂️
+            Game over. 
         """.trimIndent()
 
         updateText.text = message
