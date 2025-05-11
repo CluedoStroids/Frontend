@@ -36,7 +36,67 @@
         android:id="@+id/lobbyFragment"
         android:name="at.aau.se2.cluedo.ui.screens.LobbyFragment"
         android:label="@string/lobby"
-        tools:layout="@layout/fragment_lobby" />
+        tools:layout="@layout/fragment_lobby">
+        <action
+            android:id="@+id/action_lobbyFragment_to_solveCaseFragment"
+            app:destination="@id/solveCaseFragment" />
+        <action
+            android:id="@+id/action_lobbyFragment_to_notesFragment"
+            app:destination="@id/notesFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/solveCaseFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.SolveCaseFragment"
+        android:label="Solve Case"
+        tools:layout="@layout/fragment_solve_case">
+        <action
+            android:id="@+id/action_solveCaseFragment_to_winScreenFragment"
+            app:destination="@id/winScreenFragment" />
+        <action
+            android:id="@+id/action_solveCaseFragment_to_eliminationUpdateFragment"
+            app:destination="@id/eliminationUpdateFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/notesFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.NotesFragment"
+        android:label="Suspicion Notes"
+        tools:layout="@layout/fragment_notes">
+        <action
+            android:id="@+id/action_notesFragment_to_lobbyFragment"
+            app:destination="@id/lobbyFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/suspicionPopupFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.SuspicionPopupFragment"
+        android:label="Make a Suspicion"
+        tools:layout="@layout/fragment_suspicion_popup">
+        <action
+            android:id="@+id/action_suspicionPopupFragment_to_lobbyFragment"
+            app:destination="@id/lobbyFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/winScreenFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.WinScreenFragment"
+        android:label="You Cracked the Case!"
+        tools:layout="@layout/fragment_win_screen">
+        <action
+            android:id="@+id/action_winScreenFragment_to_lobbyFragment"
+            app:destination="@id/lobbyFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/eliminationUpdateFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.EliminationUpdateFragment"
+        android:label="Elimination Update"
+        tools:layout="@layout/fragment_elimination_update">
+        <action
+            android:id="@+id/action_eliminationUpdateFragment_to_lobbyFragment"
+            app:destination="@id/lobbyFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/settingsFragment"
@@ -55,5 +115,4 @@
         android:name="at.aau.se2.cluedo.ui.screens.JoinLobbyFragment"
         android:label="@string/join_lobby"
         tools:layout="@layout/fragment_join_lobby" />
-
 </navigation>

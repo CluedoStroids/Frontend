@@ -10,4 +10,9 @@
     <string name="settings_placeholder">Settings will be available in future updates</string>
     <string name="dice_roller">Dice Roller</string>
     <string name="roll_dice">Roll Dice</string>
+    <string name="submit_suspicion">submit suspicion\n</string>
+    <string name="cancel">Cancel</string>
+    <string name="you_ve_cracked_the_case">You have cracked the case!</string>
+    <string name="back_to_lobby">Back to Lobby</string>
+    <string name="exit_the_game">Exit the Game</string>
 </resources>

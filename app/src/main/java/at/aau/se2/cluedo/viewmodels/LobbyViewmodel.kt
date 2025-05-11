@@ -8,6 +8,8 @@ import at.aau.se2.cluedo.data.network.WebSocketService
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import android.util.Log
+
 
 class LobbyViewModel : ViewModel() {
 
@@ -45,6 +47,10 @@ class LobbyViewModel : ViewModel() {
         }
     }
 
+    fun addSuspicionNote(note: String) {
+        Log.d("SuspicionNote", note)
+    }
+
     fun leaveLobby(lobbyId: String, username: String, character: String = "Blue") {
         viewModelScope.launch {
             val color = getColorForCharacter(character)
@@ -69,5 +75,13 @@ class LobbyViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         disconnect()
+    }
+
+    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
+        webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
+    }
+
+    fun getActiveLobbies() {
+        TODO("Not yet implemented")
     }
 }

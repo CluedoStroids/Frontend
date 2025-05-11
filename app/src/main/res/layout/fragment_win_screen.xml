@@ -45,7 +45,7 @@
             android:id="@+id/button_exit_game"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Exit Game"
+            android:text="Exit the Game"
             android:layout_marginTop="16dp"
             android:backgroundTint="@color/teal_200"
             android:textColor="@color/black" />

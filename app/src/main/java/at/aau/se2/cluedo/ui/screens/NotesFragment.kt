@@ -67,10 +67,6 @@ class NotesFragment : Fragment() {
         addSection("Weapons", weapons, masterTable, true)
         addSection("Rooms", rooms, masterTable, true)
 
-        binding.buttonBack.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
-        }
-
     }
 
     private fun addSection(label: String, items: List<String>, table: TableLayout, boldDivider: Boolean) {

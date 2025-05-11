@@ -53,15 +53,6 @@ class SolveCaseFragment : Fragment() {
             solveCase()
         }
 
-        cancelButton.setOnClickListener {
-            val navController = findNavController()
-            val destinationId = resources.getIdentifier("boardPlaceholderFragment", "id", requireContext().packageName)
-            if (destinationId != 0) {
-                navController.navigate(destinationId)
-            } else {
-                Toast.makeText(context, "Board screen not found in navigation graph.", Toast.LENGTH_SHORT).show()
-            }
-        }
 
         return view
     }
