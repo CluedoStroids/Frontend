@@ -10,7 +10,12 @@ import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.GameStartedResponse
+import at.aau.se2.cluedo.data.network.WebSocketService
+import at.aau.se2.cluedo.viewmodels.CardAdapter
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBinding
@@ -21,6 +26,7 @@ import kotlin.random.Random
 class GameFragment : Fragment() {
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    private lateinit var cardsRecyclerView: RecyclerView
 
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
@@ -123,6 +129,11 @@ class GameFragment : Fragment() {
 
         })
 
+        val recyclerView = binding.playerCardsRecyclerview
+        recyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        var cards = WebSocketService.getInstance().player.value?.cards
+        recyclerView.adapter = CardAdapter(BasicCard.getCardIDs(cards))
+
     }
 
     private fun updatePlayersUI(gameState: GameStartedResponse) {
@@ -212,6 +223,7 @@ class GameFragment : Fragment() {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         }
     }
+
 
     private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
         Toast.makeText(requireContext(), message, duration).show()
