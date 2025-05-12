@@ -14,19 +14,31 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.GameStartedResponse
-import at.aau.se2.cluedo.data.network.WebSocketService
-import at.aau.se2.cluedo.viewmodels.CardAdapter
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import androidx.navigation.fragment.findNavController
+import at.aau.se2.cluedo.data.network.WebSocketService
+import at.aau.se2.cluedo.viewmodels.CardAdapter
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class GameFragment : Fragment() {
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
-    private lateinit var cardsRecyclerView: RecyclerView
+
+    private val roomCoordinates = setOf(
+        Pair(0, 0), Pair(1, 0), Pair(0, 1), Pair(1, 1), // Küche
+        Pair(0, 4), Pair(1, 4), Pair(0, 5), Pair(1, 5), // Speisezimmer
+        Pair(0, 9), Pair(1, 9), Pair(0, 10), Pair(1, 10), // Salon
+        Pair(4, 0), Pair(5, 0), Pair(4, 1), Pair(5, 1), // Musikzimmer
+        Pair(4, 9), Pair(5, 9), Pair(4, 10), Pair(5, 10), // Halle
+        Pair(8, 0), Pair(9, 0), Pair(8, 1), Pair(9, 1), // Wintergarten
+        Pair(8, 4), Pair(9, 4), Pair(8, 5), Pair(9, 5), // Billardzimmer
+        Pair(8, 6), Pair(9, 6), Pair(8, 7), Pair(9, 7), // Bibliothek
+        Pair(8, 9), Pair(9, 9), Pair(8, 10), Pair(9, 10) // Arbeitszimmer
+    )
 
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
@@ -47,6 +59,7 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUI()
+
         observeViewModel()
 
         // Check if we have a game state and log it
@@ -89,6 +102,20 @@ class GameFragment : Fragment() {
      * UI setup comes here
      */
     private fun setupUI() {
+
+      /*  binding.notesButton.setOnClickListener {
+            findNavController().navigate(R.id.action_gameFragment_to_notesFragment)
+        }
+
+        binding.solveCaseButton.setOnClickListener {
+            findNavController().navigate(R.id.action_gameFragment_to_solveCaseFragment)
+        }
+
+        binding.makeSuspicionButton.setOnClickListener {
+            findNavController().navigate(R.id.action_gameFragment_to_suspicionPopupFragment)
+        }
+*/
+
         binding.playersListTextView.movementMethod = ScrollingMovementMethod()
         binding.gameInfoTextView.movementMethod = ScrollingMovementMethod()
 
@@ -209,29 +236,38 @@ class GameFragment : Fragment() {
                         showToast(errorMessage)
                     }
                 }
+
+                launch {
+                    lobbyViewModel.lobbyState.collect { lobby ->
+                        val currentPlayer = lobby?.players?.find { it.isCurrentPlayer == true }
+                        val isInRoom = roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
+                        binding.makeSuspicionButton.isEnabled = isInRoom
+                    }
+                }
+
+
             }
         }
     }
 
-    /**
-     * Toggles Bottom Sheet Open/Close
-     */
-    private fun toggleBottomSheet() {
-        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        } else {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        }
+/**
+ * Toggles Bottom Sheet Open/Close
+ */
+private fun toggleBottomSheet() {
+    if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN) {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+    } else {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
+}
 
+private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(requireContext(), message, duration).show()
+}
 
-    private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
-        Toast.makeText(requireContext(), message, duration).show()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+override fun onDestroyView() {
+    super.onDestroyView()
+    _binding = null
+}
 
 }

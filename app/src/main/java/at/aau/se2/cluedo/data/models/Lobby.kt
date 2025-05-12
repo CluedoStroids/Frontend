@@ -5,7 +5,9 @@ import com.google.gson.annotations.SerializedName
 data class Lobby(
     @SerializedName("id") val id: String = "",
     @SerializedName("host") val host: Player = Player(),
-    @SerializedName("players") var players: List<Player> = listOf()
+    @SerializedName("participants") val participants: List<String> = listOf(),
+    @SerializedName("players") var players: List<Player> = listOf(),
+    @SerializedName("winnerUsername") val winnerUsername: String? = null
 )
 
 enum class LobbyStatus(val text: String) {
