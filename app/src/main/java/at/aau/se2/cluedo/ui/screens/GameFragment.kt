@@ -19,6 +19,8 @@ import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import androidx.navigation.fragment.findNavController
+import at.aau.se2.cluedo.data.network.WebSocketService
+import at.aau.se2.cluedo.viewmodels.CardAdapter
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -101,7 +103,7 @@ class GameFragment : Fragment() {
      */
     private fun setupUI() {
 
-        binding.notesButton.setOnClickListener {
+      /*  binding.notesButton.setOnClickListener {
             findNavController().navigate(R.id.action_gameFragment_to_notesFragment)
         }
 
@@ -112,7 +114,7 @@ class GameFragment : Fragment() {
         binding.makeSuspicionButton.setOnClickListener {
             findNavController().navigate(R.id.action_gameFragment_to_suspicionPopupFragment)
         }
-
+*/
 
         binding.playersListTextView.movementMethod = ScrollingMovementMethod()
         binding.gameInfoTextView.movementMethod = ScrollingMovementMethod()

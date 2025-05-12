@@ -67,6 +67,15 @@
             app:destination="@id/diceRollerFragment"
             app:enterAnim="@android:anim/fade_in"
             app:exitAnim="@android:anim/fade_out" />
+        <action
+            android:id="@+id/action_gameBoardIMG_to_notesFragment"
+            app:destination="@id/notesFragment" />
+        <action
+            android:id="@+id/action_gameBoardIMG_to_suspicionPopupFragment"
+            app:destination="@id/suspicionPopupFragment" />
+        <action
+            android:id="@+id/action_gameBoardIMG_to_solveCaseFragment"
+            app:destination="@id/solveCaseFragment" />
     </fragment>
 
     <fragment
@@ -83,20 +92,7 @@
     android:id="@+id/gameFragment"
     android:name="at.aau.se2.cluedo.ui.screens.GameFragment"
     android:label="Game"
-    tools:layout="@layout/fragment_game" >
-    <action
-        android:id="@+id/action_gameFragment_to_notesFragment"
-        app:destination="@id/notesFragment" />
-
-    <action
-        android:id="@+id/action_gameFragment_to_solveCaseFragment"
-        app:destination="@id/solveCaseFragment" />
-
-    <action
-        android:id="@+id/action_gameFragment_to_suspicionPopupFragment"
-        app:destination="@id/suspicionPopupFragment" />
-
-    </fragment>
+    tools:layout="@layout/fragment_game" />
 
 
 <fragment

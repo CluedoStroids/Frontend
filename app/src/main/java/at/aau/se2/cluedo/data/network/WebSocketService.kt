@@ -19,6 +19,7 @@ import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.data.models.PerformMoveResponse
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
+import at.aau.se2.cluedo.data.models.SolveCaseRequest
 import at.aau.se2.cluedo.data.models.StartGameRequest
 import com.google.gson.Gson
 import io.reactivex.disposables.Disposable
