@@ -45,9 +45,7 @@ class MainMenuFragment : Fragment() {
         binding.settingsCard.setOnClickListener {
             findNavController().navigate(R.id.action_mainMenuFragment_to_settingsFragment)
         }
-        binding.gameboardCard.setOnClickListener {
-            findNavController().navigate(R.id.action_mainMenuFragment_to_gameBoard)
-        }
+
     }
 
     override fun onDestroyView() {

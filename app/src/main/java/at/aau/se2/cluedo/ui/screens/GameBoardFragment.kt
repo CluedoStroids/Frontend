@@ -6,15 +6,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.network.WebSocketService
+import at.aau.se2.cluedo.viewmodels.CardAdapter
 import at.aau.se2.cluedo.viewmodels.GameBoard
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.launch
 
 /**
@@ -31,7 +37,8 @@ class GameBoardFragment : Fragment() {
     private var _binding: FragmentGameBoardBinding? = null
     private val binding get() = _binding!!
 
-
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    private lateinit var cardsRecyclerView: RecyclerView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         init()
@@ -50,6 +57,7 @@ class GameBoardFragment : Fragment() {
 
         // Inflate the layout for this fragment
         return binding.root
+
     }
 
 
@@ -60,6 +68,41 @@ class GameBoardFragment : Fragment() {
         //println("gameBoard Hi")
         gameBoard = view.findViewById(R.id.gameBoardView) as GameBoard
         // Check if we have a game state and log it
+
+        //BottomSheet to show cards
+        val bottomSheet = view.findViewById<NestedScrollView>(R.id.bottom_sheet)
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+
+
+        binding.cardsOpenButton.setOnClickListener {
+            toggleBottomSheet()
+        }
+        //Change Icon of FloatingActionButton (openCardsButton) depending on state of BottomSheet
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        binding.cardsOpenButton.setImageResource(R.drawable.cards_close_icon)
+                    }
+                    BottomSheetBehavior.STATE_HIDDEN -> {
+                        binding.cardsOpenButton.setImageResource(R.drawable.cards_open_icon)
+                    }
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                // not needed but must be overridden
+            }
+
+        })
+
+        val recyclerView = binding.playerCardsRecyclerview
+        recyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        var cards = WebSocketService.getInstance().player.value?.cards
+        recyclerView.adapter = CardAdapter(BasicCard.getCardIDs(cards))
+
+
         val gameState = lobbyViewModel.gameState.value
         if (gameState != null) {
             showToast("Game state available: ${gameState.players.size} players")
@@ -180,6 +223,13 @@ class GameBoardFragment : Fragment() {
         lobbyViewModel.logMessage("Updated UI with ${gameState.players.size} players")
     }
 
+    private fun toggleBottomSheet() {
+        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        } else {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        }
+    }
     private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
         Toast.makeText(requireContext(), message, duration).show()
     }
@@ -188,5 +238,6 @@ class GameBoardFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
 
 }

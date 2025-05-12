@@ -15,6 +15,7 @@ import at.aau.se2.cluedo.data.models.IsWallRequest
 import at.aau.se2.cluedo.data.models.JoinLobbyRequest
 import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
 import at.aau.se2.cluedo.data.models.Lobby
+import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.data.models.PerformMoveResponse
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
@@ -105,12 +106,12 @@ class WebSocketService {
         setupStompClient()
     }
 
-    private var player: Player? = null
+    /*private var player: Player? = null*/
     public fun getPlayer(): Player? {
-        return player
+        return player.value
     }
     public fun setPlayer(p:Player){
-        this.player = p
+        this._player.value = p
     }
 
     @SuppressLint("CheckResult")
@@ -503,7 +504,7 @@ class WebSocketService {
             _errorMessages.tryEmit("Not connected to server")
             return
         }
-        val request = PerformMoveResponse(player = player!!, moves=moves)
+        val request = PerformMoveResponse(player = player.value!!, moves=moves)
         val payload = gson.toJson(request)
         val destination = "$APP_PERFORM_MOVE${lobbyId}"
 
@@ -524,11 +525,6 @@ class WebSocketService {
             callback(gameData)
             Log.d("STOMP", "Received movement update: $gameData")
         }
-    }
-
-    @SuppressLint("CheckResult")
-    fun updateGameboard() {
-
     }
 
 

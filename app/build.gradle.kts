@@ -168,7 +168,8 @@ dependencies {
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
     implementation(libs.androidx.navigation.runtime.android)
-    implementation(libs.cardview.v7)
+    //implementation(libs.cardview.v7)
+    implementation("androidx.cardview:cardview:1.0.0")
 
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)

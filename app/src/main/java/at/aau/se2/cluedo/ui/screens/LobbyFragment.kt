@@ -87,7 +87,7 @@ class LobbyFragment : Fragment() {
             }
 
             lobbyViewModel.startGame(lobbyId, username, character)
-            //findNavController().navigate(R.id.action_lobbyFragment_to_gameFragment)
+            //findNavController().navigate(R.id.action_lobbyFragment_to_gameBoardIMG)
             showToast("Starting game...")
         }
     }
