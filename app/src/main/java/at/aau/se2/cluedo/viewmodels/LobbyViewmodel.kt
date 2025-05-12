@@ -2,15 +2,16 @@ package at.aau.se2.cluedo.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.Lobby
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.network.WebSocketService
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import android.util.Log
+import at.aau.se2.cluedo.data.models.GameStartedResponse
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.getInstance()) :
     ViewModel() {
@@ -130,8 +131,6 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         }
     }
 
-    val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
-
     private fun getColorForCharacter(character: String): PlayerColor {
         return try {
             PlayerColor.valueOf(character.uppercase())
@@ -144,4 +143,17 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         super.onCleared()
         disconnect()
     }
+
+    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
+
+        webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
+                            }
+
+    fun addSuspicionNote(note: String) {
+        Log.d("SuspicionNote", note)
+    } val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
 }
+
+
+
+

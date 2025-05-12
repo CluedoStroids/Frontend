@@ -54,7 +54,7 @@ class JoinLobbyFragment : Fragment() {
         )
         binding.joinCharacterSpinner.adapter = characterAdapter
 
-        // Set default selection to Blue
+
         val blueIndex = lobbyViewModel.availableCharacters.indexOf("Blue")
         if (blueIndex >= 0) {
             binding.joinCharacterSpinner.setSelection(blueIndex)

@@ -303,15 +303,9 @@ class WebSocketService {
         )
     }
 
-    fun createLobby(
-        username: String,
-        character: String = "Red",
-        color: PlayerColor = PlayerColor.RED
-    ) {
+    fun createLobby(username: String, character: String = "Red", color: PlayerColor = PlayerColor.RED) {
         if (!_isConnected.value) return
         val player = Player(name = username, character = character, color = color)
-
-        //me = player
         val request = CreateLobbyRequest(player)
         val payload = gson.toJson(request)
 
@@ -321,19 +315,13 @@ class WebSocketService {
         sendRequest(APP_CREATE_LOBBY, payload)
     }
 
-    fun joinLobby(
-        lobbyId: String,
-        username: String,
-        character: String = "Blue",
-        color: PlayerColor = PlayerColor.BLUE
-    ) {
+    fun joinLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
         if (!_isConnected.value || lobbyId.isBlank()) return
 
         _createdLobbyId.value = lobbyId
         subscribeToSpecificLobbyTopics(lobbyId)
 
         val player = Player(name = username, character = character, color = color)
-        //me=player
         val request = JoinLobbyRequest(player)
         val payload = gson.toJson(request)
         val destination = "$APP_JOIN_LOBBY_PREFIX$lobbyId"
@@ -347,12 +335,7 @@ class WebSocketService {
         sendRequest(destination, payload)
     }
 
-    fun leaveLobby(
-        lobbyId: String,
-        username: String,
-        character: String = "Blue",
-        color: PlayerColor = PlayerColor.BLUE
-    ) {
+    fun leaveLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
         if (!_isConnected.value || lobbyId.isBlank()) return
         val player = Player(name = username, character = character, color = color)
         val request = LeaveLobbyRequest(player)
@@ -571,6 +554,14 @@ class WebSocketService {
         // Set the game state for all players
         _gameState.value = gameState
         _gameStarted.value = true
+    }
+
+
+    @SuppressLint("CheckResult")
+    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
+        val request = SolveCaseRequest(lobbyId, username, suspect, room, weapon)
+        val payload = gson.toJson(request)
+        stompClient?.send("/app/solve-case", payload)?.subscribe()
     }
 
     fun gameData(lobbyId: String,player: Player) {
