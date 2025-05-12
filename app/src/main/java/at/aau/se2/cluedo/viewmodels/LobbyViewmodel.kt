@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.Lobby
+import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.network.WebSocketService
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -41,7 +42,9 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
     fun createLobby(username: String, character: String = "Red") {
         viewModelScope.launch {
             val color = getColorForCharacter(character)
+
             webSocketService.createLobby(username, character, color)
+            WebSocketService.getInstance().setPlayer(Player(name=username,character=character,color=color))
         }
     }
 
@@ -49,6 +52,7 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         viewModelScope.launch {
             val color = getColorForCharacter(character)
             webSocketService.joinLobby(lobbyId, username, character, color)
+            WebSocketService.getInstance().setPlayer(Player(name=username,character=character,color=color))
         }
     }
 

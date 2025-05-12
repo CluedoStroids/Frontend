@@ -154,7 +154,7 @@ class JoinLobbyFragment : Fragment() {
                         if (gameStarted) {
                             showToast("Game started! Navigating to game screen...")
                             try {
-                                findNavController().navigate(R.id.action_joinLobbyFragment_to_gameFragment)
+                                findNavController().navigate(R.id.action_joinLobbyFragment_to_gameBoardIMG)
                             } catch (e: Exception) {
                                 showToast("Error navigating to game: ${e.message}")
                             }

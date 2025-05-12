@@ -22,6 +22,7 @@
     <string name="waiting_for_turn">Game started. Waiting for your turn…</string>
     <string name="current_turn">Current turn: %1$s</string>
     <string name="you_rolled">You rolled a %1$d. Move your character.</string>
+    <string name="movement">Perform movement</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>

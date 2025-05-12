@@ -59,6 +59,7 @@ class LobbyFragment : Fragment() {
             val username = binding.createUsernameEditText.text.toString().trim()
             val character = binding.createCharacterSpinner.selectedItem.toString()
             if (username.isNotEmpty()) {
+                println("Created")
                 lobbyViewModel.createLobby(username, character)
             } else {
                 showToast("Please enter a username")
@@ -86,7 +87,7 @@ class LobbyFragment : Fragment() {
             }
 
             lobbyViewModel.startGame(lobbyId, username, character)
-            //findNavController().navigate(R.id.action_lobbyFragment_to_gameFragment)
+            //findNavController().navigate(R.id.action_lobbyFragment_to_gameBoardIMG)
             showToast("Starting game...")
         }
     }
@@ -154,7 +155,7 @@ class LobbyFragment : Fragment() {
                         if (gameStarted) {
                             showToast("Game started! Navigating to game screen...")
                             try {
-                                findNavController().navigate(R.id.action_lobbyFragment_to_gameFragment)
+                                findNavController().navigate(R.id.action_lobbyFragment_to_gameBoardIMG)
                             } catch (e: Exception) {
                                 showToast("Error navigating to game: ${e.message}")
                             }

@@ -15,4 +15,3 @@ data class Player(
     @SerializedName("color") val color: PlayerColor = PlayerColor.RED,
     @SerializedName("cards") val cards: List<BasicCard> = emptyList<BasicCard>()
 )
-
