@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class LobbyViewModel : ViewModel() {
-
-    private val webSocketService = WebSocketService.getInstance()
+class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.getInstance()) :
+    ViewModel() {
 
     val isConnected: StateFlow<Boolean> = webSocketService.isConnected
     val lobbyState: StateFlow<Lobby?> = webSocketService.lobbyState
     val createdLobbyId: StateFlow<String?> = webSocketService.createdLobbyId
+
     // Create our own error messages flow since WebSocketService doesn't have one
     private val _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
     val errorMessages: SharedFlow<String> = _errorMessages
@@ -89,7 +89,12 @@ class LobbyViewModel : ViewModel() {
                         )
                         // We need to manually set the game state in WebSocketService
                         // This is a workaround since we don't have a direct setter
-                        webSocketService.startGame(lobby.id, lobby.host.name, lobby.host.character, lobby.host.color)
+                        webSocketService.startGame(
+                            lobby.id,
+                            lobby.host.name,
+                            lobby.host.character,
+                            lobby.host.color
+                        )
                     }
                 }
             }

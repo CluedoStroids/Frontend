@@ -1,5 +1,6 @@
 package at.aau.se2.cluedo.ui.screens
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentLobbyBinding
@@ -85,10 +87,12 @@ class LobbyFragment : Fragment() {
             }
 
             lobbyViewModel.startGame(lobbyId, username, character)
+            //findNavController().navigate(R.id.action_lobbyFragment_to_gameFragment)
             showToast("Starting game...")
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -121,7 +125,7 @@ class LobbyFragment : Fragment() {
                                 Players (${lobby.players.size}):$playersList
                             """.trimIndent()
 
-                            if (lobby.id != "Creating..." && lobby.players.size >= 3) {
+                            if (lobby.id != LobbyStatus.CREATING.text && lobby.players.size >= 3) {
                                 lobbyViewModel.checkCanStartGame(lobby.id)
                             } else {
                                 binding.startGameButton.isEnabled = false
