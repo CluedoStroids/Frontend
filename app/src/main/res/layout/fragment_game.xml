@@ -91,6 +91,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/rollDiceButton" />
 
+
+        <!-- Bottom floating button -->
+
         <TextView
             android:id="@+id/gameInfoTextView"
             android:layout_width="0dp"
@@ -102,11 +105,11 @@
             android:text="@string/waiting_for_turn"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/gameInfoLabelTextView" />
+            app:layout_constraintTop_toBottomOf="@id/gameInfoLabelTextView"
+            app:layout_constraintVertical_bias="0.0" />
 
-
-        <!-- Bottom floating button -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/cardsOpenButton"
             android:layout_width="wrap_content"
@@ -117,6 +120,43 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
+
+
+        <!-- Make a Suspicion Button -->
+        <Button
+            android:id="@+id/makeSuspicionButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Suspect"
+            android:enabled="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/rollDiceButton"
+            app:layout_constraintEnd_toEndOf="@id/rollDiceButton"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Notes Button -->
+        <Button
+            android:id="@+id/notesButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Notes"
+            app:layout_constraintBottom_toTopOf="@id/makeSuspicionButton"
+            app:layout_constraintStart_toStartOf="@id/makeSuspicionButton"
+            app:layout_constraintEnd_toEndOf="@id/makeSuspicionButton"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Notes Button -->
+        <Button
+            android:id="@+id/solveCaseButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Solve"
+            app:layout_constraintBottom_toTopOf="@id/notesButton"
+            app:layout_constraintEnd_toEndOf="@id/makeSuspicionButton"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@id/makeSuspicionButton" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

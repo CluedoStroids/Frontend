@@ -74,7 +74,20 @@ app:startDestination="@id/mainMenuFragment">
     android:id="@+id/gameFragment"
     android:name="at.aau.se2.cluedo.ui.screens.GameFragment"
     android:label="Game"
-    tools:layout="@layout/fragment_game" />
+    tools:layout="@layout/fragment_game" >
+    <action
+        android:id="@+id/action_gameFragment_to_notesFragment"
+        app:destination="@id/notesFragment" />
+
+    <action
+        android:id="@+id/action_gameFragment_to_solveCaseFragment"
+        app:destination="@id/solveCaseFragment" />
+
+    <action
+        android:id="@+id/action_gameFragment_to_suspicionPopupFragment"
+        app:destination="@id/suspicionPopupFragment" />
+
+    </fragment>
 
 
 <fragment
