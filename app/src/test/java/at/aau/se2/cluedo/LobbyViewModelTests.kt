@@ -95,3 +95,6 @@ class LobbyViewModelTests {
         verify(mockWebSocketService).leaveLobby(lobbyId, username, character, PlayerColor.BLUE)
     }
 }
+
+
+
