@@ -55,7 +55,8 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
             val color = getColorForCharacter(character)
 
             webSocketService.createLobby(username, character, color)
-            WebSocketService.getInstance().setPlayer(Player(name=username,character=character,color=color))
+            WebSocketService.getInstance()
+                .setPlayer(Player(name = username, character = character, color = color))
         }
     }
 
@@ -63,7 +64,8 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         viewModelScope.launch {
             val color = getColorForCharacter(character)
             webSocketService.joinLobby(lobbyId, username, character, color)
-            WebSocketService.getInstance().setPlayer(Player(name=username,character=character,color=color))
+            WebSocketService.getInstance()
+                .setPlayer(Player(name = username, character = character, color = color))
         }
     }
 
@@ -168,16 +170,30 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         disconnect()
     }
 
-    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
+    fun solveCase(
+        lobbyId: String,
+        username: String,
+        suspect: String,
+        room: String,
+        weapon: String
+    ) {
 
         webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
-                            }
+    }
+
+
+    private val _suspicionNotes = MutableStateFlow<List<String>>(emptyList())
+    val suspicionNotes: StateFlow<List<String>> = _suspicionNotes
 
     fun addSuspicionNote(note: String) {
-        Log.d("SuspicionNote", note)
-    } val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
-}
+        _suspicionNotes.value = _suspicionNotes.value + note
+    }
 
+
+
+    val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
+
+}
 
 
 
