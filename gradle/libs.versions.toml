@@ -13,8 +13,12 @@ coreTestingVersion = "2.1.0"
 espressoCoreVersion = "3.6.1"
 gson = "2.10.1"
 junitJupiterApi = "5.10.2"
+junitJupiterApiVersion = "5.12.2"
 junitJupiterEngine = "5.10.2"
+junitJupiterEngineVersion = "5.12.2"
+junitPlatformLauncher = "1.10.2"
 junitVintageEngine = "5.10.2"
+junitVintageEngineVersion = "5.12.2"
 kotlin = "2.0.21"
 coreKtx = "1.10.1"
 junit = "4.13.2"
@@ -86,8 +90,12 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiterApi" }
+junit-jupiter-api-v5122 = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiterApiVersion" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junitJupiterEngine" }
+junit-jupiter-engine-v5122 = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junitJupiterEngineVersion" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatformLauncher" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junitVintageEngine" }
+junit-vintage-engine-v5122 = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junitVintageEngineVersion" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 kotlinx-coroutines-android-v173 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroidVersion" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
