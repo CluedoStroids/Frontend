@@ -178,17 +178,13 @@ dependencies {
     testImplementation(libs.androidx.core.testing)
     testImplementation(libs.robolectric.robolectric)
     testImplementation(libs.turbine)
-    // JUnit 4
     testImplementation(libs.junit)
-    // JUnit 5
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.2")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.12.2") // For JUnit 4 compatibility
-    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.api.v5122)
+    testRuntimeOnly(libs.junit.jupiter.engine.v5122)
+    testRuntimeOnly(libs.junit.vintage.engine.v5122)
+    testImplementation(libs.junit.platform.launcher)
     testImplementation(libs.powermock.module.junit4)
     testImplementation(libs.powermock.api.mockito2)
-    testRuntimeOnly(libs.junit.jupiter.engine)
-    testRuntimeOnly(libs.junit.vintage.engine) // For JUnit 4 compatibility
     androidTestImplementation(libs.androidx.junit.v121)
     androidTestImplementation(libs.androidx.espresso.core.v361)
 
