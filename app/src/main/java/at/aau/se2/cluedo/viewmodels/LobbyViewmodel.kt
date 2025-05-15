@@ -12,6 +12,9 @@ import kotlinx.coroutines.launch
 import android.util.Log
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+
+
 
 class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.getInstance()) :
     ViewModel() {
@@ -26,6 +29,13 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
     val canStartGame: StateFlow<Boolean> = webSocketService.canStartGame
     val gameStarted: StateFlow<Boolean> = webSocketService.gameStarted
     val gameState: StateFlow<GameStartedResponse?> = webSocketService.gameState
+
+    // Notes, category, player isChecked
+    private val _playerNotes = MutableStateFlow(
+        mutableMapOf<String, MutableMap<String, Boolean>>() // category -> (player -> checked)
+    )
+    val playerNotes: StateFlow<MutableMap<String, MutableMap<String, Boolean>>> = _playerNotes
+
 
     fun connect() {
         webSocketService.connect()
@@ -45,7 +55,8 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
             val color = getColorForCharacter(character)
 
             webSocketService.createLobby(username, character, color)
-            WebSocketService.getInstance().setPlayer(Player(name=username,character=character,color=color))
+            WebSocketService.getInstance()
+                .setPlayer(Player(name = username, character = character, color = color))
         }
     }
 
@@ -53,7 +64,8 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         viewModelScope.launch {
             val color = getColorForCharacter(character)
             webSocketService.joinLobby(lobbyId, username, character, color)
-            WebSocketService.getInstance().setPlayer(Player(name=username,character=character,color=color))
+            WebSocketService.getInstance()
+                .setPlayer(Player(name = username, character = character, color = color))
         }
     }
 
@@ -139,21 +151,49 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         }
     }
 
+    // Save a checkbox tick for a category + player
+    fun setNote(category: String, player: String, checked: Boolean) {
+        val notes = _playerNotes.value.toMutableMap()
+        val playerMap = notes.getOrPut(category) { mutableMapOf() }
+        playerMap[player] = checked
+        _playerNotes.value = notes
+    }
+
+    // Check if a specific note is checked
+    fun isNoteChecked(category: String, player: String): Boolean {
+        return _playerNotes.value[category]?.get(player) == true
+    }
+
+
     override fun onCleared() {
         super.onCleared()
         disconnect()
     }
 
-    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
+    fun solveCase(
+        lobbyId: String,
+        username: String,
+        suspect: String,
+        room: String,
+        weapon: String
+    ) {
 
         webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
-                            }
+    }
+
+
+    private val _suspicionNotes = MutableStateFlow<List<String>>(emptyList())
+    val suspicionNotes: StateFlow<List<String>> = _suspicionNotes
 
     fun addSuspicionNote(note: String) {
-        Log.d("SuspicionNote", note)
-    } val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
-}
+        _suspicionNotes.value = _suspicionNotes.value + note
+    }
 
+
+
+    val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
+
+}
 
 
 

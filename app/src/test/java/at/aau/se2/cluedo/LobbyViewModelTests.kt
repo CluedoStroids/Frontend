@@ -25,6 +25,8 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
+import org.junit.jupiter.api.Assertions.*
+
 
 class LobbyViewModelTests {
     private val testDispatcher = StandardTestDispatcher()
@@ -161,7 +163,12 @@ class LobbyViewModelTests {
         viewModel.setGameStarted(true)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        verify(mockWebSocketService, times(0)).startGame(anyString(), anyString(), anyString(), any())
+        verify(mockWebSocketService, times(0)).startGame(
+            anyString(),
+            anyString(),
+            anyString(),
+            any()
+        )
     }
 
     @Test
@@ -188,5 +195,54 @@ class LobbyViewModelTests {
 
         verify(mockWebSocketService).checkCanStartGame("test-lobby")
     }
-    // TODO: add tests for notes and suspicion
+    @Test
+    fun testSetNote_storesCheckboxValueCorrectly() {
+        viewModel.setNote("Candlestick", "Green", true)
+
+        val result = viewModel.isNoteChecked("Candlestick", "Green")
+        assertTrue(result, "Note should be marked as checked.")
+    }
+
+    @Test
+    fun testSetNote_unchecksNoteCorrectly() {
+        viewModel.setNote("Kitchen", "Red", true)
+        viewModel.setNote("Kitchen", "Red", false)
+
+        val result = viewModel.isNoteChecked("Kitchen", "Red")
+        assertFalse(result, "Note should be unchecked.")
+    }
+
+    @Test
+    fun testIsNoteChecked_returnsFalseIfNotSet() {
+        val result = viewModel.isNoteChecked("Ballroom", "Blue")
+        assertFalse(result, "Unset note should return false by default.")
+    }
+
+    @Test
+    fun testAddSuspicionNote_addsNoteToList() {
+        val note = "Miss Scarlett — in the Kitchen — with the Dagger"
+        viewModel.addSuspicionNote(note)
+
+        val suspicionNotes = viewModel.suspicionNotes.value
+        assertTrue(suspicionNotes.contains(note), "Suspicion note should be stored in the list.")
+    }
+
+    @Test
+    fun testAddSuspicionNote_multipleNotes() {
+        val note1 = "Professor Plum — in the Study — with the Revolver"
+        val note2 = "Colonel Mustard — in the Lounge — with the Wrench"
+
+        viewModel.addSuspicionNote(note1)
+        viewModel.addSuspicionNote(note2)
+
+        val suspicionNotes = viewModel.suspicionNotes.value
+        assertEquals(2, suspicionNotes.size, "There should be 2 suspicion notes stored.")
+        assertTrue(suspicionNotes.contains(note1))
+        assertTrue(suspicionNotes.contains(note2))
+    }
+
+
 }
+
+
+
