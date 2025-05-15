@@ -1,6 +1,6 @@
 package at.aau.se2.cluedo
 
-import android.util.Log
+
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.Lobby
 import at.aau.se2.cluedo.data.models.Player
@@ -19,11 +19,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.*
 
@@ -241,6 +239,34 @@ class LobbyViewModelTests {
         assertTrue(suspicionNotes.contains(note2))
     }
 
+    @Test
+    fun `initial state of a note should be unchecked`() {
+        val result = viewModel.isNoteChecked("Candlestick", "Green")
+        assertFalse(result)
+    }
+
+    @Test
+    fun `checking a note should persist correctly`() {
+        viewModel.setNote("Candlestick", "Green", true)
+        val result = viewModel.isNoteChecked("Candlestick", "Green")
+        assertTrue(result)
+    }
+
+    @Test
+    fun `unchecking a previously checked note should be false`() {
+        viewModel.setNote("Candlestick", "Green", true)
+        viewModel.setNote("Candlestick", "Green", false)
+        val result = viewModel.isNoteChecked("Candlestick", "Green")
+        assertFalse(result)
+    }
+
+    @Test
+    fun `independent notes should not affect each other`() {
+        viewModel.setNote("Rope", "Red", true)
+        assertTrue(viewModel.isNoteChecked("Rope", "Red"))
+        assertFalse(viewModel.isNoteChecked("Candlestick", "Red"))
+        assertFalse(viewModel.isNoteChecked("Rope", "Green"))
+    }
 
 }
 
