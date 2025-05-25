@@ -158,6 +158,7 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.mockito.mockito.inline)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.core)
     testImplementation(libs.androidx.core.testing)
     testImplementation(libs.robolectric.robolectric)
     testImplementation(libs.turbine)

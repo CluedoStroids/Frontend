@@ -7,6 +7,7 @@ androidxJunit = "1.2.1"
 appcompatVersion = "1.6.1"
 cardview = "1.0.0"
 constraintlayoutVersion = "2.1.4"
+core = "1.6.1"
 coreKtxVersion = "1.13.1"
 coreSplashscreen = "1.0.1"
 coreTesting = "2.2.0"
@@ -66,6 +67,7 @@ androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref
 androidx-appcompat-v161 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
 androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 androidx-constraintlayout-v214 = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
+androidx-core = { module = "androidx.test:core", version.ref = "core" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-ktx-v1131 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
