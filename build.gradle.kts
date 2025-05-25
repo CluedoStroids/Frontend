@@ -11,5 +11,6 @@ sonar {
         property("sonar.projectKey", "CluedoStroids_Frontend")
         property("sonar.organization", "cluedostroids")
         property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
     }
 }

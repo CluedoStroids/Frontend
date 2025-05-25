@@ -19,6 +19,7 @@ import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.data.models.PerformMoveResponse
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
+import at.aau.se2.cluedo.data.models.SolveCaseRequest
 import at.aau.se2.cluedo.data.models.StartGameRequest
 import com.google.gson.Gson
 import io.reactivex.disposables.Disposable
@@ -37,7 +38,7 @@ import ua.naiksoftware.stomp.dto.StompMessage
 class WebSocketService {
     companion object {
         private const val SERVER_IP = "10.0.2.2"
-        private const val SERVER_PORT = "8321"
+        private const val SERVER_PORT = "8321" //8080
         private const val CONNECTION_URL = "ws://$SERVER_IP:$SERVER_PORT/ws"
         private const val TOPIC_LOBBY_CREATED = "/topic/lobbyCreated"
         private const val TOPIC_LOBBY_UPDATES_PREFIX = "/topic/lobby/"
@@ -139,7 +140,6 @@ class WebSocketService {
                         resetConnectionState()
                     }
 
-                    LifecycleEvent.Type.ERROR,
                     LifecycleEvent.Type.CLOSED,
                     LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT -> resetConnectionState()
                 }
@@ -303,15 +303,9 @@ class WebSocketService {
         )
     }
 
-    fun createLobby(
-        username: String,
-        character: String = "Red",
-        color: PlayerColor = PlayerColor.RED
-    ) {
+    fun createLobby(username: String, character: String = "Red", color: PlayerColor = PlayerColor.RED) {
         if (!_isConnected.value) return
         val player = Player(name = username, character = character, color = color)
-
-        //me = player
         val request = CreateLobbyRequest(player)
         val payload = gson.toJson(request)
 
@@ -321,19 +315,13 @@ class WebSocketService {
         sendRequest(APP_CREATE_LOBBY, payload)
     }
 
-    fun joinLobby(
-        lobbyId: String,
-        username: String,
-        character: String = "Blue",
-        color: PlayerColor = PlayerColor.BLUE
-    ) {
+    fun joinLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
         if (!_isConnected.value || lobbyId.isBlank()) return
 
         _createdLobbyId.value = lobbyId
         subscribeToSpecificLobbyTopics(lobbyId)
 
         val player = Player(name = username, character = character, color = color)
-        //me=player
         val request = JoinLobbyRequest(player)
         val payload = gson.toJson(request)
         val destination = "$APP_JOIN_LOBBY_PREFIX$lobbyId"
@@ -347,12 +335,7 @@ class WebSocketService {
         sendRequest(destination, payload)
     }
 
-    fun leaveLobby(
-        lobbyId: String,
-        username: String,
-        character: String = "Blue",
-        color: PlayerColor = PlayerColor.BLUE
-    ) {
+    fun leaveLobby(lobbyId: String, username: String, character: String = "Blue", color: PlayerColor = PlayerColor.BLUE) {
         if (!_isConnected.value || lobbyId.isBlank()) return
         val player = Player(name = username, character = character, color = color)
         val request = LeaveLobbyRequest(player)
@@ -571,6 +554,14 @@ class WebSocketService {
         // Set the game state for all players
         _gameState.value = gameState
         _gameStarted.value = true
+    }
+
+
+    @SuppressLint("CheckResult")
+    fun solveCase(lobbyId: String, username: String, suspect: String, room: String, weapon: String) {
+        val request = SolveCaseRequest(lobbyId, username, suspect, room, weapon)
+        val payload = gson.toJson(request)
+        stompClient?.send("/app/solve-case", payload)?.subscribe()
     }
 
     fun gameData(lobbyId: String,player: Player) {

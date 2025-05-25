@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:padding="24dp"
+    android:clipToPadding="false"
+    android:gravity="center_horizontal">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal">
+
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Solve the Case"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/purple_500"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/suspectSpinner"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:theme="@style/SpinnerBoldStyle" />
+
+        <Spinner
+            android:id="@+id/roomSpinner"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_marginTop="8dp"
+            android:theme="@style/SpinnerBoldStyle" />
+
+        <Spinner
+            android:id="@+id/weaponSpinner"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_marginTop="8dp"
+            android:theme="@style/SpinnerBoldStyle" />
+
+        <Button
+            android:id="@+id/button_solve_case"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:text="Solve the Case"
+            android:textAllCaps="true"
+            android:textStyle="bold"
+            android:backgroundTint="@color/purple_500"
+            android:textColor="@color/white"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/button_cancel"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:textAllCaps="true"
+            android:textStyle="bold"
+            android:backgroundTint="@color/teal_200"
+            android:textColor="@color/black"
+            android:layout_marginBottom="24dp" />
+    </LinearLayout>
+</ScrollView>
