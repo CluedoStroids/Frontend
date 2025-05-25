@@ -104,6 +104,21 @@ class BasicCardTest {
     }
 
     @Test
+    fun testGetCardIDsNotFound() {
+
+        val cards = listOf(
+            BasicCard("", CardType.WEAPON),
+            BasicCard("Kitchen", CardType.ROOM),
+        )
+
+        val result = BasicCard.getCardIDs(cards)
+
+        assertEquals(1, result.size)
+        assertTrue(result.contains(R.drawable.kitchen))
+
+    }
+
+    @Test
     fun testNameOfCardType() {
         assertEquals("WEAPON", CardType.WEAPON.toString())
         assertEquals("ROOM", CardType.ROOM.toString())
