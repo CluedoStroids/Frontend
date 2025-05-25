@@ -5,12 +5,15 @@ androidFragmentVersion = "1.7.0"
 androidNavigationVersion = "2.7.7"
 androidxJunit = "1.2.1"
 appcompatVersion = "1.6.1"
+cardview = "1.0.0"
 constraintlayoutVersion = "2.1.4"
+core = "1.6.1"
 coreKtxVersion = "1.13.1"
 coreSplashscreen = "1.0.1"
 coreTesting = "2.2.0"
 coreTestingVersion = "2.1.0"
 espressoCoreVersion = "3.6.1"
+fragmentKtx = "1.8.6"
 gson = "2.10.1"
 junitJupiterApi = "5.10.2"
 junitJupiterApiVersion = "5.12.2"
@@ -45,6 +48,8 @@ material = "1.12.0"
 mockitoCore = "5.5.0"
 mockitoInlineVersion = "4.8.1"
 mockitoKotlin = "5.1.0"
+navigationFragmentKtx = "2.8.9"
+navigationUiKtx = "2.8.9"
 okhttp = "4.12.0"
 powermockApiMockito2 = "2.0.9"
 powermockModuleJunit4 = "2.0.9"
@@ -60,7 +65,9 @@ turbine = "1.0.0"
 [libraries]
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "androidActivtyVersion" }
 androidx-appcompat-v161 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
+androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 androidx-constraintlayout-v214 = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
+androidx-core = { module = "androidx.test:core", version.ref = "core" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-ktx-v1131 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
@@ -68,12 +75,15 @@ androidx-core-testing = { module = "androidx.arch.core:core-testing", version.re
 androidx-core-testing-v210 = { module = "androidx.arch.core:core-testing", version.ref = "coreTestingVersion" }
 androidx-espresso-core-v361 = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCoreVersion" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "androidFragmentVersion" }
+androidx-fragment-ktx-v186 = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }
 androidx-junit-v121 = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
 androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycleRuntimeKtxVersion" }
 androidx-lifecycle-runtime-ktx-v280 = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtxVersion" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "androidNavigationVersion" }
+androidx-navigation-fragment-ktx-v289 = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "androidNavigationVersion" }
+androidx-navigation-ui-ktx-v289 = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationUiKtx" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

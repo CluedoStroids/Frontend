@@ -3,7 +3,10 @@ package at.aau.se2.cluedo.data.models
 import com.example.myapplication.R
 import com.google.gson.annotations.SerializedName
 
-class BasicCard {
+class BasicCard(
+    @SerializedName("cardName") val cardName: String = "",
+    @SerializedName("type") val type: CardType? = null
+) {
 
     companion object{
         val cardImageToPNG = mapOf(
@@ -41,8 +44,6 @@ class BasicCard {
         }
     }
 
-    @SerializedName("cardName") val cardName: String = "";
-    @SerializedName("type") val type: CardType? = null;
 }
 
 enum class CardType {
