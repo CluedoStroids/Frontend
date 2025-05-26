@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
+// fixme class name should match file name
 class GameViewModel(val webSocketService: WebSocketService = WebSocketService.getInstance()) : ViewModel() {
 
     val isConnected: StateFlow<Boolean> = webSocketService.isConnected
