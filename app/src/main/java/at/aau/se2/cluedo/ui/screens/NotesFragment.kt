@@ -1,7 +1,5 @@
 package at.aau.se2.cluedo.ui.screens
 
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,13 +8,13 @@ import android.widget.CheckBox
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
+import androidx.core.graphics.toColorInt
 import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import com.example.myapplication.databinding.FragmentNotesBinding
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import androidx.fragment.app.activityViewModels
-
-
+import com.example.myapplication.R
 
 class NotesFragment : Fragment() {
 
@@ -64,7 +62,7 @@ class NotesFragment : Fragment() {
 
         val titleRow = TableRow(context)
         val titleCell = TextView(context).apply {
-            text = "Player"
+            text = getString(R.string.player_label)
             textSize = 20f
             setPadding(12)
             setTypeface(null, android.graphics.Typeface.BOLD)
@@ -73,11 +71,11 @@ class NotesFragment : Fragment() {
 
         players.forEachIndexed { index, _ ->
             val colorBlock = View(context).apply {
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.RECTANGLE
                     cornerRadius = 8f
-                    setColor(Color.parseColor(playerColors[index]))
-                    setStroke(2, Color.DKGRAY)
+                    setColor(playerColors[index].toColorInt())
+                    setStroke(2, android.graphics.Color.DKGRAY)
                 }
                 layoutParams = TableRow.LayoutParams(100, 40).apply {
                     marginEnd = 8
@@ -87,17 +85,15 @@ class NotesFragment : Fragment() {
         }
         masterTable.addView(titleRow)
 
-        addSection("Suspects", suspects, masterTable, true)
-        addSection("Weapons", weapons, masterTable, true)
-        addSection("Rooms", rooms, masterTable, true)
-
+        addSection("Suspects", suspects, masterTable)
+        addSection("Weapons", weapons, masterTable)
+        addSection("Rooms", rooms, masterTable)
     }
 
     private fun addSection(
         label: String,
         items: List<String>,
-        table: TableLayout,
-        boldDivider: Boolean
+        table: TableLayout
     ) {
         val sectionRow = TableRow(context)
         val sectionLabel = TextView(context).apply {
@@ -105,13 +101,13 @@ class NotesFragment : Fragment() {
             textSize = 18f
             setPadding(12)
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setBackgroundColor(Color.parseColor("#6200EE"))
-            setTextColor(Color.WHITE)
+            setBackgroundColor("#6200EE".toColorInt())
+            setTextColor(android.graphics.Color.WHITE)
         }
         sectionRow.addView(sectionLabel)
         repeat(players.size) {
             val emptyCell = TextView(context).apply {
-                setBackgroundColor(Color.parseColor("#6200EE"))
+                setBackgroundColor("#6200EE".toColorInt())
             }
             sectionRow.addView(emptyCell)
         }
@@ -127,21 +123,17 @@ class NotesFragment : Fragment() {
             row.addView(itemCell)
             players.forEachIndexed { index, _ ->
                 val checkBox = CheckBox(context).apply {
-                    val color = if (players[index] == "White") Color.BLACK else Color.parseColor(
-                        playerColors[index]
-                    )
-                    val outline = GradientDrawable().apply {
-                        shape = GradientDrawable.RECTANGLE
+                    val color = if (players[index] == "White") android.graphics.Color.BLACK else playerColors[index].toColorInt()
+                    val outline = android.graphics.drawable.GradientDrawable().apply {
+                        shape = android.graphics.drawable.GradientDrawable.RECTANGLE
                         cornerRadius = 6f
-                        setStroke(2, Color.BLACK)
+                        setStroke(2, android.graphics.Color.BLACK)
                     }
                     background = outline
                     buttonTintList = android.content.res.ColorStateList.valueOf(color)
 
-                    // Load previously saved state
                     isChecked = lobbyViewModel.isNoteChecked(item, players[index])
 
-                    // Save new state on change
                     setOnCheckedChangeListener { _, isChecked ->
                         lobbyViewModel.setNote(item, players[index], isChecked)
                     }
@@ -152,5 +144,4 @@ class NotesFragment : Fragment() {
             table.addView(row)
         }
     }
-
 }
