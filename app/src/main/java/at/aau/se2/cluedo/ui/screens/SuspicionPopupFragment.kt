@@ -12,6 +12,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.RoomUtils
+import com.example.myapplication.R
+
 
 class SuspicionPopupFragment : Fragment() {
 
@@ -21,33 +24,30 @@ class SuspicionPopupFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val layoutId = resources.getIdentifier("fragment_suspicion_popup", "layout", requireContext().packageName)
-        return inflater.inflate(layoutId, container, false)
+        return inflater.inflate(R.layout.fragment_suspicion_popup, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val currentPlayer = lobbyViewModel.lobbyState.value?.players?.find {
-            it.name == lobbyViewModel.createdLobbyId.value
-        }
-        val isInRoom = currentPlayer?.x == -1 && currentPlayer.y == -1
+        val currentPlayer = lobbyViewModel.lobbyState.value?.players?.find { it.isCurrentPlayer == true }
+        val roomName = RoomUtils.getRoomNameFromCoordinates(currentPlayer?.x, currentPlayer?.y)
 
-        if (!isInRoom) {
-            Toast.makeText(context, "You must be in a room to make a suspicion!", Toast.LENGTH_LONG).show()
+        if (roomName == null || !lobbyViewModel.canMakeSuggestion()) {
+            Toast.makeText(context, "You can't make another suggestion in this room.", Toast.LENGTH_LONG).show()
             findNavController().navigateUp()
             return
         }
 
-        val suspectSpinner: Spinner = view.findViewById(getId("suspectSpinner"))
-        val roomSpinner: Spinner = view.findViewById(getId("roomSpinner"))
-        val weaponSpinner: Spinner = view.findViewById(getId("weaponSpinner"))
-        val makeSuspicionButton: Button = view.findViewById(getId("button_make_suspicion"))
-        val cancelButton: Button = view.findViewById(getId("button_cancel"))
+        val suspectSpinner: Spinner = view.findViewById(R.id.suspectSpinner)
+        val roomSpinner: Spinner = view.findViewById(R.id.roomSpinner)
+        val weaponSpinner: Spinner = view.findViewById(R.id.weaponSpinner)
+        val makeSuspicionButton: Button = view.findViewById(R.id.button_make_suspicion)
+        val cancelButton: Button = view.findViewById(R.id.button_cancel)
 
-        setUpSpinner(suspectSpinner, "suspect_options")
-        setUpSpinner(roomSpinner, "room_options")
-        setUpSpinner(weaponSpinner, "weapon_options")
+        setUpSpinner(suspectSpinner, R.array.suspect_options)
+        setUpSpinner(roomSpinner, R.array.room_options)
+        setUpSpinner(weaponSpinner, R.array.weapon_options)
 
         makeSuspicionButton.setOnClickListener {
             val suspect = suspectSpinner.selectedItem.toString()
@@ -61,6 +61,7 @@ class SuspicionPopupFragment : Fragment() {
 
             val suspicion = "$suspect — in the $room — with the $weapon"
             lobbyViewModel.addSuspicionNote(suspicion)
+            lobbyViewModel.markSuggestionMade()
 
             Toast.makeText(context, "Suspicion saved to notes.", Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()
@@ -71,21 +72,18 @@ class SuspicionPopupFragment : Fragment() {
         }
     }
 
-    private fun setUpSpinner(spinner: Spinner, arrayName: String) {
-        val arrayId = resources.getIdentifier(arrayName, "array", requireContext().packageName)
-        val itemLayout = resources.getIdentifier("spinner_item", "layout", requireContext().packageName)
 
+    private fun setUpSpinner(spinner: Spinner, arrayResId: Int) {
         ArrayAdapter.createFromResource(
             requireContext(),
-            arrayId,
-            itemLayout
+            arrayResId,
+            R.layout.spinner_item
         ).also {
-            it.setDropDownViewResource(itemLayout)
+            it.setDropDownViewResource(R.layout.spinner_item)
             spinner.adapter = it
         }
     }
 
-    private fun getId(idName: String): Int {
-        return resources.getIdentifier(idName, "id", requireContext().packageName)
-    }
+
+
 }

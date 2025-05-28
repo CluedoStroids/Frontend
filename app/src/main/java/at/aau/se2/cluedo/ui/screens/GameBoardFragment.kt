@@ -25,6 +25,7 @@ import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.launch
+import at.aau.se2.cluedo.viewmodels.RoomUtils
 
 /**
  * A simple [Fragment] subclass.
@@ -53,6 +54,8 @@ class GameBoardFragment : Fragment() {
     )
 
 
+
+
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var cardsRecyclerView: RecyclerView
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +69,7 @@ class GameBoardFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         _binding = FragmentGameBoardBinding.inflate(inflater, container, false)
        // binding =_binding!!
@@ -128,7 +131,7 @@ class GameBoardFragment : Fragment() {
 
         val recyclerView = binding.playerCardsRecyclerview
         recyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        var cards = WebSocketService.getInstance().player.value?.cards
+        val cards = WebSocketService.getInstance().player.value?.cards
         recyclerView.adapter = CardAdapter(BasicCard.getCardIDs(cards))
 
 
@@ -202,6 +205,10 @@ class GameBoardFragment : Fragment() {
             gameBoard.moveRight()
         }
         doneButton.setOnClickListener {
+            val player = lobbyViewModel.lobbyState.value?.players?.find { it.isCurrentPlayer }
+            val roomName = RoomUtils.getRoomNameFromCoordinates(player?.x, player?.y)
+            lobbyViewModel.updateRoomEntry(roomName)
+
             gameBoard.done()
             moveButton.visibility= View.VISIBLE
             upButton.visibility= View.GONE
@@ -268,6 +275,7 @@ class GameBoardFragment : Fragment() {
             val currentPlayerMark = if (player.isCurrentPlayer) " (Current Turn)" else ""
             "  - ${player.name} (${player.character})$currentPlayerMark"
         }
+
 
 
         // Log for debugging

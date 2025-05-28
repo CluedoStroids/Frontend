@@ -188,7 +188,21 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         _suspicionNotes.value = _suspicionNotes.value + note
     }
 
+    private var lastRoomEntered: String? = null
+    private var hasSuggestedInThisRoom: Boolean = false
 
+    fun updateRoomEntry(currentRoom: String?) {
+        if (currentRoom != lastRoomEntered) {
+            lastRoomEntered = currentRoom
+            hasSuggestedInThisRoom = false
+        }
+    }
+
+    fun canMakeSuggestion(): Boolean = !hasSuggestedInThisRoom
+
+    fun markSuggestionMade() {
+        hasSuggestedInThisRoom = true
+    }
 
     val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
 
