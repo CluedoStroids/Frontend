@@ -7,6 +7,7 @@ import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.RoomUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -267,6 +268,60 @@ class LobbyViewModelTests {
         assertFalse(viewModel.isNoteChecked("Candlestick", "Red"))
         assertFalse(viewModel.isNoteChecked("Rope", "Green"))
     }
+
+
+    @Test
+    fun `canMakeSuggestion is true on new room entry`() {
+        viewModel.updateRoomEntry("Kitchen")
+        assertTrue(viewModel.canMakeSuggestion())
+    }
+
+    @Test
+    fun `canMakeSuggestion is false after suggestion made`() {
+        viewModel.updateRoomEntry("Kitchen")
+        viewModel.markSuggestionMade()
+        assertFalse(viewModel.canMakeSuggestion())
+    }
+
+    @Test
+    fun `updateRoomEntry resets suggestion state when entering new room`() {
+        viewModel.updateRoomEntry("Kitchen")
+        viewModel.markSuggestionMade()
+        assertFalse(viewModel.canMakeSuggestion())
+
+        viewModel.updateRoomEntry("Library") // new room
+        assertTrue(viewModel.canMakeSuggestion())
+    }
+
+    @Test
+    fun `updateRoomEntry does not reset state when staying in same room`() {
+        viewModel.updateRoomEntry("Kitchen")
+        viewModel.markSuggestionMade()
+        viewModel.updateRoomEntry("Kitchen") // same room
+        assertFalse(viewModel.canMakeSuggestion())
+    }
+
+    @Test
+    fun `markSuggestionMade should prevent suggestion even without room entry`() {
+        // directly call markSuggestionMade without setting any room
+        viewModel.markSuggestionMade()
+
+        // block suggestion even though no room was set
+        assertFalse(viewModel.canMakeSuggestion(), "Should not allow suggestion after markSuggestionMade even without room set")
+    }
+
+    @Test
+    fun `isPlayerInRoom returns true for valid room coordinates`() {
+        val player = Player(name = "Test", x = 1, y = 0)
+        assertTrue(viewModel.isPlayerInRoom(player))
+    }
+
+    @Test
+    fun `isPlayerInRoom returns false when coordinates are null`() {
+        val player = Player(name = "Test", x = 99, y = 99)
+        assertFalse(viewModel.isPlayerInRoom(player))
+    }
+
 
 }
 

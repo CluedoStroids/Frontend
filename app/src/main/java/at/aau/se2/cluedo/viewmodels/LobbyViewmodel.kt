@@ -204,6 +204,10 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         hasSuggestedInThisRoom = true
     }
 
+    fun isPlayerInRoom(player: Player?): Boolean {
+        return player != null && RoomUtils.getRoomNameFromCoordinates(player.x, player.y) != null
+    }
+
     val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
 
 }

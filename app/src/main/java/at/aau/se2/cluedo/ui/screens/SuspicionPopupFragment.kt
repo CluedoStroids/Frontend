@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
-import at.aau.se2.cluedo.viewmodels.RoomUtils
 import com.example.myapplication.R
 
 
@@ -31,13 +30,13 @@ class SuspicionPopupFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val currentPlayer = lobbyViewModel.lobbyState.value?.players?.find { it.isCurrentPlayer == true }
-        val roomName = RoomUtils.getRoomNameFromCoordinates(currentPlayer?.x, currentPlayer?.y)
 
-        if (roomName == null || !lobbyViewModel.canMakeSuggestion()) {
+        if (!lobbyViewModel.isPlayerInRoom(currentPlayer) || !lobbyViewModel.canMakeSuggestion()) {
             Toast.makeText(context, "You can't make another suggestion in this room.", Toast.LENGTH_LONG).show()
             findNavController().navigateUp()
             return
         }
+
 
         val suspectSpinner: Spinner = view.findViewById(R.id.suspectSpinner)
         val roomSpinner: Spinner = view.findViewById(R.id.roomSpinner)
