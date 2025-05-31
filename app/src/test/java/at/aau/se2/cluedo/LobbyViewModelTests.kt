@@ -7,7 +7,6 @@ import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
-import at.aau.se2.cluedo.viewmodels.RoomUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -332,6 +331,11 @@ class LobbyViewModelTests {
         verify(mockWebSocketService).solveCase("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
     }
 
+    @Test
+    fun `isPlayerInRoom returns false when player is null`() {
+        val player: Player? = null
+        assertFalse(viewModel.isPlayerInRoom(player))
+    }
 
 }
 
