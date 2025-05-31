@@ -5,12 +5,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.media.MediaDrm.LogMessage
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
+import androidx.collection.IntIntPair
 import at.aau.se2.cluedo.data.GameData
+import at.aau.se2.cluedo.data.models.CellType
+import at.aau.se2.cluedo.data.models.GameBoard
 import at.aau.se2.cluedo.data.models.Player
+import at.aau.se2.cluedo.data.models.Room
 import at.aau.se2.cluedo.data.network.WebSocketService
 import com.example.myapplication.R
 
@@ -25,6 +27,7 @@ class GameBoard @JvmOverloads constructor(
     private var gameBoardBitmap:Bitmap? = null
     private val playersBitmap= arrayListOf<Bitmap>()
 
+
     //Player and Board variables
     private var playerX: Float = 0f
     private var playerY: Float = 0f
@@ -35,18 +38,19 @@ class GameBoard @JvmOverloads constructor(
     private var gridScale:Float= 0.9f
     private var playerPosX=24
     private var playerPosY=10
-    private var gridPosX=playerPosX
-    private var gridPosY=playerPosY
     var gridSize= sizeX*gridScale
-    var move:Boolean=false
     private var playerSizeX=(gridSize/25).toInt()
     private var playerSizeY=(gridSize/25).toInt()
+
 
     private var players:List<Player>?= ArrayList()
     private var moves= arrayListOf<String>()
 
     private var playerArrPos:Int=0
     private var firstRound:Boolean=true
+    private var inRoom: Boolean=false
+    private var outsideCoordX=0
+    private var outsideCoordY=0
     //Button
 
     fun init() {
@@ -63,6 +67,8 @@ class GameBoard @JvmOverloads constructor(
                 updateGameData(gameData)
             }
         }
+        WebSocketService.getInstance().getGameBoard(id!!)
+        WebSocketService.getInstance().subscribeGetGameBoard(id!!)
 
         if (player != null&&id!=null) {
             WebSocketService.getInstance().gameData(id,player)
@@ -107,105 +113,87 @@ class GameBoard @JvmOverloads constructor(
 
     @SuppressLint("SuspiciousIndentation")
     fun moveUp() {
-        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
-        playerPosY--
-
-        // Grenzen prüfen
-        if (playerPosY < 0) {
-            playerPosY = 0
+        safeCoord();
+        if(inRoom) {
+            leaveRoom()
             invalidate()
             return
         }
-
-        // Wand-Abfrage auslösen
-        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
-
+        playerPosY--;
         // Einmalige Antwort verarbeiten
-        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
-            if (isWall) {
+            if (isWall()) {
                 playerPosY++ // Bewegung rückgängig machen
             } else {
                 moves.add("W") // Bewegung merken
+                // Grenzen prüfen
+                if (playerPosY < 0) {
+                    playerPosY = 0
+                }
             }
-
             invalidate() // Zeichenfläche aktualisieren
-        }
     }
     fun moveDown(){
-        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
-        playerPosY++
-
-        // Grenzen prüfen
-        if (playerPosY > 25) {
-            playerPosY = 24
+        safeCoord()
+        if(inRoom) {
+            leaveRoom()
             invalidate()
             return
         }
-
-        // Wand-Abfrage auslösen
-        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
-
-        // Einmalige Antwort verarbeiten
-        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
-            if (isWall) {
-                playerPosY-- // Bewegung rückgängig machen
-            } else {
+        playerPosY++
+        // Einmalige Antwort verarbeite
+            if (isWall()) {
+                playerPosY--
+            }else{
                 moves.add("S") // Bewegung merken
+                if (playerPosY > 25) {
+                    playerPosY = 24
+                }
             }
 
             invalidate() // Zeichenfläche aktualisieren
-        }
+
     }
     fun moveLeft(){
-        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
-        playerPosX--
-
-        // Grenzen prüfen
-        if (playerPosX < 0) {
-            playerPosX = 0
+        safeCoord()
+        if(inRoom) {
+            leaveRoom()
             invalidate()
             return
         }
-
-        // Wand-Abfrage auslösen
-        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
-
-        // Einmalige Antwort verarbeiten
-        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
-            if (isWall) {
+        playerPosX--
+            if (isWall()) {
                 playerPosX++ // Bewegung rückgängig machen
-            } else {
+            }else{
                 moves.add("A") // Bewegung merken
-            }
 
+                // Grenzen prüfen
+                if (playerPosX < 0) {
+                    playerPosX = 0
+                }
+            }
             invalidate() // Zeichenfläche aktualisieren
-        }
     }
     fun moveRight(){
-        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
-        playerPosX++
-
-        // Grenzen prüfen
-        if (playerPosX > 25) {
-            playerPosX = 24
+        safeCoord()
+        if(inRoom) {
+            leaveRoom()
             invalidate()
             return
         }
-
-        // Wand-Abfrage auslösen
-        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
-
+        playerPosX++
         // Einmalige Antwort verarbeiten
-        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
-            if (isWall) {
-                playerPosX-- // Bewegung rückgängig machen
-            } else {
+            if (isWall()) {
+                playerPosX--
+            }else {
                 moves.add("D") // Bewegung merken
+                // Grenzen prüfen
+                if (playerPosX > 25) {
+                    playerPosX = 24
+                }
             }
-
             invalidate() // Zeichenfläche aktualisieren
         }
-    }
+
     fun performMoveClicked(){
         //gridScale=2f
         calcSize()
@@ -213,18 +201,43 @@ class GameBoard @JvmOverloads constructor(
         moves=ArrayList()
         invalidate()
     }
+    fun isWall(): Boolean{
+        if(WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.cellType?.equals(
+                CellType.DOOR)!!){
+            walkiIntoRoom(WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.room!!)
+        }
+        return (WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.cellType?.equals(
+            CellType.ROOM)!!)||(WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.cellType?.equals(
+            CellType.WALL)!!);
+    }
 
-
+    fun walkiIntoRoom(room: Room)
+    {
+        val gm: GameBoard = GameBoard();
+        val coord: IntIntPair=gm.placeInRoom(players?.get(playerArrPos)!!,room, players!!)
+        playerPosX=coord.first
+        playerPosY=coord.second
+        inRoom=true
+    }
+    fun leaveRoom(){
+        //WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.room!!.playerLeavesRoom(players?.get(playerArrPos)!!)
+        playerPosY=outsideCoordY
+        playerPosX= outsideCoordX
+    }
+    fun safeCoord(){
+        outsideCoordY=playerPosY;
+        outsideCoordX=playerPosX;
+    }
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         // Update position if view size changes
-
         playerBitmap?.let {
             playerX = (width - it.width) / 2f
             playerY = (height - it.height) / 2f
         }
 
     }
+
     fun calcSize(){
         gridSize= sizeX*gridScale
         playerSizeX=(gridSize/25).toInt()
@@ -247,6 +260,7 @@ class GameBoard @JvmOverloads constructor(
 
         invalidate()
     }
+
     fun updateGameData(gameData: GameData?) {
         this.players = gameData?.players ?: emptyList()
         if(firstRound&& players != null && players!!.isNotEmpty()) {
@@ -261,8 +275,6 @@ class GameBoard @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         calcSize()
-
-
             gameBoardBitmap?.let {
                 boardPosX = (canvas.width - it.width) / 2f
                 boardPosY = (canvas.height - it.height) / 2f
@@ -291,13 +303,6 @@ class GameBoard @JvmOverloads constructor(
                     canvas.drawBitmap(it, playersx, playersy, null) // Draw the bitmap
                 }
             }
-    }
-
-    // Method to update player position (example)
-    fun setPlayerPosition(x: Float, y: Float) {
-        playerX = x
-        playerY = y
-        invalidate() // Request a redraw of the view
     }
 
 }

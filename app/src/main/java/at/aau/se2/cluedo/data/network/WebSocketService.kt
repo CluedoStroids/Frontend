@@ -9,9 +9,9 @@ import at.aau.se2.cluedo.data.models.ActiveLobbiesResponse
 import at.aau.se2.cluedo.data.models.CanStartGameResponse
 import at.aau.se2.cluedo.data.models.CreateLobbyRequest
 import at.aau.se2.cluedo.data.models.DiceResult
+import at.aau.se2.cluedo.data.models.GameBoardCell
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.GetActiveLobbiesRequest
-import at.aau.se2.cluedo.data.models.IsWallRequest
 import at.aau.se2.cluedo.data.models.JoinLobbyRequest
 import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
 import at.aau.se2.cluedo.data.models.Lobby
@@ -23,7 +23,6 @@ import at.aau.se2.cluedo.data.models.SolveCaseRequest
 import at.aau.se2.cluedo.data.models.StartGameRequest
 import com.google.gson.Gson
 import io.reactivex.disposables.Disposable
-import io.reactivex.disposables.Disposables
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -54,8 +53,8 @@ class WebSocketService {
         private const val TOPIC_GAME_DATA_PREFIX = "/topic/gameData/"
         private const val APP_GET_GAME_DATA="/app/getGameData/"
 
-        private const val APP_IS_WALL="/app/isWall/"
-        private const val TOPIC_IS_WALL="/topic/isWall/"
+        private const val APP_GET_GAMEBOARD="/app/getGameBoard/"
+        private const val TOPIC_GAMEBOARD="/topic/gameBoard/"
 
         private const val TOPIC_DICE_RESULT = "/topic/diceResult"
         private const val APP_ROLL_DICE = "/app/rollDice"
@@ -390,7 +389,7 @@ class WebSocketService {
         // Create a temporary game state with the current lobby players
         // This helps ensure all players see the game state even if they miss the server message
         _lobbyState.value?.let { lobby ->
-            if (lobby.players.size >= 3) {
+            if (lobby.players.size >= 2) {
                 logMessage("Creating temporary game state with ${lobby.players.size} players")
                 val tempGameState = GameStartedResponse(
                     lobbyId = lobbyId,
@@ -581,7 +580,7 @@ class WebSocketService {
         // Create a temporary game state with the current lobby players
         // This helps ensure all players see the game state even if they miss the server message
         _lobbyState.value?.let { lobby ->
-            if (lobby.players.size >= 3) {
+            if (lobby.players.size >= 2) {
                 logMessage("Creating temporary game state with ${lobby.players.size} players")
                 val tempGameState = GameData(
                     players = lobby.players,
@@ -599,12 +598,9 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    fun isWall(lobbyId:String, x:Int, y:Int) {
-
-        val request = IsWallRequest(x,y)
-        val payload = gson.toJson(request)
-        val destination = "$APP_IS_WALL$lobbyId"
-        stompClient?.send(destination, payload)?.subscribe(
+    fun getGameBoard(lobbyId:String) {
+        val destination = "$APP_GET_GAMEBOARD$lobbyId"
+        stompClient?.send(destination)?.subscribe(
             {
 
             },
@@ -615,26 +611,30 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    fun subscribeIsWall(lobbyId: String, onResult: (Boolean) -> Unit) {
-        val source = "$TOPIC_IS_WALL$lobbyId"
+    // onResult: (Array<Array<GameBoardCell>>) -> Unit
+    fun subscribeGetGameBoard(lobbyId: String) {
+        val source = "$TOPIC_GAMEBOARD$lobbyId"
         var disposable: Disposable? = null
             disposable=stompClient?.topic(source)?.subscribe({ stompMessage ->
             try {
-                val response = gson.fromJson(stompMessage.payload, Boolean::class.java)
-                Log.d("Debug", "Wall: $response")
-                onResult(response)
+                val response = gson.fromJson(stompMessage.payload, Array<Array<GameBoardCell>>::class.java)
+                Log.d("Debug", "GameBoard: $response")
+                gameDataState.value?.grid = response
+                println(gameDataState.value?.grid!!)
+
             } catch (e: Exception) {
-                logMessage("Error parsing isWall message: ${e.message}")
-                onResult(false)
+                logMessage("Error parsing GameBoard message: ${e.message}")
+                //onResult(none)
             } finally {
                 // Abo nach *einer* Nachricht entfernen
                 disposable?.dispose()
             }
         }, { error ->
             logMessage("Error in isWall subscription: ${error.message}")
-            onResult(false)
+            //onResult(false)
             disposable?.dispose()
         })
+
         }
 
     @SuppressLint("CheckResult")
