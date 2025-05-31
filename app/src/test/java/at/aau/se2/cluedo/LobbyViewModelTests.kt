@@ -303,10 +303,8 @@ class LobbyViewModelTests {
 
     @Test
     fun `markSuggestionMade should prevent suggestion even without room entry`() {
-        // directly call markSuggestionMade without setting any room
         viewModel.markSuggestionMade()
 
-        // block suggestion even though no room was set
         assertFalse(viewModel.canMakeSuggestion(), "Should not allow suggestion after markSuggestionMade even without room set")
     }
 
@@ -320,6 +318,18 @@ class LobbyViewModelTests {
     fun `isPlayerInRoom returns false when coordinates are null`() {
         val player = Player(name = "Test", x = 99, y = 99)
         assertFalse(viewModel.isPlayerInRoom(player))
+    }
+
+    @Test
+    fun `sendSuggestion should delegate to WebSocketService`() {
+        viewModel.sendSuggestion("Colonel Mustard", "Candlestick", "Kitchen")
+        verify(mockWebSocketService).sendSuggestion("Colonel Mustard", "Candlestick", "Kitchen")
+    }
+
+    @Test
+    fun `solveCase delegates to WebSocketService`() {
+        viewModel.solveCase("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
+        verify(mockWebSocketService).solveCase("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
     }
 
 
