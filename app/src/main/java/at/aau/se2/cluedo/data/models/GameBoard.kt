@@ -34,9 +34,11 @@ class GameBoard {
                 var p = 0
 
                 while (p < players.size) {
-                    if (players[p].x == player.x && players[p].y == player.y) {
-                        generateRandom(minX, maxX, minY, maxY, player)
-                        p -= 1  // hier ist es erlaubt, weil p eine var ist!
+                    if(!players[p].name.equals(player.name)) {
+                        if (players[p].x == player.x && players[p].y == player.y) {
+                            generateRandom(minX, maxX, minY, maxY, player)
+                            p -= 1  // hier ist es erlaubt, weil p eine var ist!
+                        }
                     }
                     p += 1
                 }
