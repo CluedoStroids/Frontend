@@ -31,10 +31,14 @@ class GameBoard {
                 var maxY:Int = roomDefinitions[i]?.get(2)?.toInt()!!;
 
                 generateRandom(minX,maxX,minY,maxY,player)
-                for (p:Player in players){
-                    if(p.x == player.x&&p.y == player.y){
-                        placeInRoom(player,room,players)
+                var p = 0
+
+                while (p < players.size) {
+                    if (players[p].x == player.x && players[p].y == player.y) {
+                        generateRandom(minX, maxX, minY, maxY, player)
+                        p -= 1  // hier ist es erlaubt, weil p eine var ist!
                     }
+                    p += 1
                 }
             }
         }
