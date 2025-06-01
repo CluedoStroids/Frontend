@@ -446,6 +446,27 @@ class WebSocketService {
         })
     }
 
+    @SuppressLint("CheckResult")
+    fun onSensorDiceRolled(diceOne: Int, diceTwo: Int) {
+        if (!_isConnected.value) {
+            _errorMessages.tryEmit("Sensor roll ignored: Not connected to server")
+            return
+        }
+
+        val result = DiceResult(diceOne = diceOne, diceTwo = diceTwo)
+        val payload = gson.toJson(result)
+
+        _diceOneResult.value = diceOne
+        _diceTwoResult.value = diceTwo
+
+        stompClient?.send(APP_ROLL_DICE, payload)?.subscribe({
+            logMessage("Sensor dice roll sent: $diceOne, $diceTwo")
+        }, { error ->
+            _errorMessages.tryEmit("Error sending sensor dice result: ${error.message}")
+        })
+    }
+
+
     private var playerList: List<Player>? = null
     public fun getPlayers(): List<Player>? {
         return playerList;

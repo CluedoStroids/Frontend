@@ -1,5 +1,8 @@
 package at.aau.se2.cluedo.ui.screens
 
+import android.hardware.Sensor
+import android.hardware.SensorManager
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +24,7 @@ import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.viewmodels.CardAdapter
 import at.aau.se2.cluedo.viewmodels.GameBoard
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.ui.ShakeEventListener
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -54,6 +58,9 @@ class GameBoardFragment : Fragment() {
 
     private var diceOneValue = 0
     private var diceTwoValue = 0
+    private lateinit var sensorManager: SensorManager
+    private var accelerometer: Sensor? = null
+    private val shakeListener = ShakeEventListener()
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var cardsRecyclerView: RecyclerView
@@ -240,6 +247,11 @@ class GameBoardFragment : Fragment() {
             }
         }
 
+        sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        shakeListener.setOnShakeListener {
+            webSocketService?.rollDice()
+        }
 
     }
     private fun observeViewModel() {
@@ -306,5 +318,16 @@ class GameBoardFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        accelerometer?.also { acc ->
+            sensorManager.registerListener(shakeListener, acc, SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(shakeListener)
+    }
 
 }
