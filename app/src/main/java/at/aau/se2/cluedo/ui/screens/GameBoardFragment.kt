@@ -278,14 +278,14 @@ class GameBoardFragment : Fragment() {
                     value?.let {
                         diceOneValue = it // store locally
                         binding.diceOneValueTextView2.text = diceOneValue.toString()
-                        binding.diceOneValueTextView2.text = it.toString()
+                        //binding.diceOneValueTextView2.text = it.toString()
                     }
                 }
             }
             launch {
                 turnBasedService.diceTwoResult.collect { value ->
                     value?.let {
-                        binding.diceTwoValueTextView2.text = it.toString()
+                        //binding.diceTwoValueTextView2.text = it.toString()
                         diceTwoValue = it // store locally
                         binding.diceTwoValueTextView2.text = diceTwoValue.toString()
                     }
