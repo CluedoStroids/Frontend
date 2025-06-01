@@ -57,6 +57,8 @@ class GameBoardFragment : Fragment() {
         Pair(8, 9), Pair(9, 9), Pair(8, 10), Pair(9, 10) // Arbeitszimmer
     )
 
+    private var diceOneValue = 0
+    private var diceTwoValue = 0
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var cardsRecyclerView: RecyclerView
@@ -219,15 +221,19 @@ class GameBoardFragment : Fragment() {
         }
         upButton.setOnClickListener {
             gameBoard.moveUp()
+            subtractMovement()
         }
         downButton.setOnClickListener {
             gameBoard.moveDown()
+            subtractMovement()
         }
         leftButton.setOnClickListener {
             gameBoard.moveLeft()
+            subtractMovement()
         }
         rightButton.setOnClickListener {
             gameBoard.moveRight()
+            subtractMovement()
         }
         doneButton.setOnClickListener {
             gameBoard.done()
@@ -270,6 +276,8 @@ class GameBoardFragment : Fragment() {
             launch {
                 turnBasedService.diceOneResult.collect { value ->
                     value?.let {
+                        diceOneValue = it // store locally
+                        binding.diceOneValueTextView2.text = diceOneValue.toString()
                         binding.diceOneValueTextView2.text = it.toString()
                     }
                 }
@@ -278,6 +286,8 @@ class GameBoardFragment : Fragment() {
                 turnBasedService.diceTwoResult.collect { value ->
                     value?.let {
                         binding.diceTwoValueTextView2.text = it.toString()
+                        diceTwoValue = it // store locally
+                        binding.diceTwoValueTextView2.text = diceTwoValue.toString()
                     }
                 }
             }
@@ -469,6 +479,16 @@ class GameBoardFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun subtractMovement() {
+        if (diceOneValue > 0) {
+            diceOneValue -= 1
+            binding.diceOneValueTextView2.text = diceOneValue.toString()
+        } else {
+            diceTwoValue -= 1
+            binding.diceTwoValueTextView2.text = diceTwoValue.toString()
+        }
     }
 
 

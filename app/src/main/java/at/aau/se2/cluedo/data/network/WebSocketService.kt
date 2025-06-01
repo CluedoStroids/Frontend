@@ -38,7 +38,7 @@ import ua.naiksoftware.stomp.dto.StompMessage
 class WebSocketService {
     companion object {
         private const val SERVER_IP = "10.0.2.2"
-        private const val SERVER_PORT = "8321"
+        private const val SERVER_PORT = "8321" //8080
         private const val CONNECTION_URL = "ws://$SERVER_IP:$SERVER_PORT/ws"
         private const val TOPIC_LOBBY_CREATED = "/topic/lobbyCreated"
         private const val TOPIC_LOBBY_UPDATES_PREFIX = "/topic/lobby/"
@@ -151,7 +151,6 @@ class WebSocketService {
                         resetConnectionState()
                     }
 
-                    LifecycleEvent.Type.ERROR,
                     LifecycleEvent.Type.CLOSED,
                     LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT -> resetConnectionState()
                 }

@@ -11,14 +11,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.viewmodels.CardAdapter
 import kotlinx.coroutines.launch
