@@ -62,6 +62,13 @@ class SuspicionPopupFragment : Fragment() {
             lobbyViewModel.addSuspicionNote(suspicion)
             lobbyViewModel.markSuggestionMade()
 
+            val currentLobbyId = lobbyViewModel.lobbyState.value?.id
+            val currentPlayerName = currentPlayer?.name
+            if (currentLobbyId != null && currentPlayerName != null) {
+                lobbyViewModel.sendSuggestion(suspect, weapon, room)
+            }
+
+
             Toast.makeText(context, "Suspicion saved to notes.", Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()
         }
