@@ -23,7 +23,7 @@ class SplashActivity : AppCompatActivity() {
         try {
             binding.versionTextView.text = "v${packageManager.getPackageInfo(packageName, 0).versionName}"
         } catch (e: Exception) {
-            binding.versionTextView.text = "v1.0"
+            binding.versionTextView.text = "v2.5"
         }
 
         Handler(Looper.getMainLooper()).postDelayed({
