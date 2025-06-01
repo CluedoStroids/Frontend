@@ -15,12 +15,16 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
+import at.aau.se2.cluedo.data.network.WebSocketService
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class SolveCaseFragment : Fragment() {
 
     private val lobbyViewModel: LobbyViewModel by viewModels()
+    private val turnBasedService = TurnBasedWebSocketService.getInstance()
+    private val webSocketService = WebSocketService.getInstance()
 
     private var isPlayerEliminated: Boolean = false
 
@@ -141,14 +145,15 @@ class SolveCaseFragment : Fragment() {
         }
 
         val lobbyId = lobbyViewModel.lobbyState.value?.id
-        val username = lobbyViewModel.createdLobbyId.value
+        val username = webSocketService.player.value?.name
 
         if (lobbyId == null || username.isNullOrBlank()) {
             Toast.makeText(context, "Missing lobby or username info. Please rejoin.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        lobbyViewModel.solveCase(lobbyId, username, selectedSuspect, selectedRoom, selectedWeapon)
+        // Use the new accusation system instead of the old solveCase
+        turnBasedService.makeAccusation(lobbyId, username, selectedSuspect, selectedWeapon, selectedRoom)
     }
 
     private fun animateAndClose(view: View) {
