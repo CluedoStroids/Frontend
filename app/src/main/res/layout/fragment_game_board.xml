@@ -168,6 +168,14 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/moveDown"
             app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/cheatingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cheating"
+            app:layout_constraintBottom_toBottomOf="@+id/solveCaseButton"
+            app:layout_constraintEnd_toEndOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- BOTTOM SHEET AS DIRECT CHILD OF COORDINATORLAYOUT -->

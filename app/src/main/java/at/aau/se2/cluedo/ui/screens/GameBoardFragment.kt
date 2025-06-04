@@ -97,6 +97,9 @@ class GameBoardFragment : Fragment() {
         binding.makeSuspicionButton.setOnClickListener {
             findNavController().navigate(R.id.action_gameBoardIMG_to_suspicionPopupFragment)
         }
+        binding.cheatingButton.setOnClickListener {
+            findNavController().navigate(R.id.action_gameBoardIMG_to_cheatingSuspicionFragment)
+        }
 
         //BottomSheet to show cards
         val bottomSheet = view.findViewById<NestedScrollView>(R.id.bottom_sheet)

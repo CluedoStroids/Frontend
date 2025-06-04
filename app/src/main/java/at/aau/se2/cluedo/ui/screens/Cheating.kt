@@ -1,4 +1,4 @@
-package at.aau.se2.cluedo.fragments
+package at.aau.se2.cluedo.ui.screens
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -40,7 +40,7 @@ class CheatingSuspicionFragment : Fragment() {
     }
 
     private fun setupUI() {
-        // Fixing typo in button ID
+
         binding.buttonSusbectCheating.setOnClickListener {
             submitCheatingSuspicion()
         }
@@ -119,12 +119,10 @@ class CheatingSuspicionFragment : Fragment() {
         }
     }
 
-
     private fun sendCheatingSuspicionToBackend(lobbyId: String, suspect: Player, accuser: Player) {
         lobbyViewModel.webSocketService.reportCheating(lobbyId, suspect.name,accuser.name)
 
     }
-
 
     private fun dismiss() {
         binding.cheaterSpinner.setSelection(0)
@@ -135,6 +133,5 @@ class CheatingSuspicionFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-
 }
 
