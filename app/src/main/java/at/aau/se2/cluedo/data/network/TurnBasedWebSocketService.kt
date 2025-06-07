@@ -284,7 +284,7 @@ class TurnBasedWebSocketService private constructor() {
     @SuppressLint("CheckResult")
     fun makeSuggestion(lobbyId: String, playerName: String, suspect: String, weapon: String, room: String) {
         val request = SuggestionRequest(
-            playerName = playerName,
+            playerId = playerName,
             suspect = suspect,
             weapon = weapon,
             room = room

@@ -16,8 +16,13 @@ import com.example.myapplication.R
 
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import at.aau.se2.cluedo.data.network.WebSocketService
+import com.example.myapplication.databinding.FragmentJoinLobbyBinding
+import com.example.myapplication.databinding.FragmentSuspicionPopupBinding
 
 class SuspicionPopupFragment : Fragment() {
+
+    private var _binding: FragmentSuspicionPopupBinding? = null
+    private val binding get() = _binding!!
 
     private val lobbyViewModel: LobbyViewModel by activityViewModels()
     private val turnBasedService = TurnBasedWebSocketService.getInstance()
@@ -27,7 +32,8 @@ class SuspicionPopupFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.fragment_suspicion_popup, container, false)
+        _binding = FragmentSuspicionPopupBinding.inflate(inflater,container,false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -35,18 +41,19 @@ class SuspicionPopupFragment : Fragment() {
 
         val currentPlayer = lobbyViewModel.lobbyState.value?.players?.find { it.isCurrentPlayer == true }
 
+        /*
         if (!lobbyViewModel.isPlayerInRoom(currentPlayer) || !lobbyViewModel.canMakeSuggestion()) {
             Toast.makeText(context, "You can't make another suggestion in this room.", Toast.LENGTH_LONG).show()
             findNavController().navigateUp()
             return
         }
+         */
 
-
-        val suspectSpinner: Spinner = view.findViewById(R.id.suspectSpinner)
-        val roomSpinner: Spinner = view.findViewById(R.id.roomSpinner)
-        val weaponSpinner: Spinner = view.findViewById(R.id.weaponSpinner)
-        val makeSuspicionButton: Button = view.findViewById(R.id.button_make_suspicion)
-        val cancelButton: Button = view.findViewById(R.id.button_cancel)
+        val suspectSpinner: Spinner = binding.suspectSpinner
+        val roomSpinner: Spinner = binding.roomSpinner
+        val weaponSpinner: Spinner = binding.weaponSpinner
+        val makeSuspicionButton: Button = binding.buttonMakeSuspicion
+        val cancelButton: Button = binding.buttonCancel
 
         setUpSpinner(suspectSpinner, R.array.suspect_options)
         setUpSpinner(roomSpinner, R.array.room_options)
