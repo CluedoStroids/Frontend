@@ -28,10 +28,15 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
-    <string name="submit_suspicion">submit suspicion\n</string>
+    <string name="submit_suspicion">submit suspicion</string>
     <string name="cancel">Cancel</string>
     <string name="you_ve_cracked_the_case">You have cracked the case!</string>
     <string name="back_to_lobby">Back to Lobby</string>
     <string name="exit_the_game">Exit the Game</string>
     <string name="skip_turn">Skip Turn</string>
+    <string name="player_label">Player</string>
+    <string name="suspects">Suspects</string>
+    <string name="weapons">Weapons</string>
+    <string name="rooms">Rooms</string>
+
 </resources>
