@@ -1,6 +1,7 @@
 package at.aau.se2.cluedo.ui.screens
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +18,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.GameStartedResponse
+import at.aau.se2.cluedo.data.models.TurnState
+import at.aau.se2.cluedo.data.models.TurnStateResponse
 import at.aau.se2.cluedo.data.network.WebSocketService
+import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import at.aau.se2.cluedo.viewmodels.CardAdapter
 import at.aau.se2.cluedo.viewmodels.GameBoard
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
@@ -25,7 +29,6 @@ import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.launch
-import at.aau.se2.cluedo.viewmodels.RoomUtils
 
 /**
  * A simple [Fragment] subclass.
@@ -35,7 +38,8 @@ import at.aau.se2.cluedo.viewmodels.RoomUtils
 class GameBoardFragment : Fragment() {
 
     private lateinit var gameBoard: GameBoard
-    var webSocketService:WebSocketService?=null
+    var webSocketService: WebSocketService? = null
+    private val turnBasedService = TurnBasedWebSocketService.getInstance()
     private val lobbyViewModel: LobbyViewModel by activityViewModels()
 
     private var _binding: FragmentGameBoardBinding? = null
@@ -56,31 +60,30 @@ class GameBoardFragment : Fragment() {
     private var diceOneValue = 0
     private var diceTwoValue = 0
 
-
-
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var cardsRecyclerView: RecyclerView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         init()
     }
+
     private fun init() {
         println("HI")
         webSocketService = WebSocketService.getInstance()
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
 
         _binding = FragmentGameBoardBinding.inflate(inflater, container, false)
-       // binding =_binding!!
+        // binding =_binding!!
 
         // Inflate the layout for this fragment
         return binding.root
 
     }
-
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -96,11 +99,19 @@ class GameBoardFragment : Fragment() {
         }
 
         binding.solveCaseButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameBoardIMG_to_solveCaseFragment)
+            if (turnBasedService.canPerformAction("ACCUSE")) {
+                findNavController().navigate(R.id.action_gameBoardIMG_to_solveCaseFragment)
+            } else {
+                showToast("Cannot make accusation - not your turn or invalid state")
+            }
         }
 
         binding.makeSuspicionButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameBoardIMG_to_suspicionPopupFragment)
+            if (turnBasedService.canPerformAction("SUGGEST")) {
+                findNavController().navigate(R.id.action_gameBoardIMG_to_suspicionPopupFragment)
+            } else {
+                showToast("Cannot make suggestion - not your turn or not in a room")
+            }
         }
 
         //BottomSheet to show cards
@@ -113,12 +124,14 @@ class GameBoardFragment : Fragment() {
             toggleBottomSheet()
         }
         //Change Icon of FloatingActionButton (openCardsButton) depending on state of BottomSheet
-        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         binding.cardsOpenButton.setImageResource(R.drawable.cards_close_icon)
                     }
+
                     BottomSheetBehavior.STATE_HIDDEN -> {
                         binding.cardsOpenButton.setImageResource(R.drawable.cards_open_icon)
                     }
@@ -132,8 +145,9 @@ class GameBoardFragment : Fragment() {
         })
 
         val recyclerView = binding.playerCardsRecyclerview
-        recyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        val cards = WebSocketService.getInstance().player.value?.cards
+        recyclerView.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        var cards = WebSocketService.getInstance().player.value?.cards
         recyclerView.adapter = CardAdapter(BasicCard.getCardIDs(cards))
 
 
@@ -175,6 +189,15 @@ class GameBoardFragment : Fragment() {
         gameBoard.init()
         updatePlayers()
 
+        // Observe view model changes first
+        observeViewModel()
+
+        // Initialize turn-based system after a short delay to ensure game state is available
+        lifecycleScope.launch {
+            kotlinx.coroutines.delay(1000) // Wait 1 second for game state to be established
+            initializeTurnBasedSystem()
+        }
+
         //println(gameBoard)
         val moveButton = view.findViewById<Button>(R.id.movebutton)
         val upButton = view.findViewById<Button>(R.id.moveUp)
@@ -184,15 +207,17 @@ class GameBoardFragment : Fragment() {
         val doneButton = view.findViewById<Button>(R.id.Done)
 
         moveButton.setOnClickListener {
-
-            moveButton.visibility= View.GONE
-            upButton.visibility= View.VISIBLE
-            downButton.visibility= View.VISIBLE
-            leftButton.visibility= View.VISIBLE
-            rightButton.visibility= View.VISIBLE
-            doneButton.visibility = View.VISIBLE
-            gameBoard.performMoveClicked()
-
+            if (turnBasedService.canPerformAction("MOVE")) {
+                moveButton.visibility = View.GONE
+                upButton.visibility = View.VISIBLE
+                downButton.visibility = View.VISIBLE
+                leftButton.visibility = View.VISIBLE
+                rightButton.visibility = View.VISIBLE
+                doneButton.visibility = View.VISIBLE
+                gameBoard.performMoveClicked()
+            } else {
+                showToast("Cannot move - not your turn or invalid state")
+            }
         }
         upButton.setOnClickListener {
             gameBoard.moveUp()
@@ -211,35 +236,56 @@ class GameBoardFragment : Fragment() {
             subtractMovement()
         }
         doneButton.setOnClickListener {
-            val player = lobbyViewModel.lobbyState.value?.players?.find { it.isCurrentPlayer }
-            val roomName = RoomUtils.getRoomNameFromCoordinates(player?.x, player?.y)
-            lobbyViewModel.updateRoomEntry(roomName)
-
             gameBoard.done()
-            moveButton.visibility= View.VISIBLE
-            upButton.visibility= View.GONE
-            downButton.visibility= View.GONE
-            leftButton.visibility= View.GONE
-            rightButton.visibility= View.GONE
+            moveButton.visibility = View.VISIBLE
+            upButton.visibility = View.GONE
+            downButton.visibility = View.GONE
+            leftButton.visibility = View.GONE
+            rightButton.visibility = View.GONE
             doneButton.visibility = View.GONE
+
+            // Complete movement using turn-based systemx
+            val lobbyId = lobbyViewModel.createdLobbyId.value
+            val playerName = webSocketService?.player?.value?.name
+            turnBasedService.completeMovement(lobbyId.toString(), playerName.toString())
         }
 
         binding.rollDice.setOnClickListener {
-            webSocketService?.rollDice()
+            if (turnBasedService.canPerformAction("ROLL_DICE")) {
+                val lobbyId = lobbyViewModel.createdLobbyId.value
+                val playerName = webSocketService?.player?.value?.name
+                turnBasedService.rollDiceForTurn(lobbyId.toString(), playerName.toString())
+            } else {
+                showToast("Cannot roll dice - not your turn or invalid state")
+            }
+        }
+
+        binding.skipTurnButton.setOnClickListener {
+            val lobbyId = lobbyViewModel.createdLobbyId.value
+            val playerName = webSocketService?.player?.value?.name
+            turnBasedService.skipTurn(
+                lobbyId.toString(),
+                playerName.toString(),
+                "Player manually skipped turn"
+            )
+            showToast("Turn skipped")
+
         }
 
         lifecycleScope.launch {
             launch {
-                webSocketService?.diceOneResult?.collect { value ->
+                turnBasedService.diceOneResult.collect { value ->
                     value?.let {
                         diceOneValue = it // store locally
                         binding.diceOneValueTextView2.text = diceOneValue.toString()
+                        //binding.diceOneValueTextView2.text = it.toString()
                     }
                 }
             }
             launch {
-                webSocketService?.diceTwoResult?.collect { value ->
+                turnBasedService.diceTwoResult.collect { value ->
                     value?.let {
+                        //binding.diceTwoValueTextView2.text = it.toString()
                         diceTwoValue = it // store locally
                         binding.diceTwoValueTextView2.text = diceTwoValue.toString()
                     }
@@ -249,6 +295,7 @@ class GameBoardFragment : Fragment() {
 
 
     }
+
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -262,16 +309,146 @@ class GameBoardFragment : Fragment() {
                 launch {
                     lobbyViewModel.lobbyState.collect { lobby ->
                         val currentPlayer = lobby?.players?.find { it.isCurrentPlayer == true }
-                        val isInRoom = roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
+                        val isInRoom =
+                            roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
+                        // Note: Turn-based validation will be handled by canPerformAction
+                        // This is kept for backward compatibility
                         binding.makeSuspicionButton.isEnabled = isInRoom
                     }
                 }
 
+                // Observe turn state changes
+                launch {
+                    turnBasedService.currentTurnState.collect { turnState ->
+                        turnState?.let {
+                            updateUIForTurnState(it)
+                            // Also update button states when turn state changes
+                            val isMyTurn = turnBasedService.isCurrentPlayerTurn.value
+                            updateButtonStates(isMyTurn)
+                        }
+                    }
+                }
 
+                // Observe if it's current player's turn
+                launch {
+                    turnBasedService.isCurrentPlayerTurn.collect { isMyTurn ->
+                        Log.d(
+                            "GameBoardFragment",
+                            "DEBUG: isCurrentPlayerTurn flow emitted: $isMyTurn"
+                        )
+
+                        // Force UI update on main thread
+                        requireActivity().runOnUiThread {
+                            updateButtonStates(isMyTurn)
+                        }
+                    }
+                }
+
+                // Observe game state changes to initialize turns
+                launch {
+                    lobbyViewModel.gameState.collect { gameState ->
+                        gameState?.let {
+                            // Initialize turns when game state is available
+                            val lobbyId = it.lobbyId
+                            if (lobbyId.isNotBlank()) {
+                                turnBasedService.initializeTurns(lobbyId)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-    private fun updatePlayers(){
+
+    /**
+     * Initialize the turn-based system when the game starts
+     */
+    private fun initializeTurnBasedSystem() {
+        val lobbyId = lobbyViewModel.createdLobbyId.value
+        if (!lobbyId.isNullOrBlank()) {
+            turnBasedService.initializeTurns(lobbyId)
+            turnBasedService.getTurnState(lobbyId)
+        }
+    }
+
+    /**
+     * Update UI elements based on current turn state
+     */
+    private fun updateUIForTurnState(turnState: TurnStateResponse) {
+        // Update turn state display
+        val message = getTurnStateMessage(turnState.turnState)
+        showToast("${turnState.currentPlayerName}: $message")
+
+        // The button states will be updated automatically when isCurrentPlayerTurn changes
+    }
+
+    /**
+     * Update button states based on whether it's the current player's turn
+     */
+    private fun updateButtonStates(isMyTurn: Boolean) {
+        val currentTurnState = turnBasedService.currentTurnState.value
+        val playerName = webSocketService?.player?.value?.name
+
+        // Debug logging can be removed
+        Log.d(
+            "GameBoardFragment",
+            "DEBUG: updateButtonStates called - isMyTurn: $isMyTurn, playerName: $playerName, currentPlayer: ${currentTurnState?.currentPlayerName}, turnState: ${currentTurnState?.turnState}"
+        )
+
+        // Skip turn always enabled when it's the player's turn
+        binding.skipTurnButton.isEnabled = isMyTurn
+
+        if (isMyTurn == false) {
+            // Disable all action buttons if it's not the player's turn
+            binding.rollDice.isEnabled = false
+            binding.solveCaseButton.isEnabled = false
+            binding.makeSuspicionButton.isEnabled = false
+            view?.findViewById<Button>(R.id.movebutton)?.isEnabled = false
+            Log.d("GameBoardFragment", "DEBUG: Buttons disabled - not my turn")
+        } else {
+            // Enable buttons based on turn state and game logic
+            val canRollDice = turnBasedService.canPerformAction("ROLL_DICE")
+            val canAccuse = turnBasedService.canPerformAction("ACCUSE")
+            val canSuggest = turnBasedService.canPerformAction("SUGGEST")
+            val canMove = turnBasedService.canPerformAction("MOVE")
+
+            binding.rollDice.isEnabled = canRollDice
+            binding.solveCaseButton.isEnabled = canAccuse
+            binding.makeSuspicionButton.isEnabled = canSuggest
+            view?.findViewById<Button>(R.id.movebutton)?.isEnabled = canMove
+
+            Log.d(
+                "GameBoardFragment",
+                "DEBUG: Buttons enabled - canRollDice: $canRollDice, canMove: $canMove, canSuggest: $canSuggest, canAccuse: $canAccuse, skipTurn: $isMyTurn"
+            )
+        }
+
+        // Force a visual refresh of the buttons
+        binding.rollDice.invalidate()
+        binding.solveCaseButton.invalidate()
+        binding.makeSuspicionButton.invalidate()
+        binding.skipTurnButton.invalidate()
+        view?.findViewById<Button>(R.id.movebutton)?.invalidate()
+    }
+
+    /**
+     * Get a user-friendly message for the turn state
+     */
+    private fun getTurnStateMessage(turnState: String): String {
+        return when (turnState) {
+            TurnState.PLAYERS_TURN_ROLL_DICE.value -> "Roll dice to start turn"
+            TurnState.PLAYERS_TURN_MOVE.value -> "Move your piece"
+            TurnState.PLAYERS_TURN_SUGGEST.value -> "Make a suggestion"
+            TurnState.PLAYERS_TURN_SOLVE.value -> "Make an accusation"
+            TurnState.PLAYERS_TURN_END.value -> "Turn ending..."
+            TurnState.PLAYER_HAS_WON.value -> "Game over!"
+            TurnState.WAITING_FOR_PLAYERS.value -> "Waiting for players"
+            TurnState.WAITING_FOR_START.value -> "Waiting to start"
+            else -> "Unknown state"
+        }
+    }
+
+    private fun updatePlayers() {
 
     }
 
@@ -281,7 +458,6 @@ class GameBoardFragment : Fragment() {
             val currentPlayerMark = if (player.isCurrentPlayer) " (Current Turn)" else ""
             "  - ${player.name} (${player.character})$currentPlayerMark"
         }
-
 
 
         // Log for debugging
@@ -295,6 +471,7 @@ class GameBoardFragment : Fragment() {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         }
     }
+
     private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
         Toast.makeText(requireContext(), message, duration).show()
     }

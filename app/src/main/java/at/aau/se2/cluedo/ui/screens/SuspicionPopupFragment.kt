@@ -14,10 +14,14 @@ import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.R
 
+import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
+import at.aau.se2.cluedo.data.network.WebSocketService
 
 class SuspicionPopupFragment : Fragment() {
 
     private val lobbyViewModel: LobbyViewModel by activityViewModels()
+    private val turnBasedService = TurnBasedWebSocketService.getInstance()
+    private val webSocketService = WebSocketService.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,6 +62,14 @@ class SuspicionPopupFragment : Fragment() {
                 return@setOnClickListener
             }
 
+            // Get lobby ID and player name
+            val lobbyId = lobbyViewModel.lobbyState.value?.id
+            val playerName = webSocketService.player.value?.name
+
+            if (lobbyId.isNullOrBlank() || playerName.isNullOrBlank()) {
+                Toast.makeText(context, "No active lobby or player found", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val suspicion = "$suspect — in the $room — with the $weapon"
             lobbyViewModel.addSuspicionNote(suspicion)
             lobbyViewModel.markSuggestionMade()
@@ -69,7 +81,14 @@ class SuspicionPopupFragment : Fragment() {
             }
 
 
-            Toast.makeText(context, "Suspicion saved to notes.", Toast.LENGTH_SHORT).show()
+            // Send suggestion to backend
+            turnBasedService.makeSuggestion(lobbyId, playerName, suspect, weapon, room)
+
+            // Also save to notes for backward compatibility
+            val suggestion = "$suspect — in the $room — with the $weapon"
+            lobbyViewModel.addSuspicionNote(suggestion)
+
+            Toast.makeText(context, "Suggestion sent!", Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()
         }
 
