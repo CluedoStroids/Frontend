@@ -76,10 +76,6 @@ class SuspicionPopupFragment : Fragment() {
 
             val currentLobbyId = lobbyViewModel.lobbyState.value?.id
             val currentPlayerName = currentPlayer?.name
-            if (currentLobbyId != null && currentPlayerName != null) {
-                lobbyViewModel.sendSuggestion(suspect, weapon, room)
-            }
-
 
             // Send suggestion to backend
             turnBasedService.makeSuggestion(lobbyId, playerName, suspect, weapon, room)
