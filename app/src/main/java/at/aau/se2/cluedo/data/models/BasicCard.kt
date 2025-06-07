@@ -8,6 +8,7 @@ class BasicCard(
     @SerializedName("type") val type: CardType? = null
 ) {
 
+    // fixme use enum instead of strings (you can also use constr params with enums)
     companion object{
         val cardImageToPNG = mapOf(
             "Pipe" to R.drawable.card_pipe,

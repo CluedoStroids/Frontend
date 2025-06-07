@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 
 
+// fixme create an enum for the cards instead of these strings (see comment in BasicCard)
 class BasicCardTest {
 
     @Test

@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 
-
+// fixme class name should match file name
 class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.getInstance()) :
     ViewModel() {
 
