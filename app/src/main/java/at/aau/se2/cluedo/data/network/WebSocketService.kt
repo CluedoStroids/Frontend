@@ -467,7 +467,9 @@ class WebSocketService {
         val destination = "$APP_PERFORM_MOVE${lobbyId}"
         stompClient?.send(destination, payload)?.subscribe()
     }
-    fun subscribeToMovementUpdates(lobbyId: String,callback: (GameData) -> Unit) {
+
+    @SuppressLint("CheckResult")
+    fun subscribeToMovementUpdates(lobbyId: String, callback: (GameData) -> Unit) {
         val topic = "/topic/performMovement/$lobbyId"
 
         stompClient?.topic(topic)?.subscribe { stompMessage ->
