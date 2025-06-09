@@ -1,10 +1,7 @@
 package at.aau.se2.cluedo.data.models
 
 import androidx.collection.IntIntPair
-import at.aau.se2.cluedo.data.network.WebSocketService
 import java.security.SecureRandom
-import java.util.Vector
-import kotlin.math.max
 
 class GameBoard {
     var roomDefinitions: Array<Array<String?>?> = arrayOf<Array<String?>?>(
@@ -20,6 +17,7 @@ class GameBoard {
     )
 
     fun placeInRoom(player: Player,room: Room,players: List<Player>): IntIntPair {
+        println(room.getName());
        room.playerEntersRoom(player);
 
         for (i:Int in 0 until roomDefinitions.size){
@@ -30,14 +28,15 @@ class GameBoard {
                 var minY:Int=roomDefinitions[i]?.get(4)?.toInt()!!;
                 var maxY:Int = roomDefinitions[i]?.get(2)?.toInt()!!;
 
-                generateRandom(minX,maxX,minY,maxY,player)
+                repositionPlayer(minX,maxX,minY,maxY,player)
                 var p = 0
 
+                player.x=minX+1
+                player.y=minY+1
                 while (p < players.size) {
                     if(!players[p].name.equals(player.name)) {
                         if (players[p].x == player.x && players[p].y == player.y) {
-                            generateRandom(minX, maxX, minY, maxY, player)
-                            p -= 1  // hier ist es erlaubt, weil p eine var ist!
+                            repositionPlayer(minX, maxX, minY, maxY, player)
                         }
                     }
                     p += 1
@@ -46,12 +45,12 @@ class GameBoard {
         }
         return IntIntPair(player.x,player.y);
     }
-    fun generateRandom(minX:Int,maxX:Int,minY:Int,maxY:Int,player: Player){
-        var rand: SecureRandom= SecureRandom();
-        val randomX = minX + rand.nextInt(maxX - minX)
-        val randomY = minY + rand.nextInt(maxY - minY)
-        player.x = randomX
-        player.y = randomY
+    fun repositionPlayer(minX:Int, maxX:Int, minY:Int, maxY:Int, player: Player){
+        if(player.x+1<maxX){
+            player.x++
+        }else{
+            player.y++
+        }
     }
 }
 

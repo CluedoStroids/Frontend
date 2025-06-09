@@ -65,13 +65,16 @@ class GameBoard @JvmOverloads constructor(
         WebSocketService.getInstance().subscribeToMovementUpdates(id!!) { gameData ->
             post {
                 updateGameData(gameData)
+                if (inRoom){
+                    updateGameData(gameData)
+                }
             }
         }
         WebSocketService.getInstance().getGameBoard(id!!)
         WebSocketService.getInstance().subscribeGetGameBoard(id!!)
 
         if (player != null&&id!=null) {
-            WebSocketService.getInstance().gameData(id,player)
+            WebSocketService.getInstance().getGameData(id,player)
         }
 
 
@@ -130,6 +133,9 @@ class GameBoard @JvmOverloads constructor(
                     playerPosY = 0
                 }
             }
+        if (id != null) {
+            WebSocketService.getInstance().performMovement(id.toString(),moves)
+        }
             invalidate() // Zeichenfläche aktualisieren
     }
     fun moveDown(){
@@ -149,7 +155,9 @@ class GameBoard @JvmOverloads constructor(
                     playerPosY = 24
                 }
             }
-
+        if (id != null) {
+            WebSocketService.getInstance().performMovement(id.toString(),moves)
+        }
             invalidate() // Zeichenfläche aktualisieren
 
     }
@@ -171,6 +179,9 @@ class GameBoard @JvmOverloads constructor(
                     playerPosX = 0
                 }
             }
+        if (id != null) {
+            WebSocketService.getInstance().performMovement(id.toString(),moves)
+        }
             invalidate() // Zeichenfläche aktualisieren
     }
     fun moveRight(){
@@ -191,6 +202,9 @@ class GameBoard @JvmOverloads constructor(
                     playerPosX = 24
                 }
             }
+        if (id != null) {
+            WebSocketService.getInstance().performMovement(id.toString(),moves)
+        }
             invalidate() // Zeichenfläche aktualisieren
         }
 
@@ -213,10 +227,8 @@ class GameBoard @JvmOverloads constructor(
 
     fun walkiIntoRoom(room: Room)
     {
-        val gm: GameBoard = GameBoard();
-        val coord: IntIntPair=gm.placeInRoom(players?.get(playerArrPos)!!,room, players!!)
-        playerPosX=coord.first
-        playerPosY=coord.second
+        //val gm: GameBoard = GameBoard();
+        //val coord: IntIntPair=gm.placeInRoom(players?.get(playerArrPos)!!,room, players!!)
         inRoom=true
     }
     fun leaveRoom(){

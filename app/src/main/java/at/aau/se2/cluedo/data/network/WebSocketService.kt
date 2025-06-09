@@ -501,7 +501,6 @@ class WebSocketService {
     }
     fun subscribeToMovementUpdates(lobbyId: String,callback: (GameData) -> Unit) {
         val topic = "/topic/performMovement/$lobbyId"
-
         stompClient?.topic(topic)?.subscribe { stompMessage ->
             val payload = stompMessage.payload
             val gameData = gson.fromJson(payload, GameData::class.java)
@@ -564,7 +563,7 @@ class WebSocketService {
         stompClient?.send("/app/solve-case", payload)?.subscribe()
     }
 
-    fun gameData(lobbyId: String,player: Player) {
+    fun getGameData(lobbyId: String, player: Player) {
         if (!_isConnected.value || lobbyId.isBlank()) {
             _errorMessages.tryEmit("Cannot get game Data: Not connected or invalid lobby ID")
             return
