@@ -16,7 +16,6 @@ import com.example.myapplication.R
 
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import at.aau.se2.cluedo.data.network.WebSocketService
-import com.example.myapplication.databinding.FragmentJoinLobbyBinding
 import com.example.myapplication.databinding.FragmentSuspicionPopupBinding
 
 class SuspicionPopupFragment : Fragment() {
@@ -71,9 +70,9 @@ class SuspicionPopupFragment : Fragment() {
 
             // Get lobby ID and player name
             val lobbyId = lobbyViewModel.lobbyState.value?.id
-            val playerName = webSocketService.player.value?.name
+            val playerID = webSocketService.player.value?.playerID
 
-            if (lobbyId.isNullOrBlank() || playerName.isNullOrBlank()) {
+            if (lobbyId.isNullOrBlank() || playerID.isNullOrBlank()) {
                 Toast.makeText(context, "No active lobby or player found", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -81,11 +80,8 @@ class SuspicionPopupFragment : Fragment() {
             lobbyViewModel.addSuspicionNote(suspicion)
             lobbyViewModel.markSuggestionMade()
 
-            val currentLobbyId = lobbyViewModel.lobbyState.value?.id
-            val currentPlayerName = currentPlayer?.name
-
             // Send suggestion to backend
-            turnBasedService.makeSuggestion(lobbyId, playerName, suspect, weapon, room)
+            turnBasedService.makeSuggestion(lobbyId, playerID, suspect, weapon, room)
 
             // Also save to notes for backward compatibility
             val suggestion = "$suspect — in the $room — with the $weapon"

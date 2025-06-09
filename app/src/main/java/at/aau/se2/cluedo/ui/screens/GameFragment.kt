@@ -1,10 +1,13 @@
 package at.aau.se2.cluedo.ui.screens
 
+import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.os.Looper
 import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
@@ -19,6 +22,7 @@ import com.example.myapplication.databinding.FragmentGameBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.viewmodels.CardAdapter
+import com.example.myapplication.databinding.SuggestionNotificationBinding
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -40,7 +44,12 @@ class GameFragment : Fragment() {
 
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
+
+    private var _suggestionBinding: SuggestionNotificationBinding? = null
+    private val suggestionBinding get() = _suggestionBinding!!
+
     private val lobbyViewModel: LobbyViewModel by activityViewModels()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -101,18 +110,18 @@ class GameFragment : Fragment() {
      */
     private fun setupUI() {
 
-      /*  binding.notesButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameFragment_to_notesFragment)
-        }
+        /*  binding.notesButton.setOnClickListener {
+              findNavController().navigate(R.id.action_gameFragment_to_notesFragment)
+          }
 
-        binding.solveCaseButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameFragment_to_solveCaseFragment)
-        }
+          binding.solveCaseButton.setOnClickListener {
+              findNavController().navigate(R.id.action_gameFragment_to_solveCaseFragment)
+          }
 
-        binding.makeSuspicionButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameFragment_to_suspicionPopupFragment)
-        }
-*/
+          binding.makeSuspicionButton.setOnClickListener {
+              findNavController().navigate(R.id.action_gameFragment_to_suspicionPopupFragment)
+          }
+  */
 
         binding.playersListTextView.movementMethod = ScrollingMovementMethod()
         binding.gameInfoTextView.movementMethod = ScrollingMovementMethod()
@@ -136,12 +145,14 @@ class GameFragment : Fragment() {
         }
 
         //Change Icon of FloatingActionButton (openCardsButton) depending on state of BottomSheet
-        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         binding.cardsOpenButton.setImageResource(R.drawable.cards_close_icon)
                     }
+
                     BottomSheetBehavior.STATE_HIDDEN -> {
                         binding.cardsOpenButton.setImageResource(R.drawable.cards_open_icon)
                     }
@@ -155,7 +166,8 @@ class GameFragment : Fragment() {
         })
 
         val recyclerView = binding.playerCardsRecyclerview
-        recyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         var cards = WebSocketService.getInstance().player.value?.cards
         recyclerView.adapter = CardAdapter(BasicCard.getCardIDs(cards))
 
@@ -219,9 +231,10 @@ class GameFragment : Fragment() {
                                 val lobbyState = lobbyViewModel.lobbyState.value
                                 if (lobbyState != null) {
                                     lobbyViewModel.logMessage("Using lobby state as fallback with ${lobbyState.players.size} players")
-                                    val playersList = lobbyState.players.joinToString("\n") { player ->
-                                        "  - ${player.name} (${player.character})"
-                                    }
+                                    val playersList =
+                                        lobbyState.players.joinToString("\n") { player ->
+                                            "  - ${player.name} (${player.character})"
+                                        }
                                     binding.playersListTextView.text = playersList
                                 }
                             }
@@ -238,7 +251,8 @@ class GameFragment : Fragment() {
                 launch {
                     lobbyViewModel.lobbyState.collect { lobby ->
                         val currentPlayer = lobby?.players?.find { it.isCurrentPlayer == true }
-                        val isInRoom = roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
+                        val isInRoom =
+                            roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
                         binding.makeSuspicionButton.isEnabled = isInRoom
                     }
                 }
@@ -248,24 +262,72 @@ class GameFragment : Fragment() {
         }
     }
 
-/**
- * Toggles Bottom Sheet Open/Close
- */
-private fun toggleBottomSheet() {
-    if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN) {
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-    } else {
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+    /**
+     * Toggles Bottom Sheet Open/Close
+     */
+    private fun toggleBottomSheet() {
+        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        } else {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        }
     }
-}
 
-private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
-    Toast.makeText(requireContext(), message, duration).show()
-}
+    private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
+        Toast.makeText(requireContext(), message, duration).show()
+    }
 
-override fun onDestroyView() {
-    super.onDestroyView()
-    _binding = null
-}
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    /**
+     * Displays a popup notification about a suggestion.
+     *
+     * @param playerName The name of the player making the suggestion.
+     * @param room
+     * @param weapon
+     * @param character
+     */
+    fun showSuggestionToast(
+        playerName: String,
+        room: String,
+        weapon: String,
+        character: String,
+        durationMillis: Long = 4000
+    ) {
+        val rootView = requireActivity().findViewById<ViewGroup>(android.R.id.content)
+
+        val toastView = layoutInflater.inflate(R.layout.suggestion_notification, rootView, false)
+
+        suggestionBinding.notificationTitleText.text = "$playerName suspects: "
+        suggestionBinding.notificationMessageText.text = "$character with $weapon in $room"
+
+        // Initial off-screen position and invisible
+        toastView.translationY = -200f
+        toastView.alpha = 0f
+
+        rootView.addView(toastView)
+
+        // Animate in
+        toastView.animate()
+            .translationY(0f)
+            .alpha(1f)
+            .setDuration(300)
+            .start()
+
+        // Animate out and remove after delay
+        toastView.postDelayed({
+            toastView.animate()
+                .translationY(-200f)
+                .alpha(0f)
+                .setDuration(300)
+                .withEndAction {
+                    rootView.removeView(toastView)
+                }
+                .start()
+        }, durationMillis)
+    }
 
 }
