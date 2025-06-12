@@ -558,11 +558,6 @@ class WebSocketService {
             _lobbyState.value?.players = response.players
         }
     }
-
-
-
-
-    }
     fun reportCheating(lobbyId: String,  suspect: String, accuser: String)
     {
         val message = SuspectCheating(
