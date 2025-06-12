@@ -9,7 +9,6 @@ import at.aau.se2.cluedo.data.network.WebSocketService
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import android.util.Log
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -189,11 +188,29 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         _suspicionNotes.value = _suspicionNotes.value + note
     }
 
+    private var lastRoomEntered: String? = null
+    private var hasSuggestedInThisRoom: Boolean = false
+
+    fun updateRoomEntry(currentRoom: String?) {
+        if (currentRoom != lastRoomEntered) {
+            lastRoomEntered = currentRoom
+            hasSuggestedInThisRoom = false
+        }
+    }
+
+    fun canMakeSuggestion(): Boolean = !hasSuggestedInThisRoom
+
+    fun markSuggestionMade() {
+        hasSuggestedInThisRoom = true
+    }
+
+    fun isPlayerInRoom(player: Player?): Boolean {
+        return player != null && RoomUtils.getRoomNameFromCoordinates(player.x, player.y) != null
+    }
 
 
     val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
 
+
 }
-
-
 
