@@ -40,8 +40,6 @@ class MainMenuFragment : Fragment() {
             findNavController().navigate(R.id.action_mainMenuFragment_to_joinLobbyFragment)
         }
 
-
-
         binding.settingsCard.setOnClickListener {
             findNavController().navigate(R.id.action_mainMenuFragment_to_settingsFragment)
         }
