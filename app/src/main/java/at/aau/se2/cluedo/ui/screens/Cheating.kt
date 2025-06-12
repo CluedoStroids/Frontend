@@ -71,7 +71,7 @@ class CheatingSuspicionFragment : Fragment() {
     private fun updatePlayerSpinner() {
         val currentPlayerName = lobbyViewModel.webSocketService.getPlayer()?.name
 
-        val otherPlay = currentPlayers.filter { it.name != currentPlayerName }
+        val otherPlay = currentPlayers.filter { it.name != currentPlayerName }.map { "${it.name} (${it.character})" }
 
         val playerOptions = listOf("Select player to report...") + otherPlay
 
