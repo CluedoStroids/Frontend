@@ -398,7 +398,7 @@ class WebSocketService {
         // Create a temporary game state with the current lobby players
         // This helps ensure all players see the game state even if they miss the server message
         _lobbyState.value?.let { lobby ->
-            if (lobby.players.size >= 3) {
+            if (lobby.players.size >= 2) {
                 logMessage("Creating temporary game state with ${lobby.players.size} players")
                 val tempGameState = GameStartedResponse(
                     lobbyId = lobbyId,

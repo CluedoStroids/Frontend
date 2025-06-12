@@ -1,5 +1,7 @@
 package at.aau.se2.cluedo.viewmodels
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.aau.se2.cluedo.data.models.Lobby
@@ -10,10 +12,10 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import at.aau.se2.cluedo.data.models.GameStartedResponse
+import at.aau.se2.cluedo.data.models.SuggestionNotificationData
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-
 
 
 class LobbyViewModel(
@@ -37,7 +39,6 @@ class LobbyViewModel(
         mutableMapOf<String, MutableMap<String, Boolean>>() // category -> (player -> checked)
     )
     val playerNotes: StateFlow<MutableMap<String, MutableMap<String, Boolean>>> = _playerNotes
-
 
     fun connect() {
         webSocketService.connect()
@@ -136,7 +137,7 @@ class LobbyViewModel(
                 // If we don't have a game state, check if we have a lobby
                 lobbyState.value?.let { lobby ->
                     // If we have a lobby with at least 3 players, we can start the game
-                    if (lobby.players.size >= 3) {
+                    if (lobby.players.size >= 2) {
                         // Check if we can start the game
                         checkCanStartGame(lobby.id)
                     }
@@ -165,7 +166,6 @@ class LobbyViewModel(
     fun isNoteChecked(category: String, player: String): Boolean {
         return _playerNotes.value[category]?.get(player) == true
     }
-
 
     override fun onCleared() {
         super.onCleared()

@@ -1,5 +1,6 @@
 package at.aau.se2.cluedo.ui.screens
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -7,9 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -22,13 +25,17 @@ import at.aau.se2.cluedo.data.models.TurnState
 import at.aau.se2.cluedo.data.models.TurnStateResponse
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
+import at.aau.se2.cluedo.ui.MainActivity
 import at.aau.se2.cluedo.viewmodels.CardAdapter
 import at.aau.se2.cluedo.viewmodels.GameBoard
+import at.aau.se2.cluedo.viewmodels.GameViewModel
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
+import com.example.myapplication.databinding.SuggestionNotificationBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.launch
+import kotlin.getValue
 
 /**
  * A simple [Fragment] subclass.
@@ -44,6 +51,9 @@ class GameBoardFragment : Fragment() {
 
     private var _binding: FragmentGameBoardBinding? = null
     private val binding get() = _binding!!
+
+    private val gameViewModel: GameViewModel by viewModels()
+
 
     private val roomCoordinates = setOf(
         Pair(0, 0), Pair(1, 0), Pair(0, 1), Pair(1, 1), // Küche
@@ -313,7 +323,7 @@ class GameBoardFragment : Fragment() {
                             roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
                         // Note: Turn-based validation will be handled by canPerformAction
                         // This is kept for backward compatibility
-                        binding.makeSuspicionButton.isEnabled = isInRoom
+                        binding.makeSuspicionButton.isEnabled = true //isInRoom
                     }
                 }
 
@@ -356,6 +366,25 @@ class GameBoardFragment : Fragment() {
                         }
                     }
                 }
+
+                /**
+                 * Always check if a suggestion occurs. If yes, the fields are'nt null and a InformationDialog
+                 * is shwon to each player.
+                 */
+                launch{
+                    gameViewModel.suggestionNotificationData.collect { suggestion ->
+                        Log.d("SUGGEST","Received: ${suggestion?.playerName.toString()} ,${suggestion?.room.toString()},"+
+                                " ${suggestion?.weapon.toString()} , ${suggestion?.suspect.toString()}")
+
+                        if(suggestion?.playerName!=null){
+                            showSuggestionNotification(suggestion.playerName.toString(),
+                                suggestion.room.toString(), suggestion.weapon.toString(), suggestion.suspect.toString()
+                            )
+                        }
+
+                    }
+                }
+
             }
         }
     }
@@ -377,7 +406,7 @@ class GameBoardFragment : Fragment() {
     private fun updateUIForTurnState(turnState: TurnStateResponse) {
         // Update turn state display
         val message = getTurnStateMessage(turnState.turnState)
-        showToast("${turnState.currentPlayerName}: $message")
+        //showToast("${turnState.currentPlayerName}: $message")
 
         // The button states will be updated automatically when isCurrentPlayerTurn changes
     }
@@ -409,7 +438,7 @@ class GameBoardFragment : Fragment() {
             // Enable buttons based on turn state and game logic
             val canRollDice = turnBasedService.canPerformAction("ROLL_DICE")
             val canAccuse = turnBasedService.canPerformAction("ACCUSE")
-            val canSuggest = turnBasedService.canPerformAction("SUGGEST")
+            val canSuggest = true //turnBasedService.canPerformAction("SUGGEST")
             val canMove = turnBasedService.canPerformAction("MOVE")
 
             binding.rollDice.isEnabled = canRollDice
@@ -490,6 +519,74 @@ class GameBoardFragment : Fragment() {
             binding.diceTwoValueTextView2.text = diceTwoValue.toString()
         }
     }
+
+    /**
+     * Displays a popup notification about a suggestion.
+     *
+     * @param playerName The name of the player making the suggestion.
+     * @param room
+     * @param weapon
+     * @param character
+     */
+    @SuppressLint("SetTextI18n")
+    fun showSuggestionNotification(
+        playerName: String,
+        room: String,
+        weapon: String,
+        character: String,
+        durationMillis: Long = 4000
+    ) {
+
+        var dialogBuilder = AlertDialog.Builder(requireContext())
+
+        dialogBuilder.setTitle("$playerName suggests: ")
+        dialogBuilder.setMessage("$character with $weapon in $room")
+
+        dialogBuilder.setPositiveButton("Acknowledge") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        val dialog = dialogBuilder.create()
+        dialog.show()
+
+        /*
+        val rootView = requireActivity().findViewById<ViewGroup>(android.R.id.content)
+
+        var suggestionBinding = SuggestionNotificationBinding.inflate(layoutInflater, rootView, false)
+
+        val toastView = suggestionBinding.root
+
+        suggestionBinding.notificationTitleText.text = "$playerName suspects: "
+        suggestionBinding.notificationMessageText.text = "$character with $weapon in $room"
+
+        // Initial off-screen position and invisible
+        toastView.translationY = -200f
+        toastView.alpha = 0f
+
+        rootView.addView(toastView)
+
+        // Animate in
+        toastView.animate()
+            .translationY(0f)
+            .alpha(1f)
+            .setDuration(300)
+            .start()
+
+        // Animate out and remove after delay
+        toastView.postDelayed({
+            toastView.animate()
+                .translationY(-200f)
+                .alpha(0f)
+                .setDuration(300)
+                .withEndAction {
+                    rootView.removeView(toastView)
+                }
+                .start()
+        }, durationMillis)
+         */
+    }
+
+
 
 
 }

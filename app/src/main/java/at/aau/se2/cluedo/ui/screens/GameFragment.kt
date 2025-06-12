@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.os.Looper
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +23,7 @@ import com.example.myapplication.databinding.FragmentGameBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.viewmodels.CardAdapter
+import at.aau.se2.cluedo.viewmodels.GameViewModel
 import com.example.myapplication.databinding.SuggestionNotificationBinding
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -45,10 +47,8 @@ class GameFragment : Fragment() {
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
 
-    private var _suggestionBinding: SuggestionNotificationBinding? = null
-    private val suggestionBinding get() = _suggestionBinding!!
-
     private val lobbyViewModel: LobbyViewModel by activityViewModels()
+    private val gameViewModel: GameViewModel by viewModels()
 
 
     override fun onCreateView(
@@ -280,54 +280,6 @@ class GameFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    /**
-     * Displays a popup notification about a suggestion.
-     *
-     * @param playerName The name of the player making the suggestion.
-     * @param room
-     * @param weapon
-     * @param character
-     */
-    fun showSuggestionToast(
-        playerName: String,
-        room: String,
-        weapon: String,
-        character: String,
-        durationMillis: Long = 4000
-    ) {
-        val rootView = requireActivity().findViewById<ViewGroup>(android.R.id.content)
-
-        val toastView = layoutInflater.inflate(R.layout.suggestion_notification, rootView, false)
-
-        suggestionBinding.notificationTitleText.text = "$playerName suspects: "
-        suggestionBinding.notificationMessageText.text = "$character with $weapon in $room"
-
-        // Initial off-screen position and invisible
-        toastView.translationY = -200f
-        toastView.alpha = 0f
-
-        rootView.addView(toastView)
-
-        // Animate in
-        toastView.animate()
-            .translationY(0f)
-            .alpha(1f)
-            .setDuration(300)
-            .start()
-
-        // Animate out and remove after delay
-        toastView.postDelayed({
-            toastView.animate()
-                .translationY(-200f)
-                .alpha(0f)
-                .setDuration(300)
-                .withEndAction {
-                    rootView.removeView(toastView)
-                }
-                .start()
-        }, durationMillis)
     }
 
 }

@@ -3,8 +3,8 @@ package at.aau.se2.cluedo.data.models
 import com.google.gson.annotations.SerializedName
 
 data class SuggestionRequest(
-    @SerializedName("playerID")
-    val playerId: String = "",
+    @SerializedName("playerName")
+    val playerName: String = "",
 
     @SerializedName("suspect")
     val suspect: String = "",
