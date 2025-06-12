@@ -37,7 +37,7 @@ import ua.naiksoftware.stomp.dto.StompMessage
 
 class WebSocketService {
     companion object {
-        private const val SERVER_IP = "10.0.2.2"
+        private const val SERVER_IP = "172.20.10.7" //10.0.2.2
         private const val SERVER_PORT = "8321" //8080
         private const val CONNECTION_URL = "ws://$SERVER_IP:$SERVER_PORT/ws"
         private const val TOPIC_LOBBY_CREATED = "/topic/lobbyCreated"
@@ -453,14 +453,11 @@ class WebSocketService {
             return
         }
 
-        val result = DiceResult(diceOne = diceOne, diceTwo = diceTwo)
+        val result = DiceResult(diceOne, diceTwo)
         val payload = gson.toJson(result)
 
-        _diceOneResult.value = diceOne
-        _diceTwoResult.value = diceTwo
-
         stompClient?.send(APP_ROLL_DICE, payload)?.subscribe({
-            logMessage("Sensor dice roll sent: $diceOne, $diceTwo")
+            _errorMessages.tryEmit("Dice sent from sensor")
         }, { error ->
             _errorMessages.tryEmit("Error sending sensor dice result: ${error.message}")
         })
