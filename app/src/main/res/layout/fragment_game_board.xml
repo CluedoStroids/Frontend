@@ -111,6 +111,18 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <Button
+            android:id="@+id/skipTurnButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/skip_turn"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.719"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/roll_dice" />
+
+        <Button
             android:id="@+id/moveDown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

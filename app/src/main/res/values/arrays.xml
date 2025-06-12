@@ -1,0 +1,34 @@
+<resources>
+    <string-array name="suspect_options">
+        <item>Select a suspect</item>
+        <item>Miss Scarlet</item>
+        <item>Colonel Mustard</item>
+        <item>Mrs. White</item>
+        <item>Mr. Revender</item>
+        <item>Mrs. Peacock</item>
+        <item>Professor Plum</item>
+    </string-array>
+
+    <string-array name="room_options">
+        <item>Select a room</item>
+        <item>Kitchen</item>
+        <item>Dining Room</item>
+        <item>Lounge</item>
+        <item>Music Room</item>
+        <item>Hall</item>
+        <item>Conservatory</item>
+        <item>Billiard Room</item>
+        <item>Library</item>
+        <item>Study</item>
+    </string-array>
+
+    <string-array name="weapon_options">
+        <item>Select a weapon</item>
+        <item>Knife</item>
+        <item>Candlestick</item>
+        <item>Revolver</item>
+        <item>Rope</item>
+        <item>Lead Pipe</item>
+        <item>Wrench</item>
+    </string-array>
+</resources>
