@@ -169,7 +169,7 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         disconnect()
     }
 
-    fun solveCase(
+    fun sendAccusation(
         lobbyId: String,
         username: String,
         suspect: String,
@@ -177,7 +177,7 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         weapon: String
     ) {
 
-        webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
+        webSocketService.sendAccusation(lobbyId, username, suspect, room, weapon)
     }
 
 

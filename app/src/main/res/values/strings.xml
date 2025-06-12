@@ -28,7 +28,7 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
-    <string name="submit_suspicion">submit suspicion</string>
+    <string name="submit_suggestion">Make a suspicion</string>
     <string name="cancel">Cancel</string>
     <string name="you_ve_cracked_the_case">You have cracked the case!</string>
     <string name="back_to_lobby">Back to Lobby</string>
@@ -37,5 +37,10 @@
     <string name="suspects">Suspects</string>
     <string name="weapons">Weapons</string>
     <string name="rooms">Rooms</string>
+    <string name="solve_case">Solve the case</string>
+    <string name="suspect">Suspect</string>
+    <string name="notes">Notes</string>
+    <string name="solve">Solve</string>
+    <string name="make_a_suspicion">Make a suspicion</string>
 
 </resources>

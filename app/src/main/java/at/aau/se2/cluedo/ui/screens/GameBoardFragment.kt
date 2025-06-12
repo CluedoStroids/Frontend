@@ -96,11 +96,11 @@ class GameBoardFragment : Fragment() {
         }
 
         binding.solveCaseButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameBoardIMG_to_solveCaseFragment)
+            findNavController().navigate(R.id.action_gameBoardIMG_to_accusationFragment)
         }
 
         binding.makeSuspicionButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameBoardIMG_to_suspicionPopupFragment)
+            findNavController().navigate(R.id.action_gameBoardIMG_to_suggestionFragment)
         }
 
         //BottomSheet to show cards

@@ -18,7 +18,7 @@ import at.aau.se2.cluedo.viewmodels.LobbyViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class SolveCaseFragment : Fragment() {
+class AccusationFragment : Fragment() {
 
     private val lobbyViewModel: LobbyViewModel by viewModels()
 
@@ -27,30 +27,30 @@ class SolveCaseFragment : Fragment() {
     private lateinit var suspectSpinner: Spinner
     private lateinit var roomSpinner: Spinner
     private lateinit var weaponSpinner: Spinner
-    private lateinit var solveButton: Button
+    private lateinit var accuseButton: Button
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val context = requireContext()
-        val layoutId = context.resources.getIdentifier("fragment_solve_case", "layout", context.packageName)
+        val layoutId = context.resources.getIdentifier("fragment_accusation", "layout", context.packageName)
         val view = inflater.inflate(layoutId, container, false)
 
         val suspectSpinnerId = context.resources.getIdentifier("suspectSpinner", "id", context.packageName)
         val roomSpinnerId = context.resources.getIdentifier("roomSpinner", "id", context.packageName)
         val weaponSpinnerId = context.resources.getIdentifier("weaponSpinner", "id", context.packageName)
-        val solveButtonId = context.resources.getIdentifier("button_solve_case", "id", context.packageName)
+        val accuseButtonId = context.resources.getIdentifier("button_accuse", "id", context.packageName)
         val cancelButtonId = context.resources.getIdentifier("button_cancel", "id", context.packageName)
 
         suspectSpinner = view.findViewById(suspectSpinnerId)
         roomSpinner = view.findViewById(roomSpinnerId)
         weaponSpinner = view.findViewById(weaponSpinnerId)
-        solveButton = view.findViewById(solveButtonId)
+        accuseButton = view.findViewById(accuseButtonId)
         val cancelButton: Button = view.findViewById(cancelButtonId)
 
-        solveButton.setOnClickListener {
-            solveCase()
+        accuseButton.setOnClickListener {
+            makeAccusation()
         }
 
 
@@ -83,8 +83,8 @@ class SolveCaseFragment : Fragment() {
 
                     when {
                         player.hasWon -> {
-                            solveButton.isEnabled = false
-                            Toast.makeText(context, "You won! 🎉", Toast.LENGTH_LONG).show()
+                            accuseButton.isEnabled = false
+                            Toast.makeText(context, "You won!", Toast.LENGTH_LONG).show()
 
                             val winScreenId = resources.getIdentifier("winScreenFragment", "id", requireContext().packageName)
                             if (winScreenId != 0) {
@@ -98,9 +98,9 @@ class SolveCaseFragment : Fragment() {
                             }
                         }
                         !player.isActive -> {
-                            solveButton.isEnabled = false
+                           accuseButton.isEnabled = false
                             isPlayerEliminated = true
-                            Toast.makeText(context, "Wrong guess. You are eliminated! ❌", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "Wrong guess. You are eliminated!", Toast.LENGTH_LONG).show()
 
                             val elimScreenId = resources.getIdentifier("eliminationScreenFragment", "id", requireContext().packageName)
                             if (elimScreenId != 0) {
@@ -125,9 +125,9 @@ class SolveCaseFragment : Fragment() {
         weaponSpinner.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, weaponArray)
     }
 
-    private fun solveCase() {
+    private fun makeAccusation() {
         if (isPlayerEliminated) {
-            Toast.makeText(context, "You are eliminated! You can't solve the case anymore.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "You are eliminated! You can't accuse anymore.", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -148,7 +148,7 @@ class SolveCaseFragment : Fragment() {
             return
         }
 
-        lobbyViewModel.solveCase(lobbyId, username, selectedSuspect, selectedRoom, selectedWeapon)
+        lobbyViewModel.sendAccusation(lobbyId, username, selectedSuspect, selectedRoom, selectedWeapon)
     }
 
     private fun animateAndClose(view: View) {
