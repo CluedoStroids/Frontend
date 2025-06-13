@@ -420,6 +420,11 @@ class WebSocketService {
         )
     }
 
+    private val _diceOneResult = MutableStateFlow<Int?>(null)
+    private val _diceTwoResult = MutableStateFlow<Int?>(null)
+
+    val diceOneResult: StateFlow<Int?> = _diceOneResult
+    val diceTwoResult: StateFlow<Int?> = _diceTwoResult
 
     // TODO: remove because not needed @Katharina Krassnitzer
     @SuppressLint("CheckResult")
@@ -427,8 +432,8 @@ class WebSocketService {
         stompClient?.topic(TOPIC_DICE_RESULT)?.subscribe({ stompMessage ->
             try {
                 val result = gson.fromJson(stompMessage.payload, DiceResult::class.java)
-                //_diceOneResult.value = result.diceOne
-                //_diceTwoResult.value = result.diceTwo
+                _diceOneResult.value = result.diceOne
+                _diceTwoResult.value = result.diceTwo
             } catch (e: Exception) {
                 _errorMessages.tryEmit("Invalid result format: ${e.message}")
             }
@@ -439,7 +444,16 @@ class WebSocketService {
 
     @SuppressLint("CheckResult")
     fun rollDice() {
-        stompClient?.send(APP_ROLL_DICE, "")?.subscribe()
+        if (!_isConnected.value) {
+            _errorMessages.tryEmit("Not connected to server")
+            return
+        }
+
+        stompClient?.send(APP_ROLL_DICE, "")?.subscribe({
+            _errorMessages.tryEmit("Dice requested")
+        }, { error ->
+            _errorMessages.tryEmit("Error from rolling the dice: ${error.message}")
+        })
     }
 
     @SuppressLint("CheckResult")

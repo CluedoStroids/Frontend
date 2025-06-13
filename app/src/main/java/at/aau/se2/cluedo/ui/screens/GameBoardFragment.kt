@@ -258,6 +258,7 @@ class GameBoardFragment : Fragment() {
         }
 
         binding.rollDice.setOnClickListener {
+            webSocketService?.rollDice()
             if (turnBasedService.canPerformAction("ROLL_DICE")) {
                 val lobbyId = lobbyViewModel.createdLobbyId.value
                 val playerName = webSocketService?.player?.value?.name
@@ -281,6 +282,23 @@ class GameBoardFragment : Fragment() {
 
         lifecycleScope.launch {
             launch {
+                webSocketService?.diceOneResult?.collect { value ->
+                    value?.let {
+                        diceOneValue = it // store locally
+                        binding.diceOneValueTextView2.text = diceOneValue.toString()
+                    }
+                }
+            }
+            launch {
+                webSocketService?.diceTwoResult?.collect { value ->
+                    value?.let {
+                        diceTwoValue = it // store locally
+                        binding.diceTwoValueTextView2.text = diceTwoValue.toString()
+                    }
+                }
+            }
+            /*
+            launch {
                 turnBasedService.diceOneResult.collect { value ->
                     value?.let {
                         diceOneValue = it // store locally
@@ -298,6 +316,8 @@ class GameBoardFragment : Fragment() {
                     }
                 }
             }
+
+             */
         }
 
         sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
