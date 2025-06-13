@@ -292,7 +292,7 @@ class GameBoardFragment : Fragment() {
             launch {
                 webSocketService?.diceTwoResult?.collect { value ->
                     value?.let {
-                        diceTwoValue = it // store locally
+                        diceTwoValue = it //store locally
                         binding.diceTwoValueTextView2.text = diceTwoValue.toString()
                     }
                 }
@@ -323,7 +323,7 @@ class GameBoardFragment : Fragment() {
         sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         shakeListener.setOnShakeListener {
-            webSocketService?.rollDice()
+            binding.rollDice.performClick()
         }
 
     }

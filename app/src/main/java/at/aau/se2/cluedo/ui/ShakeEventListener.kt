@@ -27,10 +27,11 @@ class ShakeEventListener : SensorEventListener {
 
         val gForce = sqrt(gX * gX + gY * gY + gZ * gZ)
 
-        if (gForce > 1.5f) {
+        if (gForce > 5.0f) {
             val now = System.currentTimeMillis()
             if (shakeTimestamp + 1000 > now) return
             shakeTimestamp = now
+
             shakeListener?.invoke()
         }
     }

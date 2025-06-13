@@ -444,11 +444,6 @@ class WebSocketService {
 
     @SuppressLint("CheckResult")
     fun rollDice() {
-        if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
-            return
-        }
-
         stompClient?.send(APP_ROLL_DICE, "")?.subscribe({
             _errorMessages.tryEmit("Dice requested")
         }, { error ->
