@@ -208,10 +208,6 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         return player != null && RoomUtils.getRoomNameFromCoordinates(player.x, player.y) != null
     }
 
-    fun sendSuggestion(suspect: String, weapon: String, room: String) {
-        webSocketService.sendSuggestion(suspect, weapon, room)
-    }
-
 
     val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
 

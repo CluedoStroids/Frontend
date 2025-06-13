@@ -15,12 +15,17 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
+import at.aau.se2.cluedo.data.network.WebSocketService
+import com.example.myapplication.R
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class AccusationFragment : Fragment() {
 
     private val lobbyViewModel: LobbyViewModel by viewModels()
+    private val turnBasedService = TurnBasedWebSocketService.getInstance()
+    private val webSocketService = WebSocketService.getInstance()
 
     private var isPlayerEliminated: Boolean = false
 
@@ -47,7 +52,15 @@ class AccusationFragment : Fragment() {
         roomSpinner = view.findViewById(roomSpinnerId)
         weaponSpinner = view.findViewById(weaponSpinnerId)
         accuseButton = view.findViewById(accuseButtonId)
+
         val cancelButton: Button = view.findViewById(cancelButtonId)
+        cancelButton.setOnClickListener {
+            animateAndClose(it)
+            it.postDelayed({
+                findNavController().navigate(R.id.gameBoardIMG)
+            }, 300)
+        }
+
 
         accuseButton.setOnClickListener {
             makeAccusation()
@@ -91,7 +104,7 @@ class AccusationFragment : Fragment() {
                                 navController.navigate(winScreenId, bundle)
                             }
                         }
-                        lobby?.winnerUsername != null -> {
+                        lobby.winnerUsername != null -> {
                             val updateScreenId = resources.getIdentifier("investigationUpdateFragment", "id", requireContext().packageName)
                             if (updateScreenId != 0) {
                                 navController.navigate(updateScreenId, bundle)
@@ -141,13 +154,15 @@ class AccusationFragment : Fragment() {
         }
 
         val lobbyId = lobbyViewModel.lobbyState.value?.id
-        val username = lobbyViewModel.createdLobbyId.value
+        val username = webSocketService.player.value?.name
 
         if (lobbyId == null || username.isNullOrBlank()) {
             Toast.makeText(context, "Missing lobby or username info. Please rejoin.", Toast.LENGTH_SHORT).show()
             return
         }
 
+        // Use the new accusation system instead of the old solveCase
+        turnBasedService.makeAccusation(lobbyId, username, selectedSuspect, selectedWeapon, selectedRoom)
         lobbyViewModel.sendAccusation(lobbyId, username, selectedSuspect, selectedRoom, selectedWeapon)
     }
 
