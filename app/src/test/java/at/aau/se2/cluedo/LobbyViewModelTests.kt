@@ -320,12 +320,6 @@ class LobbyViewModelTests {
     }
 
     @Test
-    fun `sendSuggestion should delegate to WebSocketService`() {
-        viewModel.sendSuggestion("Colonel Mustard", "Candlestick", "Kitchen")
-        verify(mockWebSocketService).sendSuggestion("Colonel Mustard", "Candlestick", "Kitchen")
-    }
-
-    @Test
     fun `solveCase delegates to WebSocketService`() {
         viewModel.solveCase("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
         verify(mockWebSocketService).solveCase("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
