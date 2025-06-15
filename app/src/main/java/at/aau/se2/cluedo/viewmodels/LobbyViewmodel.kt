@@ -181,11 +181,11 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
     }
 
 
-    private val _suspicionNotes = MutableStateFlow<List<String>>(emptyList())
-    val suspicionNotes: StateFlow<List<String>> = _suspicionNotes
+    private val _suggestionNotes = MutableStateFlow<List<String>>(emptyList())
+    val suggestionNotes: StateFlow<List<String>> = _suggestionNotes
 
-    fun addSuspicionNote(note: String) {
-        _suspicionNotes.value = _suspicionNotes.value + note
+    fun addSuggestionNote(note: String) {
+        _suggestionNotes.value = _suggestionNotes.value + note
     }
 
     private var lastRoomEntered: String? = null

@@ -45,7 +45,7 @@ class SuggestionFragment : Fragment() {
         val suspectSpinner: Spinner = view.findViewById(R.id.suspectSpinner)
         val roomSpinner: Spinner = view.findViewById(R.id.roomSpinner)
         val weaponSpinner: Spinner = view.findViewById(R.id.weaponSpinner)
-        val suggestionButton: Button = view.findViewById(R.id.submitButton)
+        val suggestionButton: Button = view.findViewById(R.id.button_make_suspicion)
         val cancelButton: Button = view.findViewById(R.id.button_cancel)
 
         setUpSpinner(suspectSpinner, R.array.suspect_options)
