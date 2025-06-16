@@ -11,6 +11,7 @@ import androidx.collection.IntIntPair
 import at.aau.se2.cluedo.data.GameData
 import at.aau.se2.cluedo.data.models.CellType
 import at.aau.se2.cluedo.data.models.GameBoard
+import at.aau.se2.cluedo.data.models.GameBoardCell
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.Room
 import at.aau.se2.cluedo.data.network.WebSocketService
@@ -62,7 +63,8 @@ class GameBoard @JvmOverloads constructor(
                 updateGameData(gameData)
             }
         }
-        WebSocketService.getInstance().subscribeToMovementUpdates(id!!) { gameData ->
+
+        WebSocketService.getInstance().subscribeToMovementUpdates() { gameData ->
             post {
                 updateGameData(gameData)
                 if (inRoom){
@@ -70,6 +72,7 @@ class GameBoard @JvmOverloads constructor(
                 }
             }
         }
+
         WebSocketService.getInstance().getGameBoard(id!!)
         WebSocketService.getInstance().subscribeGetGameBoard(id!!)
 
@@ -110,8 +113,8 @@ class GameBoard @JvmOverloads constructor(
         for(b in 0..(playersBitmap.size-1)){
             playersBitmap[b]=playersBitmap.get(b).let { Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false) }
         }
-        gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
 
+        gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -122,22 +125,24 @@ class GameBoard @JvmOverloads constructor(
             invalidate()
             return
         }
-        playerPosY--;
+        playerPosY--
         // Einmalige Antwort verarbeiten
-            if (isWall()) {
-                playerPosY++ // Bewegung rückgängig machen
-            } else {
+            if(isWall()) {
+                playerPosY++
+            }else{
                 moves.add("W") // Bewegung merken
                 // Grenzen prüfen
                 if (playerPosY < 0) {
                     playerPosY = 0
                 }
+                if (id != null) {
+                    WebSocketService.getInstance().performMovement(moves)
+                }
             }
-        if (id != null) {
-            WebSocketService.getInstance().performMovement(id.toString(),moves)
-        }
+            moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
     }
+
     fun moveDown(){
         safeCoord()
         if(inRoom) {
@@ -146,21 +151,24 @@ class GameBoard @JvmOverloads constructor(
             return
         }
         playerPosY++
+        if (playerPosY > 25) {
+            playerPosY = 24
+        }
         // Einmalige Antwort verarbeite
             if (isWall()) {
                 playerPosY--
             }else{
                 moves.add("S") // Bewegung merken
-                if (playerPosY > 25) {
-                    playerPosY = 24
+
+                if (id != null) {
+                    WebSocketService.getInstance().performMovement(moves)
                 }
             }
-        if (id != null) {
-            WebSocketService.getInstance().performMovement(id.toString(),moves)
-        }
+            moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
 
     }
+
     fun moveLeft(){
         safeCoord()
         if(inRoom) {
@@ -169,21 +177,23 @@ class GameBoard @JvmOverloads constructor(
             return
         }
         playerPosX--
+        if (playerPosX < 0) {
+            playerPosX = 0
+        }
             if (isWall()) {
-                playerPosX++ // Bewegung rückgängig machen
-            }else{
+                playerPosX++
+            }
+            else{
                 moves.add("A") // Bewegung merken
-
                 // Grenzen prüfen
-                if (playerPosX < 0) {
-                    playerPosX = 0
+                if (id != null) {
+                    WebSocketService.getInstance().performMovement(moves)
                 }
             }
-        if (id != null) {
-            WebSocketService.getInstance().performMovement(id.toString(),moves)
-        }
+            moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
     }
+
     fun moveRight(){
         safeCoord()
         if(inRoom) {
@@ -192,38 +202,45 @@ class GameBoard @JvmOverloads constructor(
             return
         }
         playerPosX++
+        // Grenzen prüfen
+        if (playerPosX > 25) {
+            playerPosX = 24
+        }
         // Einmalige Antwort verarbeiten
             if (isWall()) {
                 playerPosX--
-            }else {
+            }else{
                 moves.add("D") // Bewegung merken
-                // Grenzen prüfen
-                if (playerPosX > 25) {
-                    playerPosX = 24
+                if (id != null) {
+                    WebSocketService.getInstance().performMovement(moves)
                 }
             }
-        if (id != null) {
-            WebSocketService.getInstance().performMovement(id.toString(),moves)
-        }
+
+            moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
         }
 
     fun performMoveClicked(){
         //gridScale=2f
-        calcSize()
         //move=true
+        calcSize()
         moves=ArrayList()
         invalidate()
     }
+
+
     fun isWall(): Boolean{
-        if(WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.cellType?.equals(
-                CellType.DOOR)!!){
-            walkiIntoRoom(WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.room!!)
-        }
-        return (WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.cellType?.equals(
-            CellType.ROOM)!!)||(WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.cellType?.equals(
-            CellType.WALL)!!);
+        var grid:Array<Array<GameBoardCell>> = WebSocketService.getInstance().gameDataState.value?.grid!!
+            val y = playerPosY+1
+            if(grid.get(playerPosX).get(y).cellType.equals(
+                    CellType.DOOR)){
+                walkiIntoRoom(grid.get(playerPosX).get(y).room)
+            }
+            return (grid.get(playerPosX).get(y).cellType.equals(
+                CellType.ROOM))||(grid.get(playerPosX).get(y).cellType.equals(
+                CellType.WALL));
     }
+
 
     fun walkiIntoRoom(room: Room)
     {
@@ -231,15 +248,18 @@ class GameBoard @JvmOverloads constructor(
         //val coord: IntIntPair=gm.placeInRoom(players?.get(playerArrPos)!!,room, players!!)
         inRoom=true
     }
+
     fun leaveRoom(){
         //WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.room!!.playerLeavesRoom(players?.get(playerArrPos)!!)
         playerPosY=outsideCoordY
-        playerPosX= outsideCoordX
+        playerPosX=outsideCoordX
     }
+
     fun safeCoord(){
         outsideCoordY=playerPosY;
         outsideCoordX=playerPosX;
     }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         // Update position if view size changes
@@ -267,7 +287,7 @@ class GameBoard @JvmOverloads constructor(
         var id = WebSocketService.getInstance().lobbyState.value?.id
 
         if (id != null) {
-            WebSocketService.getInstance().performMovement(id,moves)
+            WebSocketService.getInstance().performMovement(moves)
         }
 
         invalidate()
@@ -275,6 +295,7 @@ class GameBoard @JvmOverloads constructor(
 
     fun updateGameData(gameData: GameData?) {
         this.players = gameData?.players ?: emptyList()
+
         if(firstRound&& players != null && players!!.isNotEmpty()) {
             playerPosX = players!!.get(playerArrPos).x
             playerPosY = players!!.get(playerArrPos).y

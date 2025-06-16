@@ -53,7 +53,7 @@ class WebSocketService {
         private const val TOPIC_GAME_DATA_PREFIX = "/topic/gameData/"
         private const val APP_GET_GAME_DATA="/app/getGameData/"
 
-        private const val APP_GET_GAMEBOARD="/app/getGameBoard/"
+        private const val APP_GET_GAMEBOARD="/app/getGameBoardGrid/"
         private const val TOPIC_GAMEBOARD="/topic/gameBoard/"
 
         private const val TOPIC_DICE_RESULT = "/topic/diceResult"
@@ -481,7 +481,7 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    fun performMovement(lobbyId:String,moves: List<String>) {
+    fun performMovement(moves: List<String>) {
         println("Movein")
         if (!_isConnected.value) {
             _errorMessages.tryEmit("Not connected to server")
@@ -489,7 +489,7 @@ class WebSocketService {
         }
         val request = PerformMoveResponse(player = player.value!!, moves=moves)
         val payload = gson.toJson(request)
-        val destination = "$APP_PERFORM_MOVE${lobbyId}"
+        val destination = "$APP_PERFORM_MOVE${lobbyState.value?.id}"
 
         stompClient?.send(destination, payload)?.subscribe(
             {
@@ -499,8 +499,9 @@ class WebSocketService {
         //subscribeGetGameData(lobbyId)
 
     }
-    fun subscribeToMovementUpdates(lobbyId: String,callback: (GameData) -> Unit) {
-        val topic = "/topic/performMovement/$lobbyId"
+
+    fun subscribeToMovementUpdates(callback: (GameData) -> Unit) {
+        val topic = "/topic/performMovement/${lobbyState.value?.id}"
         stompClient?.topic(topic)?.subscribe { stompMessage ->
             val payload = stompMessage.payload
             val gameData = gson.fromJson(payload, GameData::class.java)
