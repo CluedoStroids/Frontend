@@ -426,7 +426,6 @@ class WebSocketService {
     val diceOneResult: StateFlow<Int?> = _diceOneResult
     val diceTwoResult: StateFlow<Int?> = _diceTwoResult
 
-    // TODO: remove because not needed @Katharina Krassnitzer
     @SuppressLint("CheckResult")
     private fun subscribeToDiceResultTopic() {
         stompClient?.topic(TOPIC_DICE_RESULT)?.subscribe({ stompMessage ->
@@ -450,24 +449,6 @@ class WebSocketService {
             _errorMessages.tryEmit("Error from rolling the dice: ${error.message}")
         })
     }
-
-    @SuppressLint("CheckResult")
-    fun onSensorDiceRolled(diceOne: Int, diceTwo: Int) {
-        if (!_isConnected.value) {
-            _errorMessages.tryEmit("Sensor roll ignored: Not connected to server")
-            return
-        }
-
-        val result = DiceResult(diceOne, diceTwo)
-        val payload = gson.toJson(result)
-
-        stompClient?.send(APP_ROLL_DICE, payload)?.subscribe({
-            _errorMessages.tryEmit("Dice sent from sensor")
-        }, { error ->
-            _errorMessages.tryEmit("Error sending sensor dice result: ${error.message}")
-        })
-    }
-
 
     private var playerList: List<Player>? = null
     public fun getPlayers(): List<Player>? {
