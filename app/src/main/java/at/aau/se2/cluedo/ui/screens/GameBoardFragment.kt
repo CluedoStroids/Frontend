@@ -1,14 +1,20 @@
 package at.aau.se2.cluedo.ui.screens
 
+import android.R.attr.gravity
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.os.HandlerCompat.postDelayed
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -522,7 +528,6 @@ class GameBoardFragment : Fragment() {
 
     /**
      * Displays a popup notification about a suggestion.
-     *
      * @param playerName The name of the player making the suggestion.
      * @param room
      * @param weapon
@@ -534,9 +539,8 @@ class GameBoardFragment : Fragment() {
         room: String,
         weapon: String,
         character: String,
-        durationMillis: Long = 4000
+        durationMillis: Long = 5000
     ) {
-
         var dialogBuilder = AlertDialog.Builder(requireContext())
 
         dialogBuilder.setTitle("$playerName suggests: ")
@@ -547,43 +551,33 @@ class GameBoardFragment : Fragment() {
         }
 
         val dialog = dialogBuilder.create()
+
+        val window = dialog.window
+        window?.let {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(it.attributes)
+
+            // Set the desired gravity for positioning
+            layoutParams.gravity = Gravity.FILL
+
+            layoutParams.x = 0
+            layoutParams.y = 0
+
+            // Optional: Adjust window type or flags if necessary (usually not needed for simple positioning)
+            // layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL
+            // layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL // Allows touches outside the dialog
+
+            it.attributes = layoutParams
+        }
+
         dialog.show()
 
-        /*
-        val rootView = requireActivity().findViewById<ViewGroup>(android.R.id.content)
-
-        var suggestionBinding = SuggestionNotificationBinding.inflate(layoutInflater, rootView, false)
-
-        val toastView = suggestionBinding.root
-
-        suggestionBinding.notificationTitleText.text = "$playerName suspects: "
-        suggestionBinding.notificationMessageText.text = "$character with $weapon in $room"
-
-        // Initial off-screen position and invisible
-        toastView.translationY = -200f
-        toastView.alpha = 0f
-
-        rootView.addView(toastView)
-
-        // Animate in
-        toastView.animate()
-            .translationY(0f)
-            .alpha(1f)
-            .setDuration(300)
-            .start()
-
-        // Animate out and remove after delay
-        toastView.postDelayed({
-            toastView.animate()
-                .translationY(-200f)
-                .alpha(0f)
-                .setDuration(300)
-                .withEndAction {
-                    rootView.removeView(toastView)
-                }
-                .start()
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (dialog.isShowing) { //check if Dialog is still showing, otherwise dismiss
+                dialog.dismiss()
+            }
         }, durationMillis)
-         */
+
     }
 
 
