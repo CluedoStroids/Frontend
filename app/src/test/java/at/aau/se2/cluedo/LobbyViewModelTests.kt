@@ -268,6 +268,69 @@ class LobbyViewModelTests {
         assertFalse(viewModel.isNoteChecked("Rope", "Green"))
     }
 
+
+    @Test
+    fun `canMakeSuggestion is true on new room entry`() {
+        viewModel.updateRoomEntry("Kitchen")
+        assertTrue(viewModel.canMakeSuggestion())
+    }
+
+    @Test
+    fun `canMakeSuggestion is false after suggestion made`() {
+        viewModel.updateRoomEntry("Kitchen")
+        viewModel.markSuggestionMade()
+        assertFalse(viewModel.canMakeSuggestion())
+    }
+
+    @Test
+    fun `updateRoomEntry resets suggestion state when entering new room`() {
+        viewModel.updateRoomEntry("Kitchen")
+        viewModel.markSuggestionMade()
+        assertFalse(viewModel.canMakeSuggestion())
+
+        viewModel.updateRoomEntry("Library") // new room
+        assertTrue(viewModel.canMakeSuggestion())
+    }
+
+    @Test
+    fun `updateRoomEntry does not reset state when staying in same room`() {
+        viewModel.updateRoomEntry("Kitchen")
+        viewModel.markSuggestionMade()
+        viewModel.updateRoomEntry("Kitchen") // same room
+        assertFalse(viewModel.canMakeSuggestion())
+    }
+
+    @Test
+    fun `markSuggestionMade should prevent suggestion even without room entry`() {
+        viewModel.markSuggestionMade()
+
+        assertFalse(viewModel.canMakeSuggestion(), "Should not allow suggestion after markSuggestionMade even without room set")
+    }
+
+    @Test
+    fun `isPlayerInRoom returns true for valid room coordinates`() {
+        val player = Player(name = "Test", x = 1, y = 0)
+        assertTrue(viewModel.isPlayerInRoom(player))
+    }
+
+    @Test
+    fun `isPlayerInRoom returns false when coordinates are null`() {
+        val player = Player(name = "Test", x = 99, y = 99)
+        assertFalse(viewModel.isPlayerInRoom(player))
+    }
+
+    @Test
+    fun `solveCase delegates to WebSocketService`() {
+        viewModel.solveCase("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
+        verify(mockWebSocketService).solveCase("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
+    }
+
+    @Test
+    fun `isPlayerInRoom returns false when player is null`() {
+        val player: Player? = null
+        assertFalse(viewModel.isPlayerInRoom(player))
+    }
+
 }
 
 
