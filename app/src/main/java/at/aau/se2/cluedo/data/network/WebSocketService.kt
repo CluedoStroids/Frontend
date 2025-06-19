@@ -21,7 +21,7 @@ import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.models.SolveCaseRequest
 import at.aau.se2.cluedo.data.models.StartGameRequest
-
+import at.aau.se2.cluedo.data.models.SuspectCheating
 import com.google.gson.Gson
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -566,8 +566,15 @@ class WebSocketService {
             _lobbyState.value?.players = response.players
         }
     }
+    fun reportCheating(lobbyId: String,  suspect: String, accuser: String)
+    {
+        val message = SuspectCheating(
+            lobbyId = lobbyId,
+            suspect = suspect,
+            accuser = accuser
+        )
 
-
-
-
+        val payload = gson.toJson(message)
+        stompClient?.send("/app/cheating", payload)?.subscribe()
+    }
 }
