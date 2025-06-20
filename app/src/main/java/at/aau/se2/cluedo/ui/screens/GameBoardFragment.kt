@@ -1,5 +1,8 @@
 package at.aau.se2.cluedo.ui.screens
 
+import android.hardware.Sensor
+import android.hardware.SensorManager
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,6 +28,7 @@ import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import at.aau.se2.cluedo.viewmodels.CardAdapter
 import at.aau.se2.cluedo.viewmodels.GameBoard
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.ui.ShakeEventListener
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -59,6 +63,9 @@ class GameBoardFragment : Fragment() {
 
     private var diceOneValue = 0
     private var diceTwoValue = 0
+    private lateinit var sensorManager: SensorManager
+    private var accelerometer: Sensor? = null
+    private val shakeListener = ShakeEventListener()
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var cardsRecyclerView: RecyclerView
@@ -114,6 +121,9 @@ class GameBoardFragment : Fragment() {
             } else {
                 showToast("Cannot make suggestion - not your turn or not in a room")
             }
+        }
+        binding.cheatingButton.setOnClickListener {
+            findNavController().navigate(R.id.action_gameBoardIMG_to_cheatingSuspicionFragment)
         }
 
         //BottomSheet to show cards
@@ -253,6 +263,7 @@ class GameBoardFragment : Fragment() {
         }
 
         binding.rollDice.setOnClickListener {
+            webSocketService?.rollDice()
             if (turnBasedService.canPerformAction("ROLL_DICE")) {
                 val lobbyId = lobbyViewModel.createdLobbyId.value
                 val playerName = webSocketService?.player?.value?.name
@@ -276,25 +287,28 @@ class GameBoardFragment : Fragment() {
 
         lifecycleScope.launch {
             launch {
-                turnBasedService.diceOneResult.collect { value ->
+                webSocketService?.diceOneResult?.collect { value ->
                     value?.let {
                         diceOneValue = it // store locally
                         binding.diceOneValueTextView2.text = diceOneValue.toString()
-                        //binding.diceOneValueTextView2.text = it.toString()
                     }
                 }
             }
             launch {
-                turnBasedService.diceTwoResult.collect { value ->
+                webSocketService?.diceTwoResult?.collect { value ->
                     value?.let {
-                        //binding.diceTwoValueTextView2.text = it.toString()
-                        diceTwoValue = it // store locally
+                        diceTwoValue = it //store locally
                         binding.diceTwoValueTextView2.text = diceTwoValue.toString()
                     }
                 }
             }
         }
 
+        sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        shakeListener.setOnShakeListener {
+            binding.rollDice.performClick()
+        }
 
     }
 
@@ -493,5 +507,16 @@ class GameBoardFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        accelerometer?.also { acc ->
+            sensorManager.registerListener(shakeListener, acc, SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(shakeListener)
+    }
 
 }

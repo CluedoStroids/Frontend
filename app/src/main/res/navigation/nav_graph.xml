@@ -76,7 +76,10 @@
         <action
             android:id="@+id/action_gameBoardIMG_to_accusationFragment"
             app:destination="@id/accusationFragment" />
-    </fragment>
+        <action
+            android:id="@+id/action_gameBoardIMG_to_cheatingSuspicionFragment"
+            app:destination="@id/cheatingSuspicionFragment" />
+             </fragment>
 
     <fragment
         android:id="@+id/joinLobbyFragment"
@@ -147,5 +150,9 @@ tools:layout="@layout/fragment_elimination_update">
     android:id="@+id/action_eliminationUpdateFragment_to_lobbyFragment"
     app:destination="@id/lobbyFragment" />
 </fragment>
+    <fragment
+        android:id="@+id/cheatingSuspicionFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.CheatingSuspicionFragment"
+        android:label="CheatingSuspicionFragment" />
 
 </navigation>

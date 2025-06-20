@@ -21,6 +21,7 @@ import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.models.AccusationRequest
 import at.aau.se2.cluedo.data.models.StartGameRequest
+import at.aau.se2.cluedo.data.models.SuspectCheating
 import com.google.gson.Gson
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -77,6 +78,9 @@ class WebSocketService {
     private var stompClient: StompClient? = null
     private var currentLobbySubscriptionId: String? = null
 
+    // Turn-based functionality
+    private val turnBasedService = TurnBasedWebSocketService.getInstance()
+
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
@@ -115,6 +119,7 @@ class WebSocketService {
 
     public fun setPlayer(p: Player) {
         this._player.value = p
+        turnBasedService.setCurrentPlayer(p.name)
     }
 
     @SuppressLint("CheckResult")
@@ -129,6 +134,13 @@ class WebSocketService {
                 when (lifecycleEvent.type) {
                     LifecycleEvent.Type.OPENED -> {
                         _isConnected.value = true
+
+                        // Initialize turn-based service
+                        turnBasedService.initialize(stompClient!!)
+                        _player.value?.name?.let { playerName ->
+                            turnBasedService.setCurrentPlayer(playerName)
+                        }
+
                         subscribeToGeneralTopics()
                         _createdLobbyId.value?.takeIf { it.isNotBlank() }?.let { lobbyId ->
                             subscribeToSpecificLobbyTopics(lobbyId)
@@ -173,6 +185,7 @@ class WebSocketService {
         _canStartGame.value = false
         _gameStarted.value = false
         _gameState.value = null
+        turnBasedService.resetState()
     }
 
     @SuppressLint("CheckResult")
@@ -242,6 +255,9 @@ class WebSocketService {
 
         // Always subscribe to game started topic
         subscribeToGameStartedTopic(lobbyId)
+
+        // Subscribe to turn-based topics for this lobby
+        turnBasedService.subscribeToTurnBasedTopics(lobbyId)
     }
 
     @SuppressLint("CheckResult")
@@ -320,7 +336,8 @@ class WebSocketService {
 
         _lobbyState.value =
             Lobby(id = LobbyStatus.CREATING.text, host = player, players = listOf(player))
-        _player.value = player;
+        _player.value = player
+        turnBasedService.setCurrentPlayer(username)
         _createdLobbyId.value = null
         sendRequest(APP_CREATE_LOBBY, payload)
     }
@@ -347,6 +364,7 @@ class WebSocketService {
             }
         }
         _player.value = player
+        turnBasedService.setCurrentPlayer(username)
         sendRequest(destination, payload)
     }
 
@@ -454,11 +472,6 @@ class WebSocketService {
 
     @SuppressLint("CheckResult")
     fun rollDice() {
-        if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
-            return
-        }
-
         stompClient?.send(APP_ROLL_DICE, "")?.subscribe({
             _errorMessages.tryEmit("Dice requested")
         }, { error ->
@@ -531,39 +544,6 @@ class WebSocketService {
         }
     }
 
-
-    /**
-     * Check if a game has started for the current lobby
-     * This is especially useful for non-host players
-     */
-    fun checkGameStarted() {
-        if (!_isConnected.value) {
-            logMessage("Cannot check game started: Not connected")
-            return
-        }
-
-        // If we already have a game state, use it
-        if (_gameState.value != null) {
-            _gameStarted.value = true
-            return
-        }
-
-        // Try to use the lobby state
-        _lobbyState.value?.let { lobby ->
-            if (lobby.id.isNotBlank() && lobby.id != LobbyStatus.CREATING.text) {
-                logMessage("Checking if game has started for lobby: ${lobby.id}")
-
-                // Make sure we're subscribed to the game started topic
-                subscribeToGameStartedTopic(lobby.id)
-
-                // Request the current game state
-                val destination = "$APP_CAN_START_GAME_PREFIX${lobby.id}"
-                sendRequest(destination, "") {
-                    logMessage("Sent request to check if game has started")
-                }
-            }
-        }
-    }
 
     /**
      * Broadcast game started event to all players
@@ -714,7 +694,17 @@ class WebSocketService {
         }, { error ->
             logMessage("Error in game started subscription: ${error.message}")
         })
-
-
     }
-}
+
+        fun reportCheating(lobbyId: String, suspect: String, accuser: String) {
+            val message = SuspectCheating(
+                lobbyId = lobbyId,
+                suspect = suspect,
+                accuser = accuser
+            )
+
+            val payload = gson.toJson(message)
+            stompClient?.send("/app/cheating", payload)?.subscribe()
+        }
+    }
+
