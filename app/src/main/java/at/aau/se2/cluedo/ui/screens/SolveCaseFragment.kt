@@ -11,7 +11,7 @@ import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.viewmodels.LobbyViewModel
@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 
 class SolveCaseFragment : Fragment() {
 
-    private val lobbyViewModel: LobbyViewModel by viewModels()
+    private val lobbyViewModel: LobbyViewModel by activityViewModels()
     private val turnBasedService = TurnBasedWebSocketService.getInstance()
     private val webSocketService = WebSocketService.getInstance()
 
