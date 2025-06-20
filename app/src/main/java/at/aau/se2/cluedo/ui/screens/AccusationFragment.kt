@@ -131,7 +131,7 @@ class AccusationFragment : Fragment() {
     private fun setupSpinners() {
         val context = requireContext()
 
-        val suspectArray = arrayOf("Select a suspect", "Colonel Mustard", "Professor Plum", "Mr. Green", "Mrs. Peacock", "Miss Scarlett", "Mrs. White")
+        val suspectArray = arrayOf("Select a suspect", "Colonel Mustard", "Professor Plum", "Mr. Green", "Mrs. Peacock", "Miss Scarlet", "Mrs. White")
         val roomArray = arrayOf("Select a room", "Library", "Kitchen", "Ballroom", "Study", "Hall", "Billiard room", "Dining room", "Lounge", "Conservatory")
         val weaponArray = arrayOf("Select a weapon", "Candlestick", "Revolver", "Rope", "Lead Pipe", "Wrench", "Dagger")
 

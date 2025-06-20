@@ -24,6 +24,7 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.*
+import kotlinx.coroutines.test.runTest
 
 
 class LobbyViewModelTests {
@@ -321,9 +322,15 @@ class LobbyViewModelTests {
 
     @Test
     fun `sendAccusation delegates to WebSocketService`() {
-        viewModel.sendAccusation("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
-        verify(mockWebSocketService).sendAccusation("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
+        val mockWebSocketService = mock<WebSocketService>()
+        val viewModel = LobbyViewModel(mockWebSocketService)
+
+        viewModel.sendAccusationDirectForTest(lobbyId = "lobby123", username = "Matthias", suspect = "Miss Scarlet", room = "Kitchen", weapon = "Rope")
+
+        verify(mockWebSocketService).sendAccusation(
+            "lobby123", "Matthias", "Miss Scarlet", "Kitchen", "Rope")
     }
+
 
     @Test
     fun `isPlayerInRoom returns false when player is null`() {
