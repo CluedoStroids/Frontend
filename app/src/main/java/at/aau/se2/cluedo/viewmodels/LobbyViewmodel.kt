@@ -12,6 +12,8 @@ import kotlinx.coroutines.launch
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.Dispatchers
+
 
 
 
@@ -176,9 +178,11 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         room: String,
         weapon: String
     ) {
+        viewModelScope.launch(Dispatchers.IO) {
 
         webSocketService.sendAccusation(lobbyId, username, suspect, room, weapon)
     }
+}
 
 
     private val _suggestionNotes = MutableStateFlow<List<String>>(emptyList())

@@ -2,6 +2,7 @@ package at.aau.se2.cluedo.ui.screens
 
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -64,6 +65,7 @@ class AccusationFragment : Fragment() {
 
         accuseButton.setOnClickListener {
             makeAccusation()
+
         }
 
 
@@ -160,6 +162,9 @@ class AccusationFragment : Fragment() {
             Toast.makeText(context, "Missing lobby or username info. Please rejoin.", Toast.LENGTH_SHORT).show()
             return
         }
+
+        Log.d("Accusation", "Sending accusation: $selectedSuspect, $selectedRoom, $selectedWeapon, by $username")
+
 
         // Use the new accusation system instead of the old solveCase
         turnBasedService.makeAccusation(lobbyId, username, selectedSuspect, selectedWeapon, selectedRoom)

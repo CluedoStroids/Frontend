@@ -71,7 +71,7 @@ class SuggestionFragment : Fragment() {
                 return@setOnClickListener
             }
             val suspicion = "$suspect — in the $room — with the $weapon"
-            lobbyViewModel.addSuspicionNote(suspicion)
+            lobbyViewModel.addSuggestionNote(suspicion)
             lobbyViewModel.markSuggestionMade()
 
             val currentLobbyId = lobbyViewModel.lobbyState.value?.id
@@ -82,7 +82,7 @@ class SuggestionFragment : Fragment() {
 
             // Also save to notes for backward compatibility
             val suggestion = "$suspect — in the $room — with the $weapon"
-            lobbyViewModel.addSuspicionNote(suggestion)
+            lobbyViewModel.addSuggestionNote(suggestion)
 
             Toast.makeText(context, "Suggestion sent!", Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()
