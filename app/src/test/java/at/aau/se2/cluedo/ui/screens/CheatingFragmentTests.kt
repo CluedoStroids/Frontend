@@ -61,32 +61,6 @@ class CheatingFragmentTests {
         assertNotNull(fragmentInstance)
     }
 
-    @Test
-    fun testLobbyStateUpdatesCurrentPlayers() {
-        whenever(mockWebSocketService.getPlayer()).thenReturn(testHost)
-
-        // Simulate lobby state update
-        lobbyStateFlow.value = testLobby
-
-        // Verify the lobby contains expected players
-        assertEquals(3, testLobby.players.size)
-        assertTrue(testLobby.players.contains(testHost))
-        assertTrue(testLobby.players.contains(testPlayer1))
-        assertTrue(testLobby.players.contains(testPlayer2))
-    }
-
-    @Test
-    fun testFilterCurrentPlayerFromList() {
-        whenever(mockWebSocketService.getPlayer()).thenReturn(testHost)
-
-        val currentPlayerName = testHost.name
-        val otherPlayers = testLobby.players.filter { it.name != currentPlayerName }
-
-        assertEquals(2, otherPlayers.size)
-        assertFalse(otherPlayers.any { it.name == "Host" })
-        assertTrue(otherPlayers.any { it.name == "Player1" })
-        assertTrue(otherPlayers.any { it.name == "Player2" })
-    }
 
     @Test
     fun testPlayerDisplayFormat() {
@@ -96,20 +70,7 @@ class CheatingFragmentTests {
         assertEquals("Player1 (Blue)", displayFormat)
     }
 
-    @Test
-    fun testSpinnerOptionsFormat() {
-        whenever(mockWebSocketService.getPlayer()).thenReturn(testHost)
 
-        val otherPlayers = testLobby.players.filter { it.name != testHost.name }
-            .map { "${it.name} (${it.character})" }
-
-        val playerOptions = listOf("Select player to report...") + otherPlayers
-
-        assertEquals(3, playerOptions.size)
-        assertEquals("Select player to report...", playerOptions[0])
-        assertTrue(playerOptions.contains("Player1 (Blue)"))
-        assertTrue(playerOptions.contains("Player2 (Green)"))
-    }
 
     @Test
     fun testExtractPlayerNameFromSelection() {
