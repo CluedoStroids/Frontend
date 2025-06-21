@@ -39,8 +39,6 @@
     <string name="weapons">Weapons</string>
     <string name="rooms">Rooms</string>
     <string name="no_players_available">No players available</string>
-    
-    <!-- Join Lobby Strings -->
     <string name="active_lobby_id">Active Lobby ID: %1$s</string>
     <string name="active_lobby_id_empty">Active Lobby ID: -</string>
     <string name="lobby_info_format">Lobby ID: %1$s\nHost: %2$s (%3$s, %4$s)\nPlayers (%5$d):\n%6$s</string>
@@ -53,5 +51,6 @@
     <string name="game_started_navigating">Game started! Navigating to game screen...</string>
     <string name="error_navigating_to_game">Error navigating to game: %1$s</string>
     <string name="game_state_received">Game state received with %1$d players</string>
+    <string name="version_text">v%1$s</string>
 
 </resources>
