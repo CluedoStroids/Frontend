@@ -82,18 +82,18 @@ class JoinLobbyFragment : Fragment() {
 
                 if (currentLobbyId != null && currentLobbyId.isNotBlank()) {
                     // We found an active lobby, update the UI
-                    showToast("Found active lobby: $currentLobbyId")
+                    showToast(getString(R.string.found_active_lobby, currentLobbyId))
                     activeLobbyId = currentLobbyId
 
                     // Update the UI with the lobby information
                     updateLobbyInfoUI()
 
                     // Join the lobby
-                    showToast("Joining lobby: $currentLobbyId")
+                    showToast(getString(R.string.joining_lobby, currentLobbyId))
                     lobbyViewModel.joinLobby(currentLobbyId, username, character)
                 } else {
                     // No active lobby found
-                    showToast("No active lobby found. Please create a new lobby first.")
+                    showToast(getString(R.string.no_active_lobby_found))
                 }
             }, 1000) // Increased delay to give more time for server response
         }
@@ -107,7 +107,6 @@ class JoinLobbyFragment : Fragment() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -133,7 +132,6 @@ class JoinLobbyFragment : Fragment() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     private suspend fun observeLobbyState() {
         lobbyViewModel.lobbyState.collect { lobby ->
             updateLobbyInfoDisplay(lobby)
@@ -159,7 +157,7 @@ class JoinLobbyFragment : Fragment() {
     private suspend fun observeGameState() {
         lobbyViewModel.gameState.collect { gameState ->
             if (gameState != null) {
-                showToast("Game state received with ${gameState.players.size} players")
+                showToast(getString(R.string.game_state_received, gameState.players.size))
                 if (!lobbyViewModel.gameStarted.value) {
                     lobbyViewModel.setGameStarted(true)
                 }
@@ -167,29 +165,31 @@ class JoinLobbyFragment : Fragment() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     private fun updateLobbyInfoDisplay(lobby: at.aau.se2.cluedo.data.models.Lobby?) {
         if (lobby != null) {
             val playersList = lobby.players.joinToString("\n") { player ->
-                "  - ${player.name} (${player.character}, ${player.color})"
+                getString(R.string.player_list_item, player.name, player.character, player.color)
             }
-            binding.lobbyInfoTextView.text = """
-                Lobby ID: ${lobby.id}
-                Host: ${lobby.host.name} (${lobby.host.character}, ${lobby.host.color})
-                Players (${lobby.players.size}):
-                $playersList
-            """.trimIndent()
+            binding.lobbyInfoTextView.text = getString(
+                R.string.lobby_info_format,
+                lobby.id,
+                lobby.host.name,
+                lobby.host.character,
+                lobby.host.color,
+                lobby.players.size,
+                playersList
+            )
         } else {
-            binding.lobbyInfoTextView.text = "-"
+            binding.lobbyInfoTextView.text = getString(R.string.lobby_info_empty)
         }
     }
 
     private fun handleGameStarted() {
-        showToast("Game started! Navigating to game screen...")
+        showToast(getString(R.string.game_started_navigating))
         try {
             findNavController().navigate(R.id.action_joinLobbyFragment_to_gameBoardIMG)
         } catch (e: Exception) {
-            showToast("Error navigating to game: ${e.message}")
+            showToast(getString(R.string.error_navigating_to_game, e.message.orEmpty()))
         }
     }
 
@@ -197,31 +197,33 @@ class JoinLobbyFragment : Fragment() {
         Toast.makeText(requireContext(), message, duration).show()
     }
 
-    @SuppressLint("SetTextI18n")
     private fun updateLobbyInfoUI() {
         val lobby = lobbyViewModel.lobbyState.value
         if (lobby != null) {
             val playersList = lobby.players.joinToString("\n") { player ->
-                "  - ${player.name} (${player.character}, ${player.color})"
+                getString(R.string.player_list_item, player.name, player.character, player.color)
             }
-            binding.lobbyInfoTextView.text = """
-                Lobby ID: ${lobby.id}
-                Host: ${lobby.host.name} (${lobby.host.character}, ${lobby.host.color})
-                Players (${lobby.players.size}):
-                $playersList
-            """.trimIndent()
+            binding.lobbyInfoTextView.text = getString(
+                R.string.lobby_info_format,
+                lobby.id,
+                lobby.host.name,
+                lobby.host.character,
+                lobby.host.color,
+                lobby.players.size,
+                playersList
+            )
 
             // Auto-fill the username field with a unique name if it's empty
             if (binding.joinUsernameEditText.text.isNullOrBlank()) {
                 val existingNames = lobby.players.map { it.name }
                 val baseName = "Player"
                 var counter = lobby.players.size + 1
-                var newName = "$baseName$counter"
+                var newName = getString(R.string.default_player_name, counter)
 
                 // Make sure the name is unique
                 while (existingNames.contains(newName)) {
                     counter++
-                    newName = "$baseName$counter"
+                    newName = getString(R.string.default_player_name, counter)
                 }
 
                 binding.joinUsernameEditText.setText(newName)
@@ -262,12 +264,12 @@ class JoinLobbyFragment : Fragment() {
         if (activeLobbyId != null) {
             binding.joinLobbyButton.isEnabled = isConnected
             binding.leaveLobbyButton.isEnabled = isConnected
-            binding.activeLobbyIdTextView.text = "Active Lobby ID: $activeLobbyId"
+            binding.activeLobbyIdTextView.text = getString(R.string.active_lobby_id, activeLobbyId)
         } else {
             // If we're connected but don't have a lobby, we should still enable the join button
             binding.joinLobbyButton.isEnabled = isConnected
             binding.leaveLobbyButton.isEnabled = false
-            binding.activeLobbyIdTextView.text = "Active Lobby ID: -"
+            binding.activeLobbyIdTextView.text = getString(R.string.active_lobby_id_empty)
         }
     }
 
