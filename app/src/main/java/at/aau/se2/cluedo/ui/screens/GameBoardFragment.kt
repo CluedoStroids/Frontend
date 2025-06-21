@@ -391,6 +391,22 @@ class GameBoardFragment : Fragment() {
                     }
                 }
 
+                /**
+                 * When handling a suggestion, check if any suggestion is received and handle your turn
+                 * by either showing a card, or skipping, to pass it to the next player.
+                 */
+                launch{
+                    gameViewModel.processingSuggestion.collect { processing ->
+                        Log.d("SUGGEST","Received: ${processing}")
+
+                        if(processing){
+                            //showSuggestionHandlePopup()
+                            //todo
+                        }
+
+                    }
+                }
+
             }
         }
     }
@@ -539,7 +555,7 @@ class GameBoardFragment : Fragment() {
         room: String,
         weapon: String,
         character: String,
-        durationMillis: Long = 5000
+        durationMillis: Long = 10000
     ) {
         var dialogBuilder = AlertDialog.Builder(requireContext())
 
@@ -577,6 +593,25 @@ class GameBoardFragment : Fragment() {
                 dialog.dismiss()
             }
         }, durationMillis)
+
+    }
+
+    /**
+     * Displays a popup notification about a suggestion.
+     * @param playerName The name of the player making the suggestion.
+     * @param room
+     * @param weapon
+     * @param character
+     */
+    @SuppressLint("SetTextI18n")
+    fun showSuggestionHandlePopup(
+        playerName: String,
+        room: String,
+        weapon: String,
+        character: String,
+        durationMillis: Long = 10000
+    ) {
+       //todo open popup to select a card.
 
     }
 

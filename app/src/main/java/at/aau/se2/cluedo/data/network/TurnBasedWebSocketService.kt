@@ -32,6 +32,7 @@ class TurnBasedWebSocketService private constructor() {
         private const val TOPIC_MOVEMENT_COMPLETED = "/topic/movementCompleted/"
         private const val APP_MAKE_SUGGESTION = "/app/makeSuggestion/"
         private const val TOPIC_SUGGESTION_MADE = "/topic/suggestionMade/"
+        private const val TOPIC_SUGGESTION_HANDLE = "/topic/processSuggestion/"
         private const val APP_MAKE_ACCUSATION = "/app/makeAccusation/"
         private const val TOPIC_ACCUSATION_MADE = "/topic/accusationMade/"
         private const val APP_SKIP_TURN = "/app/skipTurn/"
@@ -50,6 +51,8 @@ class TurnBasedWebSocketService private constructor() {
     private val gson = Gson()
     private var stompClient: StompClient? = null
 
+    private val webSocketService = WebSocketService.getInstance()
+
     // Turn-based system state flows
     private val _currentTurnState = MutableStateFlow<TurnStateResponse?>(null)
     val currentTurnState: StateFlow<TurnStateResponse?> = _currentTurnState.asStateFlow()
@@ -65,6 +68,9 @@ class TurnBasedWebSocketService private constructor() {
 
     private val _suggestionData = MutableStateFlow<SuggestionRequest?>(null)
     val suggestionData: StateFlow<SuggestionRequest?> = _suggestionData
+
+    private var _processSuggestion = MutableStateFlow<Boolean>(false)
+    val processSuggestion: StateFlow<Boolean> = _processSuggestion
 
     private var currentPlayerName: String? = null
 
@@ -119,6 +125,15 @@ class TurnBasedWebSocketService private constructor() {
         stompClient?.topic("$TOPIC_SUGGESTION_MADE$lobbyId")?.subscribe { message ->
             Log.d("TurnBasedWS", "Suggestion response received: ${message.payload}")
             handleSuggestionResponse(message, lobbyId)
+        }
+
+        // Subscribe to suggestion responses
+        var playerID = webSocketService.player.value?.playerID
+        Log.d("SUGGEST-TURN-INFO", "PlayerID (debugging): ${playerID}")
+        stompClient?.topic("$TOPIC_SUGGESTION_HANDLE$lobbyId/${playerID}")?.subscribe { message ->
+            Log.d("SUGGEST-TURN", "Suggestion Turn response received: ${message.payload}")
+            val responseMap = gson.fromJson(message.payload, Map::class.java)
+            _processSuggestion.value = responseMap["processSuggestion"] as Boolean;
         }
 
         // Subscribe to accusation responses
