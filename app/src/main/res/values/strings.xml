@@ -52,5 +52,6 @@
     <string name="error_navigating_to_game">Error navigating to game: %1$s</string>
     <string name="game_state_received">Game state received with %1$d players</string>
     <string name="version_text">v%1$s</string>
+    <string name="app_version">v1.0</string>
 
 </resources>
