@@ -122,7 +122,7 @@ class JoinLobbyFragment : Fragment() {
     }
 
     private suspend fun observeConnectionState() {
-        lobbyViewModel.isConnected.collect { isConnected ->
+        lobbyViewModel.isConnected.collect { _ ->
             checkAndEnableButtons()
         }
     }
