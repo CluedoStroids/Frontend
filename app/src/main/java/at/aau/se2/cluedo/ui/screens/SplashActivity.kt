@@ -25,7 +25,7 @@ class SplashActivity : AppCompatActivity() {
             val versionName = packageManager.getPackageInfo(packageName, 0).versionName
             binding.versionTextView.text = getString(R.string.version_text, versionName)
         } catch (e: Exception) {
-            binding.versionTextView.text = getString(R.string.version_text, "2.5")
+            binding.versionTextView.text = getString(R.string.version_text, "1.0")
         }
 
         Handler(Looper.getMainLooper()).postDelayed({

@@ -201,7 +201,7 @@ class LobbyFragment : Fragment() {
         }
     }
 
-    private fun handleGameStateReceived(gameState: at.aau.se2.cluedo.data.models.TurnState) {
+    private fun handleGameStateReceived(gameState: at.aau.se2.cluedo.data.models.GameStartedResponse) {
         showToast("Game state received with ${gameState.players.size} players")
         if (!lobbyViewModel.gameStarted.value) {
             lobbyViewModel.setGameStarted(true)
