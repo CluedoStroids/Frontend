@@ -96,11 +96,20 @@ class GameBoardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         webSocketService?.connect()
-        //println("gameBoard Hi")
         gameBoard = view.findViewById(R.id.gameBoardView) as GameBoard
-        // Check if we have a game state and log it
 
-        //Solve Case Buttons
+        setupActionButtons()
+        setupBottomSheet(view)
+        setupCardsRecyclerView()
+        handleGameState()
+        setupGameBoard()
+        setupMovementButtons(view)
+        setupDiceRolling()
+        observeDiceResults()
+        setupSensorManager()
+    }
+
+    private fun setupActionButtons() {
         binding.notesButton.setOnClickListener {
             findNavController().navigate(R.id.action_gameBoardIMG_to_notesFragment)
         }
@@ -120,20 +129,21 @@ class GameBoardFragment : Fragment() {
                 showToast("Cannot make suggestion - not your turn or not in a room")
             }
         }
+
         binding.cheatingButton.setOnClickListener {
             findNavController().navigate(R.id.action_gameBoardIMG_to_cheatingSuspicionFragment)
         }
+    }
 
-        //BottomSheet to show cards
+    private fun setupBottomSheet(view: View) {
         val bottomSheet = view.findViewById<NestedScrollView>(R.id.bottom_sheet)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
-
         binding.cardsOpenButton.setOnClickListener {
             toggleBottomSheet()
         }
-        //Change Icon of FloatingActionButton (openCardsButton) depending on state of BottomSheet
+
         bottomSheetBehavior.addBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -141,7 +151,6 @@ class GameBoardFragment : Fragment() {
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         binding.cardsOpenButton.setImageResource(R.drawable.cards_close_icon)
                     }
-
                     BottomSheetBehavior.STATE_HIDDEN -> {
                         binding.cardsOpenButton.setImageResource(R.drawable.cards_open_icon)
                     }
@@ -151,64 +160,58 @@ class GameBoardFragment : Fragment() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 // not needed but must be overridden
             }
-
         })
+    }
 
+    private fun setupCardsRecyclerView() {
         val recyclerView = binding.playerCardsRecyclerview
         recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        var cards = WebSocketService.getInstance().player.value?.cards
+        val cards = WebSocketService.getInstance().player.value?.cards
         recyclerView.adapter = CardAdapter(BasicCard.getCardIDs(cards))
+    }
 
-
+    private fun handleGameState() {
         val gameState = lobbyViewModel.gameState.value
         if (gameState != null) {
             showToast("Game state available: ${gameState.players.size} players")
-
-            // Log all players to help with debugging
             gameState.players.forEach { player ->
                 lobbyViewModel.logMessage("Player in game: ${player.name} (${player.character})")
             }
-
         } else {
             showToast("No game state available yet")
             lobbyViewModel.logMessage("Game state is null in GameFragment")
-
-            // Try to get the game state from the lobby state
-            val lobbyState = lobbyViewModel.lobbyState.value
-            if (lobbyState != null) {
-                lobbyViewModel.logMessage("Lobby state available with ${lobbyState.players.size} players")
-
-                // Create a temporary game state from the lobby state
-                val tempGameState = GameStartedResponse(
-                    lobbyId = lobbyState.id,
-                    players = lobbyState.players
-                )
-
-                // Update the UI with the lobby players
-                updatePlayersUI(tempGameState)
-            } else {
-                lobbyViewModel.logMessage("Both game state and lobby state are null")
-            }
-
-            // Try to check if a game has started
+            handleLobbyStateAsFallback()
             lobbyViewModel.checkGameStarted()
         }
+    }
 
+    private fun handleLobbyStateAsFallback() {
+        val lobbyState = lobbyViewModel.lobbyState.value
+        if (lobbyState != null) {
+            lobbyViewModel.logMessage("Lobby state available with ${lobbyState.players.size} players")
+            val tempGameState = GameStartedResponse(
+                lobbyId = lobbyState.id,
+                players = lobbyState.players
+            )
+            updatePlayersUI(tempGameState)
+        } else {
+            lobbyViewModel.logMessage("Both game state and lobby state are null")
+        }
+    }
 
+    private fun setupGameBoard() {
         gameBoard.init()
         updatePlayers()
-
-        // Observe view model changes first
         observeViewModel()
 
-        // Initialize turn-based system after a short delay to ensure game state is available
         lifecycleScope.launch {
-            kotlinx.coroutines.delay(1000) // Wait 1 second for game state to be established
+            kotlinx.coroutines.delay(1000)
             initializeTurnBasedSystem()
         }
+    }
 
-        //println(gameBoard)
+    private fun setupMovementButtons(view: View) {
         val moveButton = view.findViewById<Button>(R.id.movebutton)
         val upButton = view.findViewById<Button>(R.id.moveUp)
         val downButton = view.findViewById<Button>(R.id.moveDown)
@@ -218,17 +221,36 @@ class GameBoardFragment : Fragment() {
 
         moveButton.setOnClickListener {
             if (turnBasedService.canPerformAction("MOVE")) {
-                moveButton.visibility = View.GONE
-                upButton.visibility = View.VISIBLE
-                downButton.visibility = View.VISIBLE
-                leftButton.visibility = View.VISIBLE
-                rightButton.visibility = View.VISIBLE
-                doneButton.visibility = View.VISIBLE
+                toggleMovementButtons(moveButton, upButton, downButton, leftButton, rightButton, doneButton, true)
                 gameBoard.performMoveClicked()
             } else {
                 showToast("Cannot move - not your turn or invalid state")
             }
         }
+
+        setupDirectionalButtons(upButton, downButton, leftButton, rightButton)
+        
+        doneButton.setOnClickListener {
+            gameBoard.done()
+            toggleMovementButtons(moveButton, upButton, downButton, leftButton, rightButton, doneButton, false)
+            val lobbyId = lobbyViewModel.createdLobbyId.value
+            val playerName = webSocketService?.player?.value?.name
+            turnBasedService.completeMovement(lobbyId.toString(), playerName.toString())
+        }
+
+        binding.skipTurnButton.setOnClickListener {
+            val lobbyId = lobbyViewModel.createdLobbyId.value
+            val playerName = webSocketService?.player?.value?.name
+            turnBasedService.skipTurn(
+                lobbyId.toString(),
+                playerName.toString(),
+                "Player manually skipped turn"
+            )
+            showToast("Turn skipped")
+        }
+    }
+
+    private fun setupDirectionalButtons(upButton: Button, downButton: Button, leftButton: Button, rightButton: Button) {
         upButton.setOnClickListener {
             gameBoard.moveUp()
             subtractMovement()
@@ -245,21 +267,29 @@ class GameBoardFragment : Fragment() {
             gameBoard.moveRight()
             subtractMovement()
         }
-        doneButton.setOnClickListener {
-            gameBoard.done()
+    }
+
+    private fun toggleMovementButtons(moveButton: Button, upButton: Button, downButton: Button, 
+                                    leftButton: Button, rightButton: Button, doneButton: Button, 
+                                    showMovementButtons: Boolean) {
+        if (showMovementButtons) {
+            moveButton.visibility = View.GONE
+            upButton.visibility = View.VISIBLE
+            downButton.visibility = View.VISIBLE
+            leftButton.visibility = View.VISIBLE
+            rightButton.visibility = View.VISIBLE
+            doneButton.visibility = View.VISIBLE
+        } else {
             moveButton.visibility = View.VISIBLE
             upButton.visibility = View.GONE
             downButton.visibility = View.GONE
             leftButton.visibility = View.GONE
             rightButton.visibility = View.GONE
             doneButton.visibility = View.GONE
-
-            // Complete movement using turn-based systemx
-            val lobbyId = lobbyViewModel.createdLobbyId.value
-            val playerName = webSocketService?.player?.value?.name
-            turnBasedService.completeMovement(lobbyId.toString(), playerName.toString())
         }
+    }
 
+    private fun setupDiceRolling() {
         binding.rollDice.setOnClickListener {
             webSocketService?.rollDice()
             if (turnBasedService.canPerformAction("ROLL_DICE")) {
@@ -270,24 +300,14 @@ class GameBoardFragment : Fragment() {
                 showToast("Cannot roll dice - not your turn or invalid state")
             }
         }
+    }
 
-        binding.skipTurnButton.setOnClickListener {
-            val lobbyId = lobbyViewModel.createdLobbyId.value
-            val playerName = webSocketService?.player?.value?.name
-            turnBasedService.skipTurn(
-                lobbyId.toString(),
-                playerName.toString(),
-                "Player manually skipped turn"
-            )
-            showToast("Turn skipped")
-
-        }
-
+    private fun observeDiceResults() {
         lifecycleScope.launch {
             launch {
                 webSocketService?.diceOneResult?.collect { value ->
                     value?.let {
-                        diceOneValue = it // store locally
+                        diceOneValue = it
                         binding.diceOneValueTextView2.text = diceOneValue.toString()
                     }
                 }
@@ -295,19 +315,20 @@ class GameBoardFragment : Fragment() {
             launch {
                 webSocketService?.diceTwoResult?.collect { value ->
                     value?.let {
-                        diceTwoValue = it //store locally
+                        diceTwoValue = it
                         binding.diceTwoValueTextView2.text = diceTwoValue.toString()
                     }
                 }
             }
         }
+    }
 
+    private fun setupSensorManager() {
         sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         shakeListener.setOnShakeListener {
             binding.rollDice.performClick()
         }
-
     }
 
     private fun observeViewModel() {
