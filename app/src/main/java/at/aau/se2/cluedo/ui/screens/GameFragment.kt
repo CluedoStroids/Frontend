@@ -182,6 +182,7 @@ class GameFragment : Fragment() {
     }
 
     private fun rollDice() {
+        // fixme magic constants for dice rolls shouldnt be somewhere in a UI fragment - extract into some dice logic class
         val diceValue = Random.nextInt(1, 7)
         binding.diceResultTextView.text = getString(R.string.dice_result, diceValue)
         binding.gameInfoTextView.text = getString(R.string.you_rolled, diceValue)

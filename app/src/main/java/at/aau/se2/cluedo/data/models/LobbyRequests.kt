@@ -2,6 +2,8 @@ package at.aau.se2.cluedo.data.models
 
 import com.google.gson.annotations.SerializedName
 
+// fixme dont mix requests and responses in a single file LobbyRequests
+// fixme add a class hierachy for pulling up the player field
 data class CreateLobbyRequest(
     @SerializedName("player") val player: Player
 )

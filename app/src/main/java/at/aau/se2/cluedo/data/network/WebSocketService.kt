@@ -507,6 +507,7 @@ class WebSocketService {
         stompClient?.send("/app/solve-case", payload)?.subscribe()
     }
 
+    // fixme method names should start with a verb (what its doing)
     fun gameData(lobbyId: String,player: Player) {
         if (!_isConnected.value || lobbyId.isBlank()) {
             _errorMessages.tryEmit("Cannot get game Data: Not connected or invalid lobby ID")

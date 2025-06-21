@@ -105,6 +105,7 @@ class GameBoard @JvmOverloads constructor(
 
     }
 
+    // fixme moves are mostly duplicate code
     @SuppressLint("SuspiciousIndentation")
     fun moveUp() {
         val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
