@@ -38,5 +38,6 @@
     <string name="suspects">Suspects</string>
     <string name="weapons">Weapons</string>
     <string name="rooms">Rooms</string>
+    <string name="no_players_available">No players available</string>
 
 </resources>

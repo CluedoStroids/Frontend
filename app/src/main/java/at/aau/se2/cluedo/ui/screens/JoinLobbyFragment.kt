@@ -111,70 +111,85 @@ class JoinLobbyFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    lobbyViewModel.isConnected.collect { isConnected ->
-                        checkAndEnableButtons()
-                    }
-                }
+                launch { observeConnectionState() }
+                launch { observeCreatedLobbyId() }
+                launch { observeLobbyState() }
+                launch { observeErrorMessages() }
+                launch { observeGameStarted() }
+                launch { observeGameState() }
+            }
+        }
+    }
 
-                launch {
-                    lobbyViewModel.createdLobbyId.collect { _ ->
-                        checkAndEnableButtons()
-                    }
-                }
+    private suspend fun observeConnectionState() {
+        lobbyViewModel.isConnected.collect { isConnected ->
+            checkAndEnableButtons()
+        }
+    }
 
-                launch {
-                    lobbyViewModel.lobbyState.collect { lobby ->
-                        if (lobby != null) {
-                            val playersList = lobby.players.joinToString("\n") { player ->
-                                "  - ${player.name} (${player.character}, ${player.color})"
-                            }
-                            binding.lobbyInfoTextView.text = """
-                                Lobby ID: ${lobby.id}
-                                Host: ${lobby.host.name} (${lobby.host.character}, ${lobby.host.color})
-                                Players (${lobby.players.size}):
-                                $playersList
-                            """.trimIndent()
-                        } else {
-                            binding.lobbyInfoTextView.text = "-"
-                        }
-                        binding.lobbyInfoTextView.scrollTo(0, 0)
-                        checkAndEnableButtons()
-                    }
-                }
+    private suspend fun observeCreatedLobbyId() {
+        lobbyViewModel.createdLobbyId.collect { _ ->
+            checkAndEnableButtons()
+        }
+    }
 
-                launch {
-                    lobbyViewModel.errorMessages.collect { errorMessage ->
-                        showToast(errorMessage, Toast.LENGTH_LONG)
-                    }
-                }
+    @SuppressLint("SetTextI18n")
+    private suspend fun observeLobbyState() {
+        lobbyViewModel.lobbyState.collect { lobby ->
+            updateLobbyInfoDisplay(lobby)
+            binding.lobbyInfoTextView.scrollTo(0, 0)
+            checkAndEnableButtons()
+        }
+    }
 
-                launch {
-                    lobbyViewModel.gameStarted.collect { gameStarted ->
-                        if (gameStarted) {
-                            showToast("Game started! Navigating to game screen...")
-                            try {
-                                findNavController().navigate(R.id.action_joinLobbyFragment_to_gameBoardIMG)
-                            } catch (e: Exception) {
-                                showToast("Error navigating to game: ${e.message}")
-                            }
-                        }
-                    }
-                }
+    private suspend fun observeErrorMessages() {
+        lobbyViewModel.errorMessages.collect { errorMessage ->
+            showToast(errorMessage, Toast.LENGTH_LONG)
+        }
+    }
 
-                // Also check the game state directly
-                launch {
-                    lobbyViewModel.gameState.collect { gameState ->
-                        if (gameState != null) {
-                            showToast("Game state received with ${gameState.players.size} players")
-                            if (!lobbyViewModel.gameStarted.value) {
-                                // If we have a game state but gameStarted is false, set it to true
-                                lobbyViewModel.setGameStarted(true)
-                            }
-                        }
-                    }
+    private suspend fun observeGameStarted() {
+        lobbyViewModel.gameStarted.collect { gameStarted ->
+            if (gameStarted) {
+                handleGameStarted()
+            }
+        }
+    }
+
+    private suspend fun observeGameState() {
+        lobbyViewModel.gameState.collect { gameState ->
+            if (gameState != null) {
+                showToast("Game state received with ${gameState.players.size} players")
+                if (!lobbyViewModel.gameStarted.value) {
+                    lobbyViewModel.setGameStarted(true)
                 }
             }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun updateLobbyInfoDisplay(lobby: at.aau.se2.cluedo.data.models.Lobby?) {
+        if (lobby != null) {
+            val playersList = lobby.players.joinToString("\n") { player ->
+                "  - ${player.name} (${player.character}, ${player.color})"
+            }
+            binding.lobbyInfoTextView.text = """
+                Lobby ID: ${lobby.id}
+                Host: ${lobby.host.name} (${lobby.host.character}, ${lobby.host.color})
+                Players (${lobby.players.size}):
+                $playersList
+            """.trimIndent()
+        } else {
+            binding.lobbyInfoTextView.text = "-"
+        }
+    }
+
+    private fun handleGameStarted() {
+        showToast("Game started! Navigating to game screen...")
+        try {
+            findNavController().navigate(R.id.action_joinLobbyFragment_to_gameBoardIMG)
+        } catch (e: Exception) {
+            showToast("Error navigating to game: ${e.message}")
         }
     }
 

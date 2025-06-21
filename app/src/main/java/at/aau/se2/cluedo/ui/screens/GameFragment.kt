@@ -211,7 +211,7 @@ class GameFragment : Fragment() {
 
     private fun handleNullGameState() {
         lobbyViewModel.logMessage("Game state is null in collector")
-        binding.playersListTextView.text = "No players available"
+        binding.playersListTextView.text = getString(R.string.no_players_available)
         binding.gameStatusTextView.text = getString(R.string.game_in_progress)
         lobbyViewModel.checkGameStarted()
     }
