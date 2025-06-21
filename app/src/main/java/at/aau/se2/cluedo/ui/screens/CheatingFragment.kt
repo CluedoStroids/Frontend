@@ -18,7 +18,7 @@ import com.example.myapplication.databinding.FragmentCheatingBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class CheatingSuspicionFragment : Fragment() {
+class CheatingFragment : Fragment() {
 
     private var _binding: FragmentCheatingBinding? = null
     private val binding get() = _binding!!

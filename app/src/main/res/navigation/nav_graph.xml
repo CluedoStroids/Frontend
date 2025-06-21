@@ -152,7 +152,7 @@ tools:layout="@layout/fragment_elimination_update">
 </fragment>
     <fragment
         android:id="@+id/cheatingSuspicionFragment"
-        android:name="at.aau.se2.cluedo.ui.screens.CheatingSuspicionFragment"
+        android:name="at.aau.se2.cluedo.ui.screens.CheatingFragment"
         android:label="CheatingSuspicionFragment" />
 
 </navigation>
