@@ -13,7 +13,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.GameStartedResponse
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -40,7 +40,7 @@ class GameFragment : Fragment() {
 
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
-    private val lobbyViewModel: LobbyViewModel by activityViewModels()
+    private val lobbyViewModel: LobbyViewmodel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,

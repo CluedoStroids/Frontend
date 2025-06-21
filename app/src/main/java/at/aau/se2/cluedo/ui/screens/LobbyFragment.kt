@@ -14,7 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import at.aau.se2.cluedo.data.models.LobbyStatus
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentLobbyBinding
 import kotlinx.coroutines.launch
@@ -23,7 +23,7 @@ class LobbyFragment : Fragment() {
 
     private var _binding: FragmentLobbyBinding? = null
     private val binding get() = _binding!!
-    private val lobbyViewModel: LobbyViewModel by activityViewModels()
+    private val lobbyViewModel: LobbyViewmodel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?

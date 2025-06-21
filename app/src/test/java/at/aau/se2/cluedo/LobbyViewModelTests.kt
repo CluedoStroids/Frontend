@@ -6,7 +6,7 @@ import at.aau.se2.cluedo.data.models.Lobby
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.network.WebSocketService
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +30,7 @@ class LobbyViewModelTests {
     private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var mockWebSocketService: WebSocketService
-    private lateinit var viewModel: LobbyViewModel
+    private lateinit var viewModel: LobbyViewmodel
 
     private val isConnectedFlow = MutableStateFlow(true)
     private val lobbyStateFlow = MutableStateFlow<Lobby?>(null)
@@ -53,7 +53,7 @@ class LobbyViewModelTests {
         whenever(mockWebSocketService.gameStarted).thenReturn(gameStartedFlow)
         whenever(mockWebSocketService.gameState).thenReturn(gameStateFlow)
 
-        viewModel = LobbyViewModel(mockWebSocketService)
+        viewModel = LobbyViewmodel(mockWebSocketService)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

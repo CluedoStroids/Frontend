@@ -27,7 +27,7 @@ import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import at.aau.se2.cluedo.viewmodels.CardAdapter
 import at.aau.se2.cluedo.viewmodels.GameBoard
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import at.aau.se2.cluedo.ui.ShakeEventListener
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
@@ -44,7 +44,7 @@ class GameBoardFragment : Fragment() {
     private lateinit var gameBoard: GameBoard
     var webSocketService: WebSocketService? = null
     private val turnBasedService = TurnBasedWebSocketService.getInstance()
-    private val lobbyViewModel: LobbyViewModel by activityViewModels()
+    private val lobbyViewModel: LobbyViewmodel by activityViewModels()
 
     private var _binding: FragmentGameBoardBinding? = null
     private val binding get() = _binding!!

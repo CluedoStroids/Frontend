@@ -11,6 +11,7 @@ class LobbyRequestsTests {
         val request = CreateLobbyRequest(player)
 
         assertEquals(player, request.player)
+        assertTrue(request is PlayerRequest)
     }
 
     @Test
@@ -19,6 +20,7 @@ class LobbyRequestsTests {
         val request = JoinLobbyRequest(player)
 
         assertEquals(player, request.player)
+        assertTrue(request is PlayerRequest)
     }
 
     @Test
@@ -27,6 +29,7 @@ class LobbyRequestsTests {
         val request = LeaveLobbyRequest(player)
 
         assertEquals(player, request.player)
+        assertTrue(request is PlayerRequest)
     }
 
     @Test
@@ -39,83 +42,22 @@ class LobbyRequestsTests {
     }
 
     @Test
-    fun testActiveLobbiesResponse() {
-        val emptyResponse = ActiveLobbiesResponse()
-        assertTrue(emptyResponse.lobbies.isEmpty())
-
-        val lobbyInfo1 = ActiveLobbiesResponse.LobbyInfo(
-            id = "lobby-1",
-            hostName = "Host1",
-            playerCount = 2
-        )
-        val lobbyInfo2 = ActiveLobbiesResponse.LobbyInfo(
-            id = "lobby-2",
-            hostName = "Host2",
-            playerCount = 3
-        )
-        val response = ActiveLobbiesResponse(listOf(lobbyInfo1, lobbyInfo2))
-
-        assertEquals(2, response.lobbies.size)
-        assertEquals("lobby-1", response.lobbies[0].id)
-        assertEquals("Host1", response.lobbies[0].hostName)
-        assertEquals(2, response.lobbies[0].playerCount)
-        assertEquals("lobby-2", response.lobbies[1].id)
-    }
-
-    @Test
-    fun testActiveLobbiesResponse_LobbyInfo() {
-        val defaultInfo = ActiveLobbiesResponse.LobbyInfo()
-        assertEquals("", defaultInfo.id)
-        assertEquals("", defaultInfo.hostName)
-        assertEquals(0, defaultInfo.playerCount)
-
-        val customInfo = ActiveLobbiesResponse.LobbyInfo(
-            id = "custom-lobby",
-            hostName = "host",
-            playerCount = 4
-        )
-        assertEquals("custom-lobby", customInfo.id)
-        assertEquals("host", customInfo.hostName)
-        assertEquals(4, customInfo.playerCount)
-    }
-
-    @Test
     fun testStartGameRequest() {
         val player = Player(name = "player", character = "Yellow", color = PlayerColor.YELLOW)
         val request = StartGameRequest(player)
 
         assertEquals(player, request.player)
+        assertTrue(request is PlayerRequest)
     }
 
     @Test
-    fun testCanStartGameResponse() {
-        val defaultResponse = CanStartGameResponse()
-        assertFalse(defaultResponse.canStart)
+    fun testIsWallRequest() {
+        val defaultRequest = IsWallRequest()
+        assertEquals(0, defaultRequest.x)
+        assertEquals(0, defaultRequest.y)
 
-        val customResponse = CanStartGameResponse(true)
-        assertTrue(customResponse.canStart)
+        val customRequest = IsWallRequest(x = 5, y = 10)
+        assertEquals(5, customRequest.x)
+        assertEquals(10, customRequest.y)
     }
-
-    @Test
-    fun testGameStartedResponse() {
-        val defaultResponse = GameStartedResponse()
-        assertEquals("", defaultResponse.lobbyId)
-        assertTrue(defaultResponse.players.isEmpty())
-
-        val player1 = Player(name = "Player1", character = "Red", color = PlayerColor.RED)
-        val player2 = Player(name = "Player2", character = "Blue", color = PlayerColor.BLUE)
-        val players = listOf(player1, player2)
-
-        val customResponse = GameStartedResponse(
-            lobbyId = "lobby-123",
-            players = players
-        )
-
-        assertEquals("lobby-123", customResponse.lobbyId)
-        assertEquals(2, customResponse.players.size)
-        assertEquals(player1, customResponse.players[0])
-        assertEquals(player2, customResponse.players[1])
-    }
-
-    // TODO: Add tests for PerformMoveResponse and IsWallRequest @dave
 }

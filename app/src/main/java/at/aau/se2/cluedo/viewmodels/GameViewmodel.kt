@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class GameViewModel(val webSocketService: WebSocketService = WebSocketService.getInstance()) : ViewModel() {
+class GameViewmodel(val webSocketService: WebSocketService = WebSocketService.getInstance()) : ViewModel() {
 
     val isConnected: StateFlow<Boolean> = webSocketService.isConnected
     val lobbyState: StateFlow<Lobby?> = webSocketService.lobbyState

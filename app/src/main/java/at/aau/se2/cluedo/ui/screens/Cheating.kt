@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import at.aau.se2.cluedo.data.models.Player
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import com.example.myapplication.databinding.FragmentCheatingBinding
 import kotlinx.coroutines.launch
 
@@ -19,7 +19,7 @@ class CheatingSuspicionFragment : Fragment() {
     private var _binding: FragmentCheatingBinding? = null
     private val binding get() = _binding!!
 
-    private val lobbyViewModel: LobbyViewModel by viewModels()
+    private val lobbyViewModel: LobbyViewmodel by viewModels()
     private var currentPlayers: List<Player> = emptyList()
     private var currentLobbyId: String? = null
 

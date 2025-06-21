@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 
 
-class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.getInstance()) :
+class LobbyViewmodel(val webSocketService: WebSocketService = WebSocketService.getInstance()) :
     ViewModel() {
 
     val isConnected: StateFlow<Boolean> = webSocketService.isConnected
