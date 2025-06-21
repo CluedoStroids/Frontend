@@ -65,7 +65,7 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
-            unitTests.isIncludeAndroidResources = true
+
             all {
                 it.useJUnitPlatform()
                 it.finalizedBy(tasks.named("jacocoTestReport"))
@@ -126,19 +126,6 @@ sonar {
 }
 
 dependencies {
-    testImplementation("androidx.test.ext:junit:1.1.5")
-    testImplementation("androidx.fragment:fragment-testing:1.6.2")
-    testImplementation("androidx.test:runner:1.5.2")
-
-    testImplementation ("io.mockk:mockk:1.13.8")
-    testImplementation ("io.mockk:mockk-android:1.13.8")
-
-    testImplementation ("org.robolectric:robolectric:4.12.2")
-    testImplementation ("androidx.test:core:1.5.0")
-    testImplementation ("androidx.test.ext:junit:1.1.5")
-
-
-
     implementation(libs.androidx.activity)
     implementation(libs.androidx.core.ktx.v1131)
     implementation(libs.androidx.appcompat.v161)
@@ -181,14 +168,9 @@ dependencies {
     testImplementation(libs.powermock.module.junit4)
     testImplementation(libs.powermock.api.mockito2)
 
-
-
-
-
     testRuntimeOnly(libs.junit.jupiter.engine.v5122)
     testRuntimeOnly(libs.junit.vintage.engine.v5122)
 
     androidTestImplementation(libs.androidx.junit.v121)
     androidTestImplementation(libs.androidx.espresso.core.v361)
-    testImplementation(kotlin("test"))
 }
