@@ -95,12 +95,6 @@ class LobbyViewmodel(val webSocketService: WebSocketService = WebSocketService.g
                 lobbyState.value?.let { lobby ->
                     if (gameState.value == null) {
                         // Create a temporary game state from the lobby
-                        val tempGameState = GameStartedResponse(
-                            lobbyId = lobby.id,
-                            players = lobby.players
-                        )
-                        // We need to manually set the game state in WebSocketService
-                        // This is a workaround since we don't have a direct setter
                         webSocketService.startGame(
                             lobby.id,
                             lobby.host.name,
