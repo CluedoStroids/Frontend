@@ -15,8 +15,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 
 
-class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.getInstance()) :
-    ViewModel() {
+class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
+    constructor() : this(WebSocketService.getInstance())
+
 
     val isConnected: StateFlow<Boolean> = webSocketService.isConnected
     val lobbyState: StateFlow<Lobby?> = webSocketService.lobbyState
@@ -169,23 +170,32 @@ class LobbyViewModel(val webSocketService: WebSocketService = WebSocketService.g
         disconnect()
     }
 
-    fun solveCase(
+    fun sendAccusation(
         lobbyId: String,
         username: String,
         suspect: String,
         room: String,
         weapon: String
     ) {
-
-        webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
+        viewModelScope.launch {
+            webSocketService.sendAccusation(lobbyId, username, suspect, room, weapon)
+        }
+    }
+    fun sendAccusationDirectForTest(
+        lobbyId: String,
+        username: String,
+        suspect: String,
+        room: String,
+        weapon: String
+    ) {
+        webSocketService.sendAccusation(lobbyId, username, suspect, room, weapon)
     }
 
+    private val _suggestionNotes = MutableStateFlow<List<String>>(emptyList())
+    val suggestionNotes: StateFlow<List<String>> = _suggestionNotes
 
-    private val _suspicionNotes = MutableStateFlow<List<String>>(emptyList())
-    val suspicionNotes: StateFlow<List<String>> = _suspicionNotes
-
-    fun addSuspicionNote(note: String) {
-        _suspicionNotes.value = _suspicionNotes.value + note
+    fun addSuggestionNote(note: String) {
+        _suggestionNotes.value = _suggestionNotes.value + note
     }
 
     private var lastRoomEntered: String? = null

@@ -106,16 +106,18 @@ class GameBoardFragment : Fragment() {
         }
 
         binding.solveCaseButton.setOnClickListener {
+            findNavController().navigate(R.id.action_gameBoardIMG_to_accusationFragment)
             if (turnBasedService.canPerformAction("ACCUSE")) {
-                findNavController().navigate(R.id.action_gameBoardIMG_to_solveCaseFragment)
+                findNavController().navigate(R.id.action_gameBoardIMG_to_accusationFragment)
             } else {
                 showToast("Cannot make accusation - not your turn or invalid state")
             }
         }
 
         binding.makeSuspicionButton.setOnClickListener {
+            findNavController().navigate(R.id.action_gameBoardIMG_to_suggestionFragment)
             if (turnBasedService.canPerformAction("SUGGEST")) {
-                findNavController().navigate(R.id.action_gameBoardIMG_to_suspicionPopupFragment)
+                findNavController().navigate(R.id.action_gameBoardIMG_to_suggestionFragment)
             } else {
                 showToast("Cannot make suggestion - not your turn or not in a room")
             }
