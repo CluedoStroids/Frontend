@@ -8,11 +8,38 @@
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
 
-    <ImageView
-        android:id="@+id/card_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:contentDescription="Player Card"
-        android:scaleType="centerCrop" />
+    <FrameLayout
+        android:layout_width="90dp"
+        android:layout_height="140dp">
+
+        <ImageView
+            android:id="@+id/card_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Player Card"
+            android:scaleType="centerCrop" />
+
+        <!-- Overlay for selection indication -->
+        <View
+            android:id="@+id/selection_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#8000FF00"
+            android:visibility="gone" />
+
+
+        <!-- Checkmark icon for selection -->
+        <ImageView
+            android:id="@+id/checkmark_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="8dp"
+            android:src="@drawable/ic_check_circle"
+            android:visibility="gone"
+            android:elevation="2dp"
+            android:contentDescription="Selected" />
+
+    </FrameLayout>
 
 </com.google.android.material.card.MaterialCardView>
