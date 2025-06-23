@@ -19,7 +19,6 @@ import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.data.models.PerformMoveResponse
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
-import at.aau.se2.cluedo.data.models.AccusationRequest
 import at.aau.se2.cluedo.data.models.StartGameRequest
 import at.aau.se2.cluedo.data.models.SuspectCheating
 import com.google.gson.Gson
@@ -50,7 +49,6 @@ class WebSocketService {
         private const val APP_CAN_START_GAME_PREFIX = "/app/canStartGame/"
         private const val TOPIC_CAN_START_GAME_PREFIX = "/topic/canStartGame/"
         private const val APP_START_GAME_PREFIX = "/app/startGame/"
-        private const val APP_ACCUSATION = "/app/accusation"
         private const val TOPIC_GAME_STARTED_PREFIX = "/topic/gameStarted/"
         private const val TOPIC_GAME_DATA_PREFIX = "/topic/gameData/"
         private const val APP_GET_GAME_DATA = "/app/getGameData/"
@@ -559,19 +557,6 @@ class WebSocketService {
 
 
     @SuppressLint("CheckResult")
-    fun sendAccusation(
-        lobbyId: String,
-        username: String,
-        suspect: String,
-        room: String,
-        weapon: String
-    ) {
-        val request = AccusationRequest(lobbyId, username, suspect, room, weapon)
-        val payload = gson.toJson(request)
-        stompClient?.send("/app/accusation", payload)?.subscribe()
-    }
-
-    @SuppressLint("CheckResult")
     fun sendSuggestion(suspect: String, weapon: String, room: String) {
         val currentPlayer = _player.value ?: return
         val lobbyId = _lobbyState.value?.id ?: return
@@ -706,5 +691,11 @@ class WebSocketService {
             val payload = gson.toJson(message)
             stompClient?.send("/app/cheating", payload)?.subscribe()
         }
+        fun subscribe(topic: String, callback: (String) -> Unit) {
+        stompClient?.topic(topic)?.subscribe { stompMessage ->
+            callback(stompMessage.payload)
+        }
     }
+
+}
 

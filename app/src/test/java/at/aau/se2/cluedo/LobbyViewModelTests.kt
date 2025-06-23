@@ -24,7 +24,6 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.*
-import kotlinx.coroutines.test.runTest
 
 
 class LobbyViewModelTests {
@@ -318,17 +317,6 @@ class LobbyViewModelTests {
     fun `isPlayerInRoom returns false when coordinates are null`() {
         val player = Player(name = "Test", x = 99, y = 99)
         assertFalse(viewModel.isPlayerInRoom(player))
-    }
-
-    @Test
-    fun `sendAccusation delegates to WebSocketService`() {
-        val mockWebSocketService = mock<WebSocketService>()
-        val viewModel = LobbyViewModel(mockWebSocketService)
-
-        viewModel.sendAccusationDirectForTest(lobbyId = "lobby123", username = "Matthias", suspect = "Miss Scarlet", room = "Kitchen", weapon = "Rope")
-
-        verify(mockWebSocketService).sendAccusation(
-            "lobby123", "Matthias", "Miss Scarlet", "Kitchen", "Rope")
     }
 
 
