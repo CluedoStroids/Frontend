@@ -1,5 +1,6 @@
 package at.aau.se2.cluedo.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.aau.se2.cluedo.data.models.Lobby
@@ -207,23 +208,30 @@ class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
 
     fun subscribeToAccusationResult(lobbyId: String) {
         webSocketService.subscribe("/topic/accusationMade/$lobbyId") { message ->
+            Log.d("LobbyViewModel", "Accusation result received: $message")
             val json = JSONObject(message)
             val correct = json.optBoolean("correct", false)
             val player = json.optString("player", "")
             val eliminated = json.optBoolean("playerEliminated", false)
 
+            Log.d("LobbyViewModel", "Parsed accusation result - correct: $correct, player: $player, eliminated: $eliminated, localPlayer: ${getLocalPlayerName()}")
+
             viewModelScope.launch {
                 when {
                     correct && player == getLocalPlayerName() -> {
+                        Log.d("LobbyViewModel", "Navigating to WinScreen")
                         _navigationEvents.emit(NavigationTarget.WinScreen)
                     }
                     eliminated && player == getLocalPlayerName() -> {
+                        Log.d("LobbyViewModel", "Navigating to EliminationScreen")
                         _navigationEvents.emit(NavigationTarget.EliminationScreen)
                     }
                     eliminated && player != getLocalPlayerName() -> {
+                        Log.d("LobbyViewModel", "Navigating to EliminationUpdate for $player")
                         _navigationEvents.emit(NavigationTarget.EliminationUpdate(player))
                     }
                     correct && player != getLocalPlayerName() -> {
+                        Log.d("LobbyViewModel", "Navigating to InvestigationUpdate for $player")
                         _navigationEvents.emit(NavigationTarget.InvestigationUpdate(player))
                     }
                 }

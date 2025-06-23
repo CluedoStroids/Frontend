@@ -106,7 +106,6 @@ class GameBoardFragment : Fragment() {
         }
 
         binding.solveCaseButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameBoardIMG_to_accusationFragment)
             if (turnBasedService.canPerformAction("ACCUSE")) {
                 findNavController().navigate(R.id.action_gameBoardIMG_to_accusationFragment)
             } else {
@@ -115,7 +114,6 @@ class GameBoardFragment : Fragment() {
         }
 
         binding.makeSuspicionButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameBoardIMG_to_suggestionFragment)
             if (turnBasedService.canPerformAction("SUGGEST")) {
                 findNavController().navigate(R.id.action_gameBoardIMG_to_suggestionFragment)
             } else {
@@ -511,6 +509,11 @@ class GameBoardFragment : Fragment() {
         super.onResume()
         accelerometer?.also { acc ->
             sensorManager.registerListener(shakeListener, acc, SensorManager.SENSOR_DELAY_UI)
+        }
+        
+        val lobbyId = lobbyViewModel.createdLobbyId.value
+        if (!lobbyId.isNullOrBlank()) {
+            turnBasedService.getTurnState(lobbyId)
         }
     }
 

@@ -48,7 +48,7 @@ class AccusationFragment : Fragment() {
         val suspectSpinnerId = context.resources.getIdentifier("suspectSpinner", "id", context.packageName)
         val roomSpinnerId = context.resources.getIdentifier("roomSpinner", "id", context.packageName)
         val weaponSpinnerId = context.resources.getIdentifier("weaponSpinner", "id", context.packageName)
-        val accuseButtonId = context.resources.getIdentifier("button_accuse", "id", context.packageName)
+        val accuseButtonId = context.resources.getIdentifier("button_solve_case", "id", context.packageName)
         val cancelButtonId = context.resources.getIdentifier("button_cancel", "id", context.packageName)
 
         suspectSpinner = view.findViewById(suspectSpinnerId)
@@ -59,9 +59,7 @@ class AccusationFragment : Fragment() {
         val cancelButton: Button = view.findViewById(cancelButtonId)
         cancelButton.setOnClickListener {
             animateAndClose(it)
-            it.postDelayed({
-                findNavController().navigate(R.id.gameBoardIMG)
-            }, 300)
+            findNavController().navigate(R.id.gameBoardIMG)
         }
 
         accuseButton.setOnClickListener {
@@ -80,23 +78,40 @@ class AccusationFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupSpinners()
 
+        // Subscribe to accusation results for this lobby
+        val lobbyId = lobbyViewModel.lobbyState.value?.id
+        if (lobbyId != null) {
+            lobbyViewModel.subscribeToAccusationResult(lobbyId)
+        }
+
         lifecycleScope.launch {
             lobbyViewModel.navigationEvents.collectLatest { target ->
+                Log.d("AccusationFragment", "Navigation event received: $target")
                 val bundle = createResultBundle(
                     webSocketService.player.value ?: return@collectLatest,
                     webSocketService.player.value?.name ?: "Unknown"
                 )
 
                 when (target) {
-                    is NavigationTarget.WinScreen -> navigateIfExists("winScreenFragment", bundle)
-                    is NavigationTarget.EliminationScreen -> navigateIfExists("eliminationScreenFragment", bundle)
+                    is NavigationTarget.WinScreen -> {
+                        Log.d("AccusationFragment", "Navigating to win screen")
+                        findNavController().navigate(R.id.winScreenFragment, bundle)
+                    }
+                    is NavigationTarget.EliminationScreen -> {
+                        Log.d("AccusationFragment", "Navigating to elimination screen - using eliminationUpdateFragment")
+                        // Since eliminationScreenFragment doesn't exist, use eliminationUpdateFragment
+                        findNavController().navigate(R.id.eliminationUpdateFragment, bundle)
+                    }
                     is NavigationTarget.EliminationUpdate -> {
+                        Log.d("AccusationFragment", "Navigating to elimination update for ${target.playerName}")
                         bundle.putString("eliminatedPlayer", target.playerName)
-                        navigateIfExists("eliminationUpdateFragment", bundle)
+                        findNavController().navigate(R.id.eliminationUpdateFragment, bundle)
                     }
                     is NavigationTarget.InvestigationUpdate -> {
+                        Log.d("AccusationFragment", "Navigating to investigation update for ${target.playerName}")
                         bundle.putString("winningPlayer", target.playerName)
-                        navigateIfExists("investigationUpdateFragment", bundle)
+                        // Since investigationUpdateFragment doesn't exist, use winScreenFragment
+                        findNavController().navigate(R.id.winScreenFragment, bundle)
                     }
                 }
             }
@@ -109,13 +124,6 @@ class AccusationFragment : Fragment() {
             putString("suspect", suspectSpinner.selectedItem.toString())
             putString("room", roomSpinner.selectedItem.toString())
             putString("weapon", weaponSpinner.selectedItem.toString())
-        }
-    }
-
-    private fun navigateIfExists(fragmentName: String, bundle: Bundle) {
-        val id = resources.getIdentifier(fragmentName, "id", requireContext().packageName)
-        if (id != 0) {
-            findNavController().navigate(id, bundle)
         }
     }
 
@@ -132,11 +140,6 @@ class AccusationFragment : Fragment() {
     }
 
     private fun makeAccusation() {
-        if (isPlayerEliminated) {
-            Toast.makeText(context, "You are eliminated! You can't accuse anymore.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
         val selectedSuspect = suspectSpinner.selectedItem.toString()
         val selectedRoom = roomSpinner.selectedItem.toString()
         val selectedWeapon = weaponSpinner.selectedItem.toString()
