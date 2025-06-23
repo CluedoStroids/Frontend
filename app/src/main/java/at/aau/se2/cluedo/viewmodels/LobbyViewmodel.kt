@@ -170,26 +170,6 @@ class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
         disconnect()
     }
 
-    fun sendAccusation(
-        lobbyId: String,
-        username: String,
-        suspect: String,
-        room: String,
-        weapon: String
-    ) {
-        viewModelScope.launch {
-            webSocketService.sendAccusation(lobbyId, username, suspect, room, weapon)
-        }
-    }
-    fun sendAccusationDirectForTest(
-        lobbyId: String,
-        username: String,
-        suspect: String,
-        room: String,
-        weapon: String
-    ) {
-        webSocketService.sendAccusation(lobbyId, username, suspect, room, weapon)
-    }
 
     private val _suggestionNotes = MutableStateFlow<List<String>>(emptyList())
     val suggestionNotes: StateFlow<List<String>> = _suggestionNotes
