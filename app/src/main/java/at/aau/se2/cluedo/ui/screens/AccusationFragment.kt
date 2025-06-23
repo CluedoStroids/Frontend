@@ -168,7 +168,6 @@ class AccusationFragment : Fragment() {
 
         // Use the new accusation system instead of the old solveCase
         turnBasedService.makeAccusation(lobbyId, username, selectedSuspect, selectedWeapon, selectedRoom)
-        lobbyViewModel.sendAccusation(lobbyId, username, selectedSuspect, selectedRoom, selectedWeapon)
     }
 
     private fun animateAndClose(view: View) {
