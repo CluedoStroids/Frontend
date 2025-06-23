@@ -22,9 +22,7 @@ import com.example.myapplication.R
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import at.aau.se2.cluedo.data.models.Player
-import at.aau.se2.cluedo.data.models.Lobby
 import at.aau.se2.cluedo.viewmodels.NavigationTarget
-
 
 class AccusationFragment : Fragment() {
 
@@ -66,12 +64,9 @@ class AccusationFragment : Fragment() {
             }, 300)
         }
 
-
         accuseButton.setOnClickListener {
             makeAccusation()
-
         }
-
 
         return view
     }
@@ -106,20 +101,8 @@ class AccusationFragment : Fragment() {
                 }
             }
         }
-
-
-        lifecycleScope.launch {
-            lobbyViewModel.lobbyState.collectLatest { lobby ->
-                val username = lobbyViewModel.createdLobbyId.value
-                val player = lobby?.players?.find { it.name == username }
-
-                player?.let {
-                    val bundle = createResultBundle(it, username ?: "Unknown")
-                    handleNavigation(it, lobby, bundle)
-                }
-            }
-        }
     }
+
     private fun createResultBundle(player: Player, username: String): Bundle {
         return Bundle().apply {
             putString("winnerName", player.character.ifBlank { username })
@@ -129,34 +112,12 @@ class AccusationFragment : Fragment() {
         }
     }
 
-    private fun handleNavigation(player: Player, lobby: Lobby, bundle: Bundle) {
-        val navController = findNavController()
-
-        when {
-            player.hasWon -> {
-                accuseButton.isEnabled = false
-                Toast.makeText(context, "You won!", Toast.LENGTH_LONG).show()
-                navigateIfExists("winScreenFragment", bundle)
-            }
-            lobby.winnerUsername != null -> {
-                navigateIfExists("investigationUpdateFragment", bundle)
-            }
-            !player.isActive -> {
-                accuseButton.isEnabled = false
-                isPlayerEliminated = true
-                Toast.makeText(context, "Wrong guess. You are eliminated!", Toast.LENGTH_LONG).show()
-                navigateIfExists("eliminationScreenFragment", bundle)
-            }
-        }
-    }
-
     private fun navigateIfExists(fragmentName: String, bundle: Bundle) {
         val id = resources.getIdentifier(fragmentName, "id", requireContext().packageName)
         if (id != 0) {
             findNavController().navigate(id, bundle)
         }
     }
-
 
     private fun setupSpinners() {
         val context = requireContext()
@@ -195,8 +156,6 @@ class AccusationFragment : Fragment() {
 
         Log.d("Accusation", "Sending accusation: $selectedSuspect, $selectedRoom, $selectedWeapon, by $username")
 
-
-        // Use the new accusation system instead of the old solveCase
         turnBasedService.makeAccusation(lobbyId, username, selectedSuspect, selectedWeapon, selectedRoom)
     }
 
