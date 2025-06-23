@@ -514,7 +514,7 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    fun performMovement(lobbyId: String, moves: List<String>) {
+    fun performMovement(moves: List<String>) {
         println("Movein")
         if (!_isConnected.value) {
             _errorMessages.tryEmit("Not connected to server")
