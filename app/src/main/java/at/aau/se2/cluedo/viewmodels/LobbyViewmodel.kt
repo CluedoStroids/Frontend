@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-
+import org.json.JSONObject
 
 
 class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
@@ -23,12 +23,15 @@ class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
     val lobbyState: StateFlow<Lobby?> = webSocketService.lobbyState
     val createdLobbyId: StateFlow<String?> = webSocketService.createdLobbyId
 
+
     // Create our own error messages flow since WebSocketService doesn't have one
     private val _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
     val errorMessages: SharedFlow<String> = _errorMessages
     val canStartGame: StateFlow<Boolean> = webSocketService.canStartGame
     val gameStarted: StateFlow<Boolean> = webSocketService.gameStarted
     val gameState: StateFlow<GameStartedResponse?> = webSocketService.gameState
+    private val _navigationEvents = MutableSharedFlow<NavigationTarget>()
+    val navigationEvents: SharedFlow<NavigationTarget> = _navigationEvents
 
     // Notes, category, player isChecked
     private val _playerNotes = MutableStateFlow(
@@ -122,6 +125,10 @@ class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
         }
     }
 
+    private fun getLocalPlayerName(): String {
+        return webSocketService.player.value?.name ?: ""
+    }
+
     fun checkGameStarted() {
         viewModelScope.launch {
             // Check if we have a game state
@@ -198,9 +205,41 @@ class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
         return player != null && RoomUtils.getRoomNameFromCoordinates(player.x, player.y) != null
     }
 
+    fun subscribeToAccusationResult(lobbyId: String) {
+        webSocketService.subscribe("/topic/accusationMade/$lobbyId") { message ->
+            val json = JSONObject(message)
+            val correct = json.optBoolean("correct", false)
+            val player = json.optString("player", "")
+            val eliminated = json.optBoolean("playerEliminated", false)
 
+            viewModelScope.launch {
+                when {
+                    correct && player == getLocalPlayerName() -> {
+                        _navigationEvents.emit(NavigationTarget.WinScreen)
+                    }
+                    eliminated && player == getLocalPlayerName() -> {
+                        _navigationEvents.emit(NavigationTarget.EliminationScreen)
+                    }
+                    eliminated && player != getLocalPlayerName() -> {
+                        _navigationEvents.emit(NavigationTarget.EliminationUpdate(player))
+                    }
+                    correct && player != getLocalPlayerName() -> {
+                        _navigationEvents.emit(NavigationTarget.InvestigationUpdate(player))
+                    }
+                }
+            }
+        }
+    }
     val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
 
-
 }
+
+
+sealed class NavigationTarget {
+    object WinScreen : NavigationTarget()
+    object EliminationScreen : NavigationTarget()
+    data class EliminationUpdate(val playerName: String) : NavigationTarget()
+    data class InvestigationUpdate(val playerName: String) : NavigationTarget()
+}
+
 

@@ -691,5 +691,11 @@ class WebSocketService {
             val payload = gson.toJson(message)
             stompClient?.send("/app/cheating", payload)?.subscribe()
         }
+        fun subscribe(topic: String, callback: (String) -> Unit) {
+        stompClient?.topic(topic)?.subscribe { stompMessage ->
+            callback(stompMessage.payload)
+        }
     }
+
+}
 

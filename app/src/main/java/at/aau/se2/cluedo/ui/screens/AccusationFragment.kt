@@ -21,6 +21,10 @@ import at.aau.se2.cluedo.data.network.WebSocketService
 import com.example.myapplication.R
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import at.aau.se2.cluedo.data.models.Player
+import at.aau.se2.cluedo.data.models.Lobby
+import at.aau.se2.cluedo.viewmodels.NavigationTarget
+
 
 class AccusationFragment : Fragment() {
 
@@ -79,54 +83,80 @@ class AccusationFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupSpinners()
 
         lifecycleScope.launch {
-            lobbyViewModel.lobbyState.collectLatest { lobby ->
-                val currentUsername = lobbyViewModel.createdLobbyId.value
-                val player = lobby?.players?.find { it.name == currentUsername }
+            lobbyViewModel.navigationEvents.collectLatest { target ->
+                val bundle = createResultBundle(
+                    webSocketService.player.value ?: return@collectLatest,
+                    webSocketService.player.value?.name ?: "Unknown"
+                )
 
-                if (player != null) {
-                    val navController = findNavController()
-                    val bundle = Bundle().apply {
-                        putString("winnerName", player.character.ifBlank { currentUsername })
-                        putString("suspect", suspectSpinner.selectedItem.toString())
-                        putString("room", roomSpinner.selectedItem.toString())
-                        putString("weapon", weaponSpinner.selectedItem.toString())
+                when (target) {
+                    is NavigationTarget.WinScreen -> navigateIfExists("winScreenFragment", bundle)
+                    is NavigationTarget.EliminationScreen -> navigateIfExists("eliminationScreenFragment", bundle)
+                    is NavigationTarget.EliminationUpdate -> {
+                        bundle.putString("eliminatedPlayer", target.playerName)
+                        navigateIfExists("eliminationUpdateFragment", bundle)
                     }
-
-                    when {
-                        player.hasWon -> {
-                            accuseButton.isEnabled = false
-                            Toast.makeText(context, "You won!", Toast.LENGTH_LONG).show()
-
-                            val winScreenId = resources.getIdentifier("winScreenFragment", "id", requireContext().packageName)
-                            if (winScreenId != 0) {
-                                navController.navigate(winScreenId, bundle)
-                            }
-                        }
-                        lobby.winnerUsername != null -> {
-                            val updateScreenId = resources.getIdentifier("investigationUpdateFragment", "id", requireContext().packageName)
-                            if (updateScreenId != 0) {
-                                navController.navigate(updateScreenId, bundle)
-                            }
-                        }
-                        !player.isActive -> {
-                           accuseButton.isEnabled = false
-                            isPlayerEliminated = true
-                            Toast.makeText(context, "Wrong guess. You are eliminated!", Toast.LENGTH_LONG).show()
-
-                            val elimScreenId = resources.getIdentifier("eliminationScreenFragment", "id", requireContext().packageName)
-                            if (elimScreenId != 0) {
-                                navController.navigate(elimScreenId, bundle)
-                            }
-                        }
+                    is NavigationTarget.InvestigationUpdate -> {
+                        bundle.putString("winningPlayer", target.playerName)
+                        navigateIfExists("investigationUpdateFragment", bundle)
                     }
                 }
             }
         }
+
+
+        lifecycleScope.launch {
+            lobbyViewModel.lobbyState.collectLatest { lobby ->
+                val username = lobbyViewModel.createdLobbyId.value
+                val player = lobby?.players?.find { it.name == username }
+
+                player?.let {
+                    val bundle = createResultBundle(it, username ?: "Unknown")
+                    handleNavigation(it, lobby, bundle)
+                }
+            }
+        }
     }
+    private fun createResultBundle(player: Player, username: String): Bundle {
+        return Bundle().apply {
+            putString("winnerName", player.character.ifBlank { username })
+            putString("suspect", suspectSpinner.selectedItem.toString())
+            putString("room", roomSpinner.selectedItem.toString())
+            putString("weapon", weaponSpinner.selectedItem.toString())
+        }
+    }
+
+    private fun handleNavigation(player: Player, lobby: Lobby, bundle: Bundle) {
+        val navController = findNavController()
+
+        when {
+            player.hasWon -> {
+                accuseButton.isEnabled = false
+                Toast.makeText(context, "You won!", Toast.LENGTH_LONG).show()
+                navigateIfExists("winScreenFragment", bundle)
+            }
+            lobby.winnerUsername != null -> {
+                navigateIfExists("investigationUpdateFragment", bundle)
+            }
+            !player.isActive -> {
+                accuseButton.isEnabled = false
+                isPlayerEliminated = true
+                Toast.makeText(context, "Wrong guess. You are eliminated!", Toast.LENGTH_LONG).show()
+                navigateIfExists("eliminationScreenFragment", bundle)
+            }
+        }
+    }
+
+    private fun navigateIfExists(fragmentName: String, bundle: Bundle) {
+        val id = resources.getIdentifier(fragmentName, "id", requireContext().packageName)
+        if (id != 0) {
+            findNavController().navigate(id, bundle)
+        }
+    }
+
 
     private fun setupSpinners() {
         val context = requireContext()
