@@ -12,11 +12,9 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import at.aau.se2.cluedo.data.models.GameStartedResponse
-import at.aau.se2.cluedo.data.models.SuggestionNotificationData
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-
 
 class LobbyViewModel(
     val webSocketService: WebSocketService = WebSocketService.getInstance(),

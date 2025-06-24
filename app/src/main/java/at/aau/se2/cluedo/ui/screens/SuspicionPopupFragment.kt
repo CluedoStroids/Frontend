@@ -71,17 +71,19 @@ class SuspicionPopupFragment : Fragment() {
             // Get lobby ID and player name
             val lobbyId = lobbyViewModel.lobbyState.value?.id
             val playerName = webSocketService.player.value?.name
+            val playerId = webSocketService.player.value?.playerID
 
-            if (lobbyId.isNullOrBlank() || playerName.isNullOrBlank()) {
+            if (lobbyId.isNullOrBlank() || playerName.isNullOrBlank() || playerId.isNullOrBlank()) {
                 Toast.makeText(context, "No active lobby or player found", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
             val suspicion = "$suspect — in the $room — with the $weapon"
             lobbyViewModel.addSuspicionNote(suspicion)
             lobbyViewModel.markSuggestionMade()
 
             // Send suggestion to backend
-            turnBasedService.makeSuggestion(lobbyId, playerName, suspect, weapon, room)
+            turnBasedService.makeSuggestion(lobbyId, playerName,playerId,suspect, weapon, room)
 
             // Also save to notes for backward compatibility
             val suggestion = "$suspect — in the $room — with the $weapon"

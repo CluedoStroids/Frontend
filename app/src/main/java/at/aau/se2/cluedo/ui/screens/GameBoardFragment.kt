@@ -617,7 +617,7 @@ class GameBoardFragment : Fragment() {
             .setCancelable(true)
             .create()
 
-        var selectedCard: String? = null
+        var selectedCard: String = ""
 
         if(gameViewModel.getMatchingCards().isEmpty()){
             suggestionDialog.text = "You dont have matching cards!"
@@ -643,7 +643,7 @@ class GameBoardFragment : Fragment() {
                 // Handle case where no card was selected but confirm was clicked (if confirm is always enabled)
                 Log.w("SuggestionPopup", "Confirm clicked but no card was selected.")
             }
-            //gameViewModel.send
+            gameViewModel.sendSuggestionResponse(selectedCard.toString())
 
         }
 

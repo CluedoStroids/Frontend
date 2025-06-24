@@ -11,6 +11,7 @@ import at.aau.se2.cluedo.data.models.SuggestionRequest
 import at.aau.se2.cluedo.data.models.AccusationRequest
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.SkipTurnRequest
+import at.aau.se2.cluedo.data.models.SuggestionResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +33,7 @@ class TurnBasedWebSocketService private constructor() {
         private const val APP_COMPLETE_MOVEMENT = "/app/completeMovement/"
         private const val TOPIC_MOVEMENT_COMPLETED = "/topic/movementCompleted/"
         private const val APP_MAKE_SUGGESTION = "/app/makeSuggestion/"
+        private const val APP_MAKE_SUGGESTION_RESPONSE = "/app/processSuggestion/"
         private const val TOPIC_SUGGESTION_MADE = "/topic/suggestionMade/"
         private const val TOPIC_SUGGESTION_HANDLE = "/topic/processSuggestion/"
         private const val APP_MAKE_ACCUSATION = "/app/makeAccusation/"
@@ -201,6 +203,7 @@ class TurnBasedWebSocketService private constructor() {
 
         val suggestionData = SuggestionRequest(
             (responseMap["player"] as? String).toString(),
+            (responseMap["playerId"] as? String).toString(),
             (responseMap["suspect"] as? String).toString(),
             (responseMap["weapon"] as? String).toString(),
             (responseMap["room"] as? String).toString()
@@ -314,17 +317,29 @@ class TurnBasedWebSocketService private constructor() {
     }
 
     @SuppressLint("CheckResult")
-    fun makeSuggestion(lobbyId: String, playerName: String, suspect: String, weapon: String, room: String) {
+    fun makeSuggestion(lobbyId: String, playerName: String,playerId: String, suspect: String, weapon: String, room: String) {
         val request = SuggestionRequest(
             playerName = playerName,
+            playerId = playerId,
             suspect = suspect,
             weapon = weapon,
             room = room
         )
         val payload = gson.toJson(request)
         Log.d("SUGGEST","Sent!: ${suspect} ,${weapon},"+
-                " ${room} , ${playerName}")
+                " ${room} , ${playerName} , $playerId")
         stompClient?.send("$APP_MAKE_SUGGESTION$lobbyId", payload)?.subscribe()
+    }
+
+    @SuppressLint("CheckResult")
+    fun makeSuggestionResponse(lobbyId: String, playerId: String, cardName: String) {
+        val request = SuggestionResponse(
+            playerId = playerId,
+            cardName = cardName
+        )
+        val payload = gson.toJson(request)
+        Log.d("SUGGEST-TURN","Sent!: "+request)
+        stompClient?.send("$APP_MAKE_SUGGESTION_RESPONSE$lobbyId", payload)?.subscribe()
     }
 
     @SuppressLint("CheckResult")

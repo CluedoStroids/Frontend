@@ -1,6 +1,7 @@
 package at.aau.se2.cluedo.viewmodels
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.aau.se2.cluedo.data.models.BasicCard
@@ -55,8 +56,10 @@ class GameViewModel(
         return matchingCards
     }
 
-    fun sendSuggestionResponse(cardName: String?){
-        //turnBasedWebSocketService.
+    fun sendSuggestionResponse(cardName: String){
+        var playerId: String = suggestionNotificationData.value?.playerId.toString()
+
+        turnBasedWebSocketService.makeSuggestionResponse(lobbyId = "0", playerId,cardName)
     }
 
 }

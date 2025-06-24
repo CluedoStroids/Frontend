@@ -11,10 +11,10 @@ import com.example.myapplication.R
 
 
 class CardAdapter(private val cards: List<BasicCard>?,
-                  private val onSelectionChanged: ((String?) -> Unit)? = null ) :
+                  private val onSelectionChanged: ((String) -> Unit)? = null ) :
     RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
 
-    private var selectedCard: String? = null
+    private var selectedCard: String = ""
 
     inner class CardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.card_image)
@@ -36,9 +36,9 @@ class CardAdapter(private val cards: List<BasicCard>?,
 
         holder.itemView.setOnClickListener {
             if (selectedCard == cards?.get(position)?.cardName) {
-                selectedCard = null // Deselect
+                selectedCard = "" // Deselect
             } else {
-                selectedCard = cards?.get(position)?.cardName
+                selectedCard = cards?.get(position)?.cardName.toString()
             }
             onSelectionChanged?.invoke(selectedCard)
             notifyDataSetChanged()
