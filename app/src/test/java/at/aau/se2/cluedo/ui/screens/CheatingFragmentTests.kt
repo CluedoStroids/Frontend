@@ -5,7 +5,7 @@ import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.ui.screens.CheatingFragment
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
@@ -17,7 +17,7 @@ import org.mockito.kotlin.whenever
 class CheatingFragmentTests {
 
     private lateinit var mockWebSocketService: WebSocketService
-    private lateinit var mockLobbyViewModel: LobbyViewModel
+    private lateinit var mockLobbyViewModel: LobbyViewmodel
     private lateinit var fragment: CheatingFragment
 
     private val lobbyStateFlow = MutableStateFlow<Lobby?>(null)
@@ -35,7 +35,7 @@ class CheatingFragmentTests {
     @BeforeEach
     fun setup() {
         mockWebSocketService = mock(WebSocketService::class.java)
-        mockLobbyViewModel = mock(LobbyViewModel::class.java)
+        mockLobbyViewModel = mock(LobbyViewmodel::class.java)
         fragment = CheatingFragment()
 
         // Setup mock flows
