@@ -22,7 +22,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.*
 import org.mockito.kotlin.eq
@@ -55,7 +54,7 @@ class LobbyViewModelTests {
         whenever(mockWebSocketService.canStartGame).thenReturn(canStartGameFlow)
         whenever(mockWebSocketService.gameStarted).thenReturn(gameStartedFlow)
         whenever(mockWebSocketService.gameState).thenReturn(gameStateFlow)
-        doReturn(playerFlow).`when`(mockWebSocketService).player
+        whenever(mockWebSocketService.player).thenReturn(playerFlow)
 
         viewModel = LobbyViewmodel(mockWebSocketService)
     }
