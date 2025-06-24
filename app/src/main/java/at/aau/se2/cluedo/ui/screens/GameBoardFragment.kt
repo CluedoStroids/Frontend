@@ -61,7 +61,6 @@ class GameBoardFragment : Fragment() {
 
     private val gameViewModel: GameViewModel by viewModels()
 
-
     private val roomCoordinates = setOf(
         Pair(0, 0), Pair(1, 0), Pair(0, 1), Pair(1, 1), // Küche
         Pair(0, 4), Pair(1, 4), Pair(0, 5), Pair(1, 5), // Speisezimmer
@@ -78,7 +77,9 @@ class GameBoardFragment : Fragment() {
     private var diceTwoValue = 0
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
-    private lateinit var cardsRecyclerView: RecyclerView
+
+    private lateinit var suggestionNotificationDialog: AlertDialog
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         init()
@@ -566,9 +567,9 @@ class GameBoardFragment : Fragment() {
             dialog.dismiss()
         }
 
-        val dialog = dialogBuilder.create()
+        suggestionNotificationDialog = dialogBuilder.create()
 
-        val window = dialog.window
+        val window = suggestionNotificationDialog.window
         window?.let {
             val layoutParams = WindowManager.LayoutParams()
             layoutParams.copyFrom(it.attributes)
@@ -586,11 +587,11 @@ class GameBoardFragment : Fragment() {
             it.attributes = layoutParams
         }
 
-        dialog.show()
+        suggestionNotificationDialog.show()
 
         Handler(Looper.getMainLooper()).postDelayed({
-            if (dialog.isShowing) { //check if Dialog is still showing, otherwise dismiss
-                dialog.dismiss()
+            if (suggestionNotificationDialog.isShowing) { //check if Dialog is still showing, otherwise dismiss
+                suggestionNotificationDialog.dismiss()
             }
         }, durationMillis)
 
@@ -611,6 +612,10 @@ class GameBoardFragment : Fragment() {
         val suggestionDialog = dialogView.findViewById<TextView>(R.id.textSuggestionDialog)
         val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerViewSingleSelection)
         val confirmButton = dialogView.findViewById<Button>(R.id.btnConfirmSelection)
+
+        if (suggestionNotificationDialog.isShowing) { //check if Dialog is still showing, otherwise dismiss
+            suggestionNotificationDialog.dismiss()
+        }
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
