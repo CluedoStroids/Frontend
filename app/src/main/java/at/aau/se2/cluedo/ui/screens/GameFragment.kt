@@ -169,7 +169,7 @@ class GameFragment : Fragment() {
         recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         var cards = WebSocketService.getInstance().player.value?.cards
-        recyclerView.adapter = CardAdapter(BasicCard.getCardIDs(cards))
+        recyclerView.adapter = CardAdapter(cards)
 
     }
 

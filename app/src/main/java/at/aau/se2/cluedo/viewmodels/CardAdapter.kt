@@ -6,14 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import at.aau.se2.cluedo.data.models.BasicCard
 import com.example.myapplication.R
 
 
-class CardAdapter(private val cards: List<Int>,
-                  private val onSelectionChanged: ((Int?) -> Unit)? = null ) :
+class CardAdapter(private val cards: List<BasicCard>?,
+                  private val onSelectionChanged: ((String?) -> Unit)? = null ) :
     RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
 
-    private var selectedPosition: Int? = null
+    private var selectedCard: String? = null
 
     inner class CardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.card_image)
@@ -26,22 +27,23 @@ class CardAdapter(private val cards: List<Int>,
     }
 
     override fun onBindViewHolder(holder: CardViewHolder, @SuppressLint("RecyclerView") position: Int) {
-        val resId = cards[position]
+        val cardIds = BasicCard.getCardIDs(cards)
+        val resId = cardIds[position]
         holder.imageView.setImageResource(resId)
 
         // Highlight selected card (e.g., faded effect)
-        holder.imageView.alpha = if (position == selectedPosition) 0.5f else 1.0f
+        holder.imageView.alpha = if (cards?.get(position)?.cardName == selectedCard) 0.5f else 1.0f
 
         holder.itemView.setOnClickListener {
-            if (selectedPosition == position) {
-                selectedPosition = null // Deselect
+            if (selectedCard == cards?.get(position)?.cardName) {
+                selectedCard = null // Deselect
             } else {
-                selectedPosition = position
+                selectedCard = cards?.get(position)?.cardName
             }
-            onSelectionChanged?.invoke(selectedPosition?.let { cards[it] })
+            onSelectionChanged?.invoke(selectedCard)
             notifyDataSetChanged()
         }
     }
 
-    override fun getItemCount(): Int = cards.size
+    override fun getItemCount(): Int = cards?.size ?: 0
 }

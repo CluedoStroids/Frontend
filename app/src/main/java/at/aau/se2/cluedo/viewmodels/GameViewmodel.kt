@@ -55,4 +55,8 @@ class GameViewModel(
         return matchingCards
     }
 
+    fun sendSuggestionResponse(cardName: String?){
+        //turnBasedWebSocketService.
+    }
+
 }

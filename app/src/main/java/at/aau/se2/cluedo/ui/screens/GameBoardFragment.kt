@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.os.HandlerCompat.postDelayed
@@ -164,7 +165,7 @@ class GameBoardFragment : Fragment() {
         recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         var cards = WebSocketService.getInstance().player.value?.cards
-        recyclerView.adapter = CardAdapter(BasicCard.getCardIDs(cards))
+        recyclerView.adapter = CardAdapter(cards)
 
 
         val gameState = lobbyViewModel.gameState.value
@@ -607,6 +608,7 @@ class GameBoardFragment : Fragment() {
 
     ) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.card_selection_popop, null)
+        val suggestionDialog = dialogView.findViewById<TextView>(R.id.textSuggestionDialog)
         val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerViewSingleSelection)
         val confirmButton = dialogView.findViewById<Button>(R.id.btnConfirmSelection)
 
@@ -615,18 +617,34 @@ class GameBoardFragment : Fragment() {
             .setCancelable(true)
             .create()
 
-        var selectedCard: Int? = null
+        var selectedCard: String? = null
 
-        val adapter = CardAdapter(BasicCard.getCardIDs(gameViewModel.getMatchingCards())) { selection ->
-            selectedCard = selection
+        if(gameViewModel.getMatchingCards().isEmpty()){
+            suggestionDialog.text = "You dont have matching cards!"
+            confirmButton.text = "Skip"
+        }else{
+            val adapter = CardAdapter(gameViewModel.getMatchingCards()) { selection ->
+                selectedCard = selection
+                Log.d("SUGGEST-TURN",""+selection)
+                confirmButton.isEnabled = (selection != null)
+            }
+            recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            recyclerView.adapter = adapter
         }
-
-        recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        recyclerView.adapter = adapter
 
         confirmButton.setOnClickListener {
             dialog.dismiss()
             //todo handle selected card. example send back
+            selectedCard?.let { cardId ->
+                Log.d("SuggestionPopup", "Selected card ID: $cardId")
+                // Call your function to send the selected card
+                // For example: gameViewModel.sendSelectedCard(cardId)
+            } ?: run {
+                // Handle case where no card was selected but confirm was clicked (if confirm is always enabled)
+                Log.w("SuggestionPopup", "Confirm clicked but no card was selected.")
+            }
+            //gameViewModel.send
+
         }
 
         dialog.show()
