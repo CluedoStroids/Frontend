@@ -477,7 +477,7 @@ class WebSocketService {
     private fun subscribePlayersResult() {
         stompClient?.topic(TOPIC_GET_PLAYERS)?.subscribe { stompMessage ->
             val result = gson.fromJson(stompMessage.payload, List::class.java)
-            playerList = result as? List<Player>
+            playerList = result as List<Player>?
         }
     }
 
