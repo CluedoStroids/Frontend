@@ -1,6 +1,5 @@
 package at.aau.se2.cluedo.ui.screens
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
@@ -157,7 +156,7 @@ class JoinLobbyFragment : Fragment() {
     private suspend fun observeGameState() {
         lobbyViewModel.gameState.collect { gameState ->
             if (gameState != null) {
-                showToast(getString(R.string.game_state_received, gameState.players.size))
+                showToast(resources.getQuantityString(R.plurals.game_state_players, gameState.players.size, gameState.players.size))
                 if (!lobbyViewModel.gameStarted.value) {
                     lobbyViewModel.setGameStarted(true)
                 }

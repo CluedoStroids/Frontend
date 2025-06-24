@@ -118,7 +118,7 @@ class LobbyFragment : Fragment() {
     private suspend fun observeLobbyId() {
         lobbyViewModel.createdLobbyId.collect { lobbyId ->
             val displayId = lobbyId ?: "-"
-            binding.activeLobbyIdTextView.text = "Active Lobby ID: $displayId"
+            binding.activeLobbyIdTextView.text = getString(R.string.active_lobby_id_text, displayId)
         }
     }
 

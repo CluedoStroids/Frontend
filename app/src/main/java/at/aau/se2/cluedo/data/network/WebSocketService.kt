@@ -580,11 +580,9 @@ class WebSocketService {
 
     @SuppressLint("CheckResult")
     fun subscribeIsWall(lobbyId: String, onResult: (Boolean) -> Unit) {
-        var disposable: Disposable? = null
-        disposable = stompClient?.topic("$TOPIC_IS_WALL$lobbyId")?.subscribe { stompMessage ->
+        stompClient?.topic("$TOPIC_IS_WALL$lobbyId")?.subscribe { stompMessage ->
             val response = gson.fromJson(stompMessage.payload, Boolean::class.java)
             onResult(response)
-            disposable?.dispose()
         }
     }
 

@@ -45,9 +45,8 @@
     <string name="found_active_lobby">Found active lobby: %1$s</string>
     <string name="joining_lobby">Joining lobby: %1$s</string>
     <string name="no_active_lobby_found">No active lobby found. Please create a new lobby first.</string>
-    <string name="game_started_navigating">Game started! Navigating to game screen...</string>
+    <string name="game_started_navigating">Game started! Navigating to game screen…</string>
     <string name="error_navigating_to_game">Error navigating to game: %1$s</string>
-    <string name="game_state_received">Game state received with %1$d players</string>
     <string name="version_text">v%1$s</string>
     <string name="solve_case">Solve the case</string>
     <string name="suspect">Suspect</string>
@@ -55,5 +54,9 @@
     <string name="solve">Solve</string>
     <string name="make_a_suspicion">Make a suspicion</string>
     <string name="version_number">v3.0</string>
-
+    <string name="active_lobby_id_text">Active Lobby ID: %1$s</string>
+    <plurals name="game_state_players">
+        <item quantity="one">Game state received with %1$d player</item>
+        <item quantity="other">Game state received with %1$d players</item>
+    </plurals>
 </resources>
