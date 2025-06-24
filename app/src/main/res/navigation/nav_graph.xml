@@ -71,15 +71,15 @@
             android:id="@+id/action_gameBoardIMG_to_notesFragment"
             app:destination="@id/notesFragment" />
         <action
-            android:id="@+id/action_gameBoardIMG_to_suspicionPopupFragment"
-            app:destination="@id/suspicionPopupFragment" />
+            android:id="@+id/action_gameBoardIMG_to_suggestionFragment"
+            app:destination="@id/suggestionFragment" />
         <action
-            android:id="@+id/action_gameBoardIMG_to_solveCaseFragment"
-            app:destination="@id/solveCaseFragment" />
+            android:id="@+id/action_gameBoardIMG_to_accusationFragment"
+            app:destination="@id/accusationFragment" />
         <action
             android:id="@+id/action_gameBoardIMG_to_cheatingSuspicionFragment"
             app:destination="@id/cheatingSuspicionFragment" />
-    </fragment>
+             </fragment>
 
     <fragment
         android:id="@+id/joinLobbyFragment"
@@ -99,15 +99,15 @@
 
 
 <fragment
-android:id="@+id/solveCaseFragment"
-android:name="at.aau.se2.cluedo.ui.screens.SolveCaseFragment"
+android:id="@+id/accusationFragment"
+android:name="at.aau.se2.cluedo.ui.screens.AccusationFragment"
 android:label="Solve Case"
-tools:layout="@layout/fragment_solve_case">
+tools:layout="@layout/fragment_accusation">
 <action
-    android:id="@+id/action_solveCaseFragment_to_winScreenFragment"
+    android:id="@+id/action_accusationFragment_to_winScreenFragment"
     app:destination="@id/winScreenFragment" />
 <action
-    android:id="@+id/action_solveCaseFragment_to_eliminationUpdateFragment"
+    android:id="@+id/action_accusationFragment_to_eliminationUpdateFragment"
     app:destination="@id/eliminationUpdateFragment" />
 </fragment>
 
@@ -122,19 +122,19 @@ tools:layout="@layout/fragment_notes">
 </fragment>
 
 <fragment
-android:id="@+id/suspicionPopupFragment"
-android:name="at.aau.se2.cluedo.ui.screens.SuspicionPopupFragment"
+android:id="@+id/suggestionFragment"
+android:name="at.aau.se2.cluedo.ui.screens.SuggestionFragment"
 android:label="Make a Suspicion"
-tools:layout="@layout/fragment_suspicion_popup">
+tools:layout="@layout/fragment_suggestion">
 <action
-    android:id="@+id/action_suspicionPopupFragment_to_lobbyFragment"
+    android:id="@+id/action_suggestionFragment_to_lobbyFragment"
     app:destination="@id/lobbyFragment" />
 </fragment>
 
 <fragment
 android:id="@+id/winScreenFragment"
 android:name="at.aau.se2.cluedo.ui.screens.WinScreenFragment"
-android:label="You Cracked the Case!"
+android:label="You have Cracked the Case!"
 tools:layout="@layout/fragment_win_screen">
 <action
     android:id="@+id/action_winScreenFragment_to_lobbyFragment"

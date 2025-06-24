@@ -27,7 +27,7 @@
             android:id="@+id/button_back_to_lobby"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Back to Lobby"
+            android:text="@string/back_to_lobby"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp"
             android:backgroundTint="@color/purple_500"
@@ -37,7 +37,7 @@
             android:id="@+id/button_exit_game"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Exit the Game"
+            android:text="@string/exit_the_game"
             android:layout_marginTop="4dp"
             android:backgroundTint="@color/teal_200"
             android:textColor="@color/black" />

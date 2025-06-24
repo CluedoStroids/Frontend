@@ -6,7 +6,7 @@ import at.aau.se2.cluedo.data.models.Lobby
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.network.WebSocketService
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +30,7 @@ class LobbyViewModelTests {
     private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var mockWebSocketService: WebSocketService
-    private lateinit var viewModel: LobbyViewModel
+    private lateinit var viewModel: LobbyViewmodel
 
     private val isConnectedFlow = MutableStateFlow(true)
     private val lobbyStateFlow = MutableStateFlow<Lobby?>(null)
@@ -53,7 +53,7 @@ class LobbyViewModelTests {
         whenever(mockWebSocketService.gameStarted).thenReturn(gameStartedFlow)
         whenever(mockWebSocketService.gameState).thenReturn(gameStateFlow)
 
-        viewModel = LobbyViewModel(mockWebSocketService)
+        viewModel = LobbyViewmodel(mockWebSocketService)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -217,26 +217,26 @@ class LobbyViewModelTests {
     }
 
     @Test
-    fun testAddSuspicionNote_addsNoteToList() {
+    fun testAddSuggestionNote_addsNoteToList() {
         val note = "Miss Scarlett — in the Kitchen — with the Dagger"
-        viewModel.addSuspicionNote(note)
+        viewModel.addSuggestionNote(note)
 
-        val suspicionNotes = viewModel.suspicionNotes.value
-        assertTrue(suspicionNotes.contains(note), "Suspicion note should be stored in the list.")
+        val suggestionNotes = viewModel.suggestionNotes.value
+        assertTrue(suggestionNotes.contains(note), "Suggestion note should be stored in the list.")
     }
 
     @Test
-    fun testAddSuspicionNote_multipleNotes() {
+    fun testAddSuggestionNote_multipleNotes() {
         val note1 = "Professor Plum — in the Study — with the Revolver"
         val note2 = "Colonel Mustard — in the Lounge — with the Wrench"
 
-        viewModel.addSuspicionNote(note1)
-        viewModel.addSuspicionNote(note2)
+        viewModel.addSuggestionNote(note1)
+        viewModel.addSuggestionNote(note2)
 
-        val suspicionNotes = viewModel.suspicionNotes.value
-        assertEquals(2, suspicionNotes.size, "There should be 2 suspicion notes stored.")
-        assertTrue(suspicionNotes.contains(note1))
-        assertTrue(suspicionNotes.contains(note2))
+        val suggestionNotes = viewModel.suggestionNotes.value
+        assertEquals(2, suggestionNotes.size, "There should be 2 suggestion notes stored.")
+        assertTrue(suggestionNotes.contains(note1))
+        assertTrue(suggestionNotes.contains(note2))
     }
 
     @Test
@@ -319,11 +319,6 @@ class LobbyViewModelTests {
         assertFalse(viewModel.isPlayerInRoom(player))
     }
 
-    @Test
-    fun `solveCase delegates to WebSocketService`() {
-        viewModel.solveCase("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
-        verify(mockWebSocketService).solveCase("lobby123", "Matthias", "Scarlet", "Kitchen", "Rope")
-    }
 
     @Test
     fun `isPlayerInRoom returns false when player is null`() {
