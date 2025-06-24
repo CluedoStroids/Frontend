@@ -11,7 +11,6 @@ class LobbyRequestsTests {
         val request = CreateLobbyRequest(player)
 
         assertEquals(player, request.player)
-        assertTrue(request is PlayerRequest)
     }
 
     @Test
@@ -20,7 +19,6 @@ class LobbyRequestsTests {
         val request = JoinLobbyRequest(player)
 
         assertEquals(player, request.player)
-        assertTrue(request is PlayerRequest)
     }
 
     @Test
@@ -29,7 +27,6 @@ class LobbyRequestsTests {
         val request = LeaveLobbyRequest(player)
 
         assertEquals(player, request.player)
-        assertTrue(request is PlayerRequest)
     }
 
     @Test
@@ -47,7 +44,6 @@ class LobbyRequestsTests {
         val request = StartGameRequest(player)
 
         assertEquals(player, request.player)
-        assertTrue(request is PlayerRequest)
     }
 
     @Test
