@@ -6,6 +6,9 @@ data class SuggestionResponse(
     @SerializedName("playerId")
     val playerId: String = "",
 
+    @SerializedName("playerName")
+    val playerName: String = "",
+
     @SerializedName("cardName")
     val cardName: String = ""
 )

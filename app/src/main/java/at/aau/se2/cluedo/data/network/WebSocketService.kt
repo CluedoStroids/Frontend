@@ -287,6 +287,8 @@ class WebSocketService {
                     Log.i("START","Player in game: ${player.name} (${player.character})")
                 }
 
+                subscribeToSpecificPlayerTopics(lobbyId, player.value?.playerID.toString())
+
                 // Force a delay to ensure UI updates before navigation
                 Handler(Looper.getMainLooper()).postDelayed({
                     // Double-check that we're still in the game state
@@ -348,7 +350,6 @@ class WebSocketService {
             }
         }
         _player.value = player
-        subscribeToSpecificPlayerTopics(lobbyId,player.playerID)
 
         turnBasedService.setCurrentPlayer(player)
         sendRequest(destination, payload)

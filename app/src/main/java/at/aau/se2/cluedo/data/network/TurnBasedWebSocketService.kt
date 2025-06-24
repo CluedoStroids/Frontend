@@ -36,6 +36,7 @@ class TurnBasedWebSocketService private constructor() {
         private const val APP_MAKE_SUGGESTION_RESPONSE = "/app/processSuggestion/"
         private const val TOPIC_SUGGESTION_MADE = "/topic/suggestionMade/"
         private const val TOPIC_SUGGESTION_HANDLE = "/topic/processSuggestion/"
+        private const val TOPIC_SUGGESTION_RESULT = "/topic/resultSuggestion/"
         private const val APP_MAKE_ACCUSATION = "/app/makeAccusation/"
         private const val TOPIC_ACCUSATION_MADE = "/topic/accusationMade/"
         private const val APP_SKIP_TURN = "/app/skipTurn/"
@@ -72,6 +73,9 @@ class TurnBasedWebSocketService private constructor() {
 
     private val _processSuggestion = MutableStateFlow<Boolean>(false)
     val processSuggestion: StateFlow<Boolean> = _processSuggestion
+
+    private val _resultSuggestion = MutableStateFlow<SuggestionResponse?>(null)
+    val resultSuggestion: StateFlow<SuggestionResponse?> = _resultSuggestion
 
     private var currentPlayerName: String? = null
     private var currentPlayer: Player? = null
@@ -160,6 +164,15 @@ class TurnBasedWebSocketService private constructor() {
             val responseMap = gson.fromJson(message.payload, Map::class.java)
             _processSuggestion.value = responseMap["processSuggestion"] as Boolean;
         }
+
+        stompClient?.topic("$TOPIC_SUGGESTION_RESULT$lobbyId/$playerId")?.subscribe { message ->
+            Log.d("SUGGEST-TURN", "Suggestion Turn response received: ${message.payload}")
+            val responseMap = gson.fromJson(message.payload, Map::class.java)
+            Log.d("SUGGEST-TURN",responseMap["receivedCard"] as String + "from: "+responseMap["sendingPlayer"] as String)
+            _resultSuggestion.value = SuggestionResponse(playerName = responseMap["sendingPlayer"] as String,
+                                                         cardName = responseMap["receivedCard"]as String)
+        }
+
     }
 
     private fun handleTurnStateChange(message: StompMessage, lobbyId: String) {

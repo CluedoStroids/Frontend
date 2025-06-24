@@ -408,6 +408,21 @@ class GameBoardFragment : Fragment() {
                     }
                 }
 
+                /**
+                 * When handling a suggestion, check if any suggestion is received and handle your turn
+                 * by either showing a card, or skipping, to pass it to the next player.
+                 */
+                launch{
+                    gameViewModel.resultSuggestion.collect { result ->
+                        Log.d("SUGGEST","Received: ${result}")
+
+                        if(result != null){
+                            showSuggestionResultPopup(result.playerName,result.cardName)
+                        }
+
+                    }
+                }
+
             }
         }
     }
@@ -613,10 +628,6 @@ class GameBoardFragment : Fragment() {
         val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerViewSingleSelection)
         val confirmButton = dialogView.findViewById<Button>(R.id.btnConfirmSelection)
 
-        if (suggestionNotificationDialog.isShowing) { //check if Dialog is still showing, otherwise dismiss
-            suggestionNotificationDialog.dismiss()
-        }
-
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
             .setCancelable(true)
@@ -639,7 +650,6 @@ class GameBoardFragment : Fragment() {
 
         confirmButton.setOnClickListener {
             dialog.dismiss()
-            //todo handle selected card. example send back
             selectedCard?.let { cardId ->
                 Log.d("SuggestionPopup", "Selected card ID: $cardId")
                 // Call your function to send the selected card
@@ -648,7 +658,8 @@ class GameBoardFragment : Fragment() {
                 // Handle case where no card was selected but confirm was clicked (if confirm is always enabled)
                 Log.w("SuggestionPopup", "Confirm clicked but no card was selected.")
             }
-            gameViewModel.sendSuggestionResponse(selectedCard.toString())
+            val lobbyId = lobbyViewModel.lobbyState.value?.id.toString()
+            gameViewModel.sendSuggestionResponse(lobbyId,selectedCard.toString())
 
         }
 
@@ -656,7 +667,57 @@ class GameBoardFragment : Fragment() {
 
     }
 
+    /**
+     * Displays a popup notification about a suggestion.
+     * @param playerName The name of the player making the suggestion.
+     * @param room
+     * @param weapon
+     * @param character
+     */
+    @SuppressLint("SetTextI18n")
+    fun showSuggestionResultPopup(
+        playerName: String,
+        cardName: String,
+        durationMillis: Long = 60000
+    ) {
+        var dialogBuilder = AlertDialog.Builder(requireContext())
 
+        dialogBuilder.setTitle("$playerName shows you: ")
+        dialogBuilder.setMessage("$cardName")
+
+        dialogBuilder.setPositiveButton("Acknowledge") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        suggestionNotificationDialog = dialogBuilder.create()
+
+        val window = suggestionNotificationDialog.window
+        window?.let {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(it.attributes)
+
+            // Set the desired gravity for positioning
+            layoutParams.gravity = Gravity.FILL
+
+            layoutParams.x = 0
+            layoutParams.y = 0
+
+            // Optional: Adjust window type or flags if necessary (usually not needed for simple positioning)
+            // layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL
+            // layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL // Allows touches outside the dialog
+
+            it.attributes = layoutParams
+        }
+
+        suggestionNotificationDialog.show()
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (suggestionNotificationDialog.isShowing) { //check if Dialog is still showing, otherwise dismiss
+                suggestionNotificationDialog.dismiss()
+            }
+        }, durationMillis)
+
+    }
 
 
 

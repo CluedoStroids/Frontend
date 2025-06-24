@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.SuggestionRequest
+import at.aau.se2.cluedo.data.models.SuggestionResponse
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import at.aau.se2.cluedo.data.network.WebSocketService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,9 @@ class GameViewModel(
     private val _processingSuggestion = MutableStateFlow<Boolean>(false)
     val processingSuggestion: StateFlow<Boolean> = _processingSuggestion
 
+    private val _resultSuggestion = MutableStateFlow<SuggestionResponse?>(null)
+    val resultSuggestion: StateFlow<SuggestionResponse?> = _resultSuggestion
+
     init {
         viewModelScope.launch {
             turnBasedWebSocketService.suggestionData.collect { suggestion ->
@@ -33,6 +37,12 @@ class GameViewModel(
         viewModelScope.launch {
             turnBasedWebSocketService.processSuggestion.collect { processing ->
                 _processingSuggestion.value = processing
+            }
+        }
+
+        viewModelScope.launch {
+            turnBasedWebSocketService.resultSuggestion.collect { result ->
+                _resultSuggestion.value = result
             }
         }
 
@@ -56,10 +66,9 @@ class GameViewModel(
         return matchingCards
     }
 
-    fun sendSuggestionResponse(cardName: String){
+    fun sendSuggestionResponse(lobbyId: String, cardName: String){
         var playerId: String = suggestionNotificationData.value?.playerId.toString()
-
-        turnBasedWebSocketService.makeSuggestionResponse(lobbyId = "0", playerId,cardName)
+        turnBasedWebSocketService.makeSuggestionResponse(lobbyId, playerId,cardName)
     }
 
 }
