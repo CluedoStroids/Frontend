@@ -13,7 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import at.aau.se2.cluedo.data.models.Player
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import com.example.myapplication.databinding.FragmentCheatingBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -24,7 +24,7 @@ class CheatingFragment : Fragment() {
     private val binding get() = _binding!!
 
 
-    private val lobbyViewModel: LobbyViewModel by activityViewModels()
+    private val lobbyViewModel: LobbyViewmodel by activityViewModels()
 
     private var currentPlayers: List<Player> = emptyList()
     private var currentLobbyId: String? = null
