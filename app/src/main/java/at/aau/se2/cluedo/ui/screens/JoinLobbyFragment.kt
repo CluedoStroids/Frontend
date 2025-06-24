@@ -215,7 +215,6 @@ class JoinLobbyFragment : Fragment() {
             // Auto-fill the username field with a unique name if it's empty
             if (binding.joinUsernameEditText.text.isNullOrBlank()) {
                 val existingNames = lobby.players.map { it.name }
-                val baseName = "Player"
                 var counter = lobby.players.size + 1
                 var newName = getString(R.string.default_player_name, counter)
 
