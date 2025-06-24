@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Cluedo</string>
     <string name="main_menu">Main Menu</string>
-    <string name="main_menu_sub_text">SE2 Project</string>
     <string name="lobby">Lobby</string>
     <string name="settings">Settings</string>
     <string name="create_lobby">Create Lobby</string>
@@ -11,9 +10,7 @@
     <string name="dice_roller">Dice Roller</string>
     <string name="roll_dice">Roll Dice</string>
     <string name="start_game">Start Game</string>
-    <string name="game_started">Game Started</string>
     <string name="not_enough_players">Not enough players to start the game. Need at least 3 players.</string>
-    <string name="can_start_game">Game can be started! You have enough players.</string>
     <string name="game">Game</string>
     <string name="game_in_progress">Game in progress…</string>
     <string name="players">Players:</string>
