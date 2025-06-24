@@ -28,9 +28,9 @@ class MainMenuFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         try {
             val packageInfo = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
-            binding.versionTextView.text = "v${packageInfo.versionName}"
+            binding.versionTextView.text = getString(R.string.version_text, packageInfo.versionName)
         } catch (e: PackageManager.NameNotFoundException) {
-            binding.versionTextView.text = "v1.0"
+            binding.versionTextView.text = getString(R.string.version_text, "1.0")
         }
         binding.createLobbyCard.setOnClickListener {
             findNavController().navigate(R.id.action_mainMenuFragment_to_lobbyFragment)
@@ -39,8 +39,6 @@ class MainMenuFragment : Fragment() {
         binding.joinLobbyCard.setOnClickListener {
             findNavController().navigate(R.id.action_mainMenuFragment_to_joinLobbyFragment)
         }
-
-
 
         binding.settingsCard.setOnClickListener {
             findNavController().navigate(R.id.action_mainMenuFragment_to_settingsFragment)

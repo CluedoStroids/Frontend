@@ -11,19 +11,19 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import com.example.myapplication.R
 
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import at.aau.se2.cluedo.data.network.WebSocketService
-import com.example.myapplication.databinding.FragmentSuspicionPopupBinding
+import com.example.myapplication.databinding.FragmentSuggestionBinding
 
-class SuspicionPopupFragment : Fragment() {
+class SuggestionFragment : Fragment() {
 
-    private var _binding: FragmentSuspicionPopupBinding? = null
+    private var _binding: FragmentSuggestionBinding? = null
     private val binding get() = _binding!!
 
-    private val lobbyViewModel: LobbyViewModel by activityViewModels()
+    private val lobbyViewModel: LobbyViewmodel by activityViewModels()
     private val turnBasedService = TurnBasedWebSocketService.getInstance()
     private val webSocketService = WebSocketService.getInstance()
 
@@ -31,7 +31,7 @@ class SuspicionPopupFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSuspicionPopupBinding.inflate(inflater,container,false)
+        _binding = FragmentSuggestionBinding.inflate(inflater,container,false)
         return binding.root
     }
 
@@ -48,17 +48,18 @@ class SuspicionPopupFragment : Fragment() {
         }
          */
 
+
+        val suggestionButton: Button = binding.buttonMakeSuspicion
         val suspectSpinner: Spinner = binding.suspectSpinner
         val roomSpinner: Spinner = binding.roomSpinner
         val weaponSpinner: Spinner = binding.weaponSpinner
-        val makeSuspicionButton: Button = binding.buttonMakeSuspicion
         val cancelButton: Button = binding.buttonCancel
 
         setUpSpinner(suspectSpinner, R.array.suspect_options)
         setUpSpinner(roomSpinner, R.array.room_options)
         setUpSpinner(weaponSpinner, R.array.weapon_options)
 
-        makeSuspicionButton.setOnClickListener {
+        suggestionButton.setOnClickListener {
             val suspect = suspectSpinner.selectedItem.toString()
             val room = roomSpinner.selectedItem.toString()
             val weapon = weaponSpinner.selectedItem.toString()
@@ -79,7 +80,7 @@ class SuspicionPopupFragment : Fragment() {
             }
 
             val suspicion = "$suspect — in the $room — with the $weapon"
-            lobbyViewModel.addSuspicionNote(suspicion)
+            lobbyViewModel.addSuggestionNote(suspicion)
             lobbyViewModel.markSuggestionMade()
 
             // Send suggestion to backend
@@ -87,7 +88,7 @@ class SuspicionPopupFragment : Fragment() {
 
             // Also save to notes for backward compatibility
             val suggestion = "$suspect — in the $room — with the $weapon"
-            lobbyViewModel.addSuspicionNote(suggestion)
+            lobbyViewModel.addSuggestionNote(suggestion)
 
             Toast.makeText(context, "Suggestion sent!", Toast.LENGTH_SHORT).show()
 

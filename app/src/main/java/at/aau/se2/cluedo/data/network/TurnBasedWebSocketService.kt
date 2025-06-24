@@ -138,8 +138,7 @@ class TurnBasedWebSocketService private constructor() {
         // Subscribe to accusation responses
         stompClient?.topic("$TOPIC_ACCUSATION_MADE$lobbyId")?.subscribe { message ->
             Log.d("TurnBasedWS", "Accusation response received: ${message.payload}")
-            // Accusations don't return TurnStateResponse, just success/failure info
-            // The turn state should be updated through other means
+            handleAccusationResponse(message, lobbyId)
         }
 
         // Subscribe to skip turn responses
@@ -281,6 +280,20 @@ class TurnBasedWebSocketService private constructor() {
         }
     }
 
+    private fun handleAccusationResponse(message: StompMessage, lobbyId: String) {
+        Log.d("TurnBasedWS", "Accusation response received: ${message.payload}")
+        val responseMap = gson.fromJson(message.payload, Map::class.java)
+
+        val success = responseMap["success"] as? Boolean ?: false
+        val correct = responseMap["correct"] as? Boolean ?: false
+        val playerEliminated = responseMap["playerEliminated"] as? Boolean ?: false
+        val messageText = responseMap["message"] as? String ?: ""
+
+        Log.d("TurnBasedWS", "Accusation result: success=$success, correct=$correct, playerEliminated=$playerEliminated, message=$messageText")
+
+        getTurnState(lobbyId)
+    }
+
     private fun updatePlayerTurnStatus(turnState: TurnStateResponse) {
         val isMyTurn = currentPlayerName == turnState.currentPlayerName
         _isCurrentPlayerTurn.value = isMyTurn
@@ -358,7 +371,8 @@ class TurnBasedWebSocketService private constructor() {
     @SuppressLint("CheckResult")
     fun makeAccusation(lobbyId: String, playerName: String, suspect: String, weapon: String, room: String) {
         val request = AccusationRequest(
-            playerName = playerName,
+            lobbyId = lobbyId,
+            username = playerName,
             suspect = suspect,
             weapon = weapon,
             room = room

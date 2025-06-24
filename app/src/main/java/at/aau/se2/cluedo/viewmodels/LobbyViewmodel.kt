@@ -2,6 +2,7 @@ package at.aau.se2.cluedo.viewmodels
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.aau.se2.cluedo.data.models.Lobby
@@ -15,15 +16,18 @@ import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.json.JSONObject
 
-class LobbyViewModel(
-    val webSocketService: WebSocketService = WebSocketService.getInstance(),
-    val turnBasedWebSocketService: TurnBasedWebSocketService = TurnBasedWebSocketService.getInstance()
-) : ViewModel() {
+
+
+class LobbyViewmodel(val webSocketService: WebSocketService = WebSocketService.getInstance(),
+                     val turnBasedWebSocketService: TurnBasedWebSocketService = TurnBasedWebSocketService.getInstance()) :
+    ViewModel() {
 
     val isConnected: StateFlow<Boolean> = webSocketService.isConnected
     val lobbyState: StateFlow<Lobby?> = webSocketService.lobbyState
     val createdLobbyId: StateFlow<String?> = webSocketService.createdLobbyId
+
 
     // Create our own error messages flow since WebSocketService doesn't have one
     private val _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
@@ -31,6 +35,8 @@ class LobbyViewModel(
     val canStartGame: StateFlow<Boolean> = webSocketService.canStartGame
     val gameStarted: StateFlow<Boolean> = webSocketService.gameStarted
     val gameState: StateFlow<GameStartedResponse?> = webSocketService.gameState
+    private val _navigationEvents = MutableSharedFlow<NavigationTarget>()
+    val navigationEvents: SharedFlow<NavigationTarget> = _navigationEvents
 
     // Notes, category, player isChecked
     private val _playerNotes = MutableStateFlow(
@@ -56,7 +62,7 @@ class LobbyViewModel(
             val color = getColorForCharacter(character)
 
             webSocketService.createLobby(username, character, color)
-            //WebSocketService.getInstance().setPlayer(Player(name = username, character = character, color = color))
+            webSocketService.setPlayer(Player(name = username, character = character, color = color))
         }
     }
 
@@ -64,7 +70,7 @@ class LobbyViewModel(
         viewModelScope.launch {
             val color = getColorForCharacter(character)
             webSocketService.joinLobby(lobbyId, username, character, color)
-            //WebSocketService.getInstance().setPlayer(Player(name = username, character = character, color = color))
+            webSocketService.setPlayer(Player(name = username, character = character, color = color))
         }
     }
 
@@ -95,12 +101,6 @@ class LobbyViewModel(
                 lobbyState.value?.let { lobby ->
                     if (gameState.value == null) {
                         // Create a temporary game state from the lobby
-                        val tempGameState = GameStartedResponse(
-                            lobbyId = lobby.id,
-                            players = lobby.players
-                        )
-                        // We need to manually set the game state in WebSocketService
-                        // This is a workaround since we don't have a direct setter
                         webSocketService.startGame(
                             lobby.id,
                             lobby.host.name,
@@ -121,6 +121,10 @@ class LobbyViewModel(
         }
     }
 
+    private fun getLocalPlayerName(): String {
+        return webSocketService.player.value?.name ?: ""
+    }
+
     fun checkGameStarted() {
         viewModelScope.launch {
             // Check if we have a game state
@@ -133,7 +137,7 @@ class LobbyViewModel(
                 // If we don't have a game state, check if we have a lobby
                 lobbyState.value?.let { lobby ->
                     // If we have a lobby with at least 3 players, we can start the game
-                    if (lobby.players.size >= 2) {
+                    if (lobby.players.size >= 3) {
                         // Check if we can start the game
                         checkCanStartGame(lobby.id)
                     }
@@ -168,23 +172,12 @@ class LobbyViewModel(
         disconnect()
     }
 
-    fun solveCase(
-        lobbyId: String,
-        username: String,
-        suspect: String,
-        room: String,
-        weapon: String
-    ) {
 
-        webSocketService.solveCase(lobbyId, username, suspect, room, weapon)
-    }
+    private val _suggestionNotes = MutableStateFlow<List<String>>(emptyList())
+    val suggestionNotes: StateFlow<List<String>> = _suggestionNotes
 
-
-    private val _suspicionNotes = MutableStateFlow<List<String>>(emptyList())
-    val suspicionNotes: StateFlow<List<String>> = _suspicionNotes
-
-    fun addSuspicionNote(note: String) {
-        _suspicionNotes.value = _suspicionNotes.value + note
+    fun addSuggestionNote(note: String) {
+        _suggestionNotes.value = _suggestionNotes.value + note
     }
 
     private var lastRoomEntered: String? = null
@@ -207,9 +200,48 @@ class LobbyViewModel(
         return player != null && RoomUtils.getRoomNameFromCoordinates(player.x, player.y) != null
     }
 
+    fun subscribeToAccusationResult(lobbyId: String) {
+        webSocketService.subscribe("/topic/accusationMade/$lobbyId") { message ->
+            Log.d("LobbyViewModel", "Accusation result received: $message")
+            val json = JSONObject(message)
+            val correct = json.optBoolean("correct", false)
+            val player = json.optString("player", "")
+            val eliminated = json.optBoolean("playerEliminated", false)
 
+            Log.d("LobbyViewModel", "Parsed accusation result - correct: $correct, player: $player, eliminated: $eliminated, localPlayer: ${getLocalPlayerName()}")
+
+            viewModelScope.launch {
+                when {
+                    correct && player == getLocalPlayerName() -> {
+                        Log.d("LobbyViewModel", "Navigating to WinScreen")
+                        _navigationEvents.emit(NavigationTarget.WinScreen)
+                    }
+                    eliminated && player == getLocalPlayerName() -> {
+                        Log.d("LobbyViewModel", "Navigating to EliminationScreen")
+                        _navigationEvents.emit(NavigationTarget.EliminationScreen)
+                    }
+                    eliminated && player != getLocalPlayerName() -> {
+                        Log.d("LobbyViewModel", "Navigating to EliminationUpdate for $player")
+                        _navigationEvents.emit(NavigationTarget.EliminationUpdate(player))
+                    }
+                    correct && player != getLocalPlayerName() -> {
+                        Log.d("LobbyViewModel", "Navigating to InvestigationUpdate for $player")
+                        _navigationEvents.emit(NavigationTarget.InvestigationUpdate(player))
+                    }
+                }
+            }
+        }
+    }
     val availableCharacters = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
 
-
 }
+
+
+sealed class NavigationTarget {
+    object WinScreen : NavigationTarget()
+    object EliminationScreen : NavigationTarget()
+    data class EliminationUpdate(val playerName: String) : NavigationTarget()
+    data class InvestigationUpdate(val playerName: String) : NavigationTarget()
+}
+
 
