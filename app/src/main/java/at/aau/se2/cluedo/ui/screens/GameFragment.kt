@@ -156,6 +156,22 @@ class GameFragment : Fragment() {
                     BottomSheetBehavior.STATE_HIDDEN -> {
                         binding.cardsOpenButton.setImageResource(R.drawable.cards_open_icon)
                     }
+
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        // not needed but must be overridden
+                    }
+
+                    BottomSheetBehavior.STATE_DRAGGING -> {
+                        // not needed but must be overridden
+                    }
+
+                    BottomSheetBehavior.STATE_HALF_EXPANDED -> {
+                        // not needed but must be overridden
+                    }
+
+                    BottomSheetBehavior.STATE_SETTLING -> {
+                        // not needed but must be overridden
+                    }
                 }
             }
 
