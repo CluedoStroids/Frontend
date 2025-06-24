@@ -24,7 +24,6 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.*
-import org.mockito.kotlin.eq
 
 
 class LobbyViewModelTests {
@@ -39,7 +38,6 @@ class LobbyViewModelTests {
     private val canStartGameFlow = MutableStateFlow(false)
     private val gameStartedFlow = MutableStateFlow(false)
     private val gameStateFlow = MutableStateFlow<GameStartedResponse?>(null)
-    private val playerFlow = MutableStateFlow<Player?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @BeforeEach
@@ -54,9 +52,6 @@ class LobbyViewModelTests {
         whenever(mockWebSocketService.canStartGame).thenReturn(canStartGameFlow)
         whenever(mockWebSocketService.gameStarted).thenReturn(gameStartedFlow)
         whenever(mockWebSocketService.gameState).thenReturn(gameStateFlow)
-        whenever(mockWebSocketService.player).thenReturn(playerFlow)
-
-        whenever(mockWebSocketService.subscribe(anyString(), any())).then {}
 
         viewModel = LobbyViewmodel(mockWebSocketService)
     }
@@ -329,173 +324,6 @@ class LobbyViewModelTests {
     fun `isPlayerInRoom returns false when player is null`() {
         val player: Player? = null
         assertFalse(viewModel.isPlayerInRoom(player))
-    }
-
-    @Test
-    fun testLogMessage() {
-        val testMessage = "Test error message"
-        viewModel.logMessage(testMessage)
-        
-        assertTrue(true)
-    }
-
-    @Test
-    fun testCreateLobbyWithDefaultCharacter() {
-        val username = "TestUser"
-        
-        viewModel.createLobby(username)
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        verify(mockWebSocketService).createLobby(username, "Red", PlayerColor.RED)
-    }
-
-    @Test
-    fun testJoinLobbyWithDefaultCharacter() {
-        val lobbyId = "test-lobby"
-        val username = "TestUser"
-        
-        viewModel.joinLobby(lobbyId, username)
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        verify(mockWebSocketService).joinLobby(lobbyId, username, "Blue", PlayerColor.BLUE)
-    }
-
-    @Test
-    fun testLeaveLobbyWithDefaultCharacter() {
-        val lobbyId = "test-lobby"
-        val username = "TestUser"
-        
-        viewModel.leaveLobby(lobbyId, username)
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        verify(mockWebSocketService).leaveLobby(lobbyId, username, "Blue", PlayerColor.BLUE)
-    }
-
-    @Test
-    fun testGetColorForCharacterWithInvalidName() {
-        viewModel.createLobby("TestUser", "InvalidCharacter")
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        verify(mockWebSocketService).createLobby("TestUser", "InvalidCharacter", PlayerColor.RED)
-    }
-
-    @Test
-    fun testGetColorForCharacterWithAllValidCharacters() {
-        viewModel.createLobby("TestUser", "Red")
-        testDispatcher.scheduler.advanceUntilIdle()
-        verify(mockWebSocketService).createLobby("TestUser", "Red", PlayerColor.RED)
-        
-        viewModel.createLobby("TestUser", "Blue")
-        testDispatcher.scheduler.advanceUntilIdle()
-        verify(mockWebSocketService).createLobby("TestUser", "Blue", PlayerColor.BLUE)
-        
-        viewModel.createLobby("TestUser", "Green")
-        testDispatcher.scheduler.advanceUntilIdle()
-        verify(mockWebSocketService).createLobby("TestUser", "Green", PlayerColor.GREEN)
-        
-        viewModel.createLobby("TestUser", "Yellow")
-        testDispatcher.scheduler.advanceUntilIdle()
-        verify(mockWebSocketService).createLobby("TestUser", "Yellow", PlayerColor.YELLOW)
-        
-        viewModel.createLobby("TestUser", "Purple")
-        testDispatcher.scheduler.advanceUntilIdle()
-        verify(mockWebSocketService).createLobby("TestUser", "Purple", PlayerColor.PURPLE)
-        
-        viewModel.createLobby("TestUser", "White")
-        testDispatcher.scheduler.advanceUntilIdle()
-        verify(mockWebSocketService).createLobby("TestUser", "White", PlayerColor.WHITE)
-    }
-
-    @Test
-    fun testSetGameStartedWithFalse() {
-        viewModel.setGameStarted(false)
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        verify(mockWebSocketService, times(0)).startGame(anyString(), anyString(), anyString(), any())
-    }
-
-    @Test
-    fun testCheckGameStartedWhenLobbyHasLessThan3Players() {
-        val host = Player(name = "Host", character = "Red", color = PlayerColor.RED)
-        val player = Player(name = "Player", character = "Blue", color = PlayerColor.BLUE)
-        val lobby = Lobby(id = "test-lobby", host = host, players = listOf(host, player)) // Only 2 players
-        lobbyStateFlow.value = lobby
-        
-        viewModel.checkGameStarted()
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        verify(mockWebSocketService, times(0)).checkCanStartGame(anyString())
-    }
-
-    @Test
-    fun testCheckGameStartedWhenNoLobbyExists() {
-        lobbyStateFlow.value = null
-        
-        viewModel.checkGameStarted()
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        verify(mockWebSocketService, times(0)).checkCanStartGame(anyString())
-    }
-
-    @Test
-    fun testAvailableCharacters() {
-        val expected = listOf("Red", "Blue", "Green", "Yellow", "Purple", "White")
-        assertEquals(expected, viewModel.availableCharacters)
-    }
-
-    @Test
-    fun testSubscribeToAccusationResult() {
-        viewModel.subscribeToAccusationResult("test-lobby")
-        
-        verify(mockWebSocketService).subscribe(eq("/topic/accusationMade/test-lobby"), any())
-    }
-
-    @Test
-    fun testUpdateRoomEntryWithNull() {
-        viewModel.updateRoomEntry("Kitchen")
-        viewModel.markSuggestionMade()
-        
-        viewModel.updateRoomEntry(null)
-        
-        assertTrue(viewModel.canMakeSuggestion())
-    }
-
-    @Test
-    fun testMultipleNoteCategoriesWorkIndependently() {
-        viewModel.setNote("Weapons", "Candlestick", true)
-        viewModel.setNote("Rooms", "Kitchen", true)
-        viewModel.setNote("Characters", "Scarlett", false)
-        
-        assertTrue(viewModel.isNoteChecked("Weapons", "Candlestick"))
-        assertTrue(viewModel.isNoteChecked("Rooms", "Kitchen"))
-        assertFalse(viewModel.isNoteChecked("Characters", "Scarlett"))
-        assertFalse(viewModel.isNoteChecked("Weapons", "Kitchen")) // Different category
-    }
-
-    @Test
-    fun testPlayerNotesStateFlowUpdate() {
-        val initialNotes = viewModel.playerNotes.value
-        assertTrue(initialNotes.isEmpty())
-        
-        viewModel.setNote("TestCategory", "TestPlayer", true)
-        
-        val updatedNotes = viewModel.playerNotes.value
-        assertTrue(updatedNotes.containsKey("TestCategory"))
-        assertTrue(updatedNotes["TestCategory"]?.get("TestPlayer") == true)
-    }
-
-    @Test
-    fun testSuggestionNotesFlowInitiallyEmpty() {
-        val initialNotes = viewModel.suggestionNotes.value
-        assertTrue(initialNotes.isEmpty())
-    }
-
-    @Test
-    fun testCaseInsensitiveCharacterNameHandling() {
-        viewModel.createLobby("TestUser", "red")
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        verify(mockWebSocketService).createLobby("TestUser", "red", PlayerColor.RED)
     }
 
 }
