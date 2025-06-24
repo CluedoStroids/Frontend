@@ -54,5 +54,6 @@
     <string name="notes">Notes</string>
     <string name="solve">Solve</string>
     <string name="make_a_suspicion">Make a suspicion</string>
+    <string name="version_number">v3.0</string>
 
 </resources>
