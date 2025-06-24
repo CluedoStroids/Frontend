@@ -116,7 +116,7 @@ class GameBoardFragment : Fragment() {
 
         binding.solveCaseButton.setOnClickListener {
             if (turnBasedService.canPerformAction("ACCUSE")) {
-                findNavController().navigate(R.id.action_gameBoardIMG_to_solveCaseFragment)
+                findNavController().navigate(R.id.action_gameBoardIMG_to_accusationFragment)
             } else {
                 showToast("Cannot make accusation - not your turn or invalid state")
             }
@@ -124,7 +124,7 @@ class GameBoardFragment : Fragment() {
 
         binding.makeSuspicionButton.setOnClickListener {
             if (turnBasedService.canPerformAction("SUGGEST")) {
-                findNavController().navigate(R.id.action_gameBoardIMG_to_suspicionPopupFragment)
+                findNavController().navigate(R.id.action_gameBoardIMG_to_suggestionFragment)
             } else {
                 showToast("Cannot make suggestion - not your turn or not in a room")
             }
@@ -530,6 +530,11 @@ class GameBoardFragment : Fragment() {
         super.onResume()
         accelerometer?.also { acc ->
             sensorManager.registerListener(shakeListener, acc, SensorManager.SENSOR_DELAY_UI)
+        }
+        
+        val lobbyId = lobbyViewModel.createdLobbyId.value
+        if (!lobbyId.isNullOrBlank()) {
+            turnBasedService.getTurnState(lobbyId)
         }
     }
 

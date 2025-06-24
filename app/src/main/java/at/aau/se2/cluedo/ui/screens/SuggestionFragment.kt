@@ -17,7 +17,7 @@ import com.example.myapplication.R
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import at.aau.se2.cluedo.data.network.WebSocketService
 
-class SuspicionPopupFragment : Fragment() {
+class SuggestionFragment : Fragment() {
 
     private val lobbyViewModel: LobbyViewmodel by activityViewModels()
     private val turnBasedService = TurnBasedWebSocketService.getInstance()
@@ -27,7 +27,7 @@ class SuspicionPopupFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.fragment_suspicion_popup, container, false)
+        return inflater.inflate(R.layout.fragment_suggestion, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -45,14 +45,14 @@ class SuspicionPopupFragment : Fragment() {
         val suspectSpinner: Spinner = view.findViewById(R.id.suspectSpinner)
         val roomSpinner: Spinner = view.findViewById(R.id.roomSpinner)
         val weaponSpinner: Spinner = view.findViewById(R.id.weaponSpinner)
-        val makeSuspicionButton: Button = view.findViewById(R.id.button_make_suspicion)
+        val suggestionButton: Button = view.findViewById(R.id.button_make_suspicion)
         val cancelButton: Button = view.findViewById(R.id.button_cancel)
 
         setUpSpinner(suspectSpinner, R.array.suspect_options)
         setUpSpinner(roomSpinner, R.array.room_options)
         setUpSpinner(weaponSpinner, R.array.weapon_options)
 
-        makeSuspicionButton.setOnClickListener {
+        suggestionButton.setOnClickListener {
             val suspect = suspectSpinner.selectedItem.toString()
             val room = roomSpinner.selectedItem.toString()
             val weapon = weaponSpinner.selectedItem.toString()
@@ -71,7 +71,7 @@ class SuspicionPopupFragment : Fragment() {
                 return@setOnClickListener
             }
             val suspicion = "$suspect — in the $room — with the $weapon"
-            lobbyViewModel.addSuspicionNote(suspicion)
+            lobbyViewModel.addSuggestionNote(suspicion)
             lobbyViewModel.markSuggestionMade()
 
             val currentLobbyId = lobbyViewModel.lobbyState.value?.id
@@ -82,7 +82,7 @@ class SuspicionPopupFragment : Fragment() {
 
             // Also save to notes for backward compatibility
             val suggestion = "$suspect — in the $room — with the $weapon"
-            lobbyViewModel.addSuspicionNote(suggestion)
+            lobbyViewModel.addSuggestionNote(suggestion)
 
             Toast.makeText(context, "Suggestion sent!", Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()
