@@ -55,8 +55,6 @@ class LobbyViewModelTests {
         whenever(mockWebSocketService.gameStarted).thenReturn(gameStartedFlow)
         whenever(mockWebSocketService.gameState).thenReturn(gameStateFlow)
         whenever(mockWebSocketService.player).thenReturn(playerFlow)
-        
-        whenever(mockWebSocketService.subscribe(anyString(), any())).then {}
 
         viewModel = LobbyViewmodel(mockWebSocketService)
     }

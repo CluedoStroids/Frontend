@@ -59,8 +59,7 @@ class LobbyViewmodel(val webSocketService: WebSocketService = WebSocketService.g
             val color = getColorForCharacter(character)
 
             webSocketService.createLobby(username, character, color)
-            WebSocketService.getInstance()
-                .setPlayer(Player(name = username, character = character, color = color))
+            webSocketService.setPlayer(Player(name = username, character = character, color = color))
         }
     }
 
@@ -68,8 +67,7 @@ class LobbyViewmodel(val webSocketService: WebSocketService = WebSocketService.g
         viewModelScope.launch {
             val color = getColorForCharacter(character)
             webSocketService.joinLobby(lobbyId, username, character, color)
-            WebSocketService.getInstance()
-                .setPlayer(Player(name = username, character = character, color = color))
+            webSocketService.setPlayer(Player(name = username, character = character, color = color))
         }
     }
 
