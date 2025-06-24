@@ -56,25 +56,25 @@ class TurnBasedWebSocketService private constructor() {
     private var stompClient: StompClient? = null
 
     // Turn-based system state flows
-    private val _currentTurnState = MutableStateFlow<TurnStateResponse?>(null)
+    private var _currentTurnState = MutableStateFlow<TurnStateResponse?>(null)
     val currentTurnState: StateFlow<TurnStateResponse?> = _currentTurnState.asStateFlow()
 
-    private val _isCurrentPlayerTurn = MutableStateFlow(false)
+    private var _isCurrentPlayerTurn = MutableStateFlow(false)
     val isCurrentPlayerTurn: StateFlow<Boolean> = _isCurrentPlayerTurn.asStateFlow()
 
-    private val _diceOneResult = MutableStateFlow<Int?>(null)
+    private var _diceOneResult = MutableStateFlow<Int?>(null)
     val diceOneResult: StateFlow<Int?> = _diceOneResult.asStateFlow()
 
-    private val _diceTwoResult = MutableStateFlow<Int?>(null)
+    private var _diceTwoResult = MutableStateFlow<Int?>(null)
     val diceTwoResult: StateFlow<Int?> = _diceTwoResult.asStateFlow()
 
-    private val _suggestionData = MutableStateFlow<SuggestionRequest?>(null)
+    private var _suggestionData = MutableStateFlow<SuggestionRequest?>(null)
     val suggestionData: StateFlow<SuggestionRequest?> = _suggestionData
 
-    private val _processSuggestion = MutableStateFlow<Boolean>(false)
+    private var _processSuggestion = MutableStateFlow<Boolean>(false)
     val processSuggestion: StateFlow<Boolean> = _processSuggestion
 
-    private val _resultSuggestion = MutableStateFlow<SuggestionResponse?>(null)
+    private var _resultSuggestion = MutableStateFlow<SuggestionResponse?>(null)
     val resultSuggestion: StateFlow<SuggestionResponse?> = _resultSuggestion
 
     private var currentPlayerName: String? = null
