@@ -169,7 +169,7 @@ class GameBoardFragment : Fragment() {
 
         val gameState = lobbyViewModel.gameState.value
         if (gameState != null) {
-            showToast("Game state available: ${gameState.players.size} players")
+            //showToast("Game state available: ${gameState.players.size} players")
 
             // Log all players to help with debugging
             gameState.players.forEach { player ->
@@ -177,7 +177,7 @@ class GameBoardFragment : Fragment() {
             }
 
         } else {
-            showToast("No game state available yet")
+            //showToast("No game state available yet")
             lobbyViewModel.logMessage("Game state is null in GameFragment")
 
             // Try to get the game state from the lobby state
@@ -400,8 +400,7 @@ class GameBoardFragment : Fragment() {
                         Log.d("SUGGEST","Received: ${processing}")
 
                         if(processing){
-                            //showSuggestionHandlePopup()
-                            //todo
+                            showSuggestionHandlePopup()
                         }
 
                     }
@@ -555,7 +554,7 @@ class GameBoardFragment : Fragment() {
         room: String,
         weapon: String,
         character: String,
-        durationMillis: Long = 10000
+        durationMillis: Long = 60000
     ) {
         var dialogBuilder = AlertDialog.Builder(requireContext())
 
@@ -605,15 +604,36 @@ class GameBoardFragment : Fragment() {
      */
     @SuppressLint("SetTextI18n")
     fun showSuggestionHandlePopup(
-        playerName: String,
-        room: String,
-        weapon: String,
-        character: String,
-        durationMillis: Long = 10000
+
     ) {
-       //todo open popup to select a card.
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.card_selection_popop, null)
+        val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerViewSingleSelection)
+        val confirmButton = dialogView.findViewById<Button>(R.id.btnConfirmSelection)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        var selectedCard: Int? = null
+
+        val adapter = CardAdapter(BasicCard.getCardIDs(gameViewModel.getMatchingCards())) { selection ->
+            selectedCard = selection
+        }
+
+        recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.adapter = adapter
+
+        confirmButton.setOnClickListener {
+            dialog.dismiss()
+            //todo handle selected card. example send back
+        }
+
+        dialog.show()
 
     }
+
+
 
 
 

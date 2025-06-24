@@ -167,7 +167,7 @@ class LobbyFragment : Fragment() {
                 launch {
                     lobbyViewModel.gameState.collect { gameState ->
                         if (gameState != null) {
-                            showToast("Game state received with ${gameState.players.size} players")
+                            //showToast("Game state received with ${gameState.players.size} players")
                             if (!lobbyViewModel.gameStarted.value) {
                                 // If we have a game state but gameStarted is false, set it to true
                                 lobbyViewModel.setGameStarted(true)

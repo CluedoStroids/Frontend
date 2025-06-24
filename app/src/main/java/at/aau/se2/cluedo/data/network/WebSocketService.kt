@@ -88,7 +88,7 @@ class WebSocketService {
     private val _gameDataState = MutableStateFlow<GameData?>(null)
     val gameDataState = _gameDataState.asStateFlow()
 
-    val _player = MutableStateFlow<Player?>(null)           //Client player object
+    private var _player = MutableStateFlow<Player?>(null)           //Client player object
     val player: StateFlow<Player?> = _player.asStateFlow()  //Client player object
 
     private val _createdLobbyId = MutableStateFlow<String?>(null)
@@ -116,7 +116,7 @@ class WebSocketService {
     }
     public fun setPlayer(p:Player){
         this._player.value = p
-        turnBasedService.setCurrentPlayer(p.name)
+        turnBasedService.setCurrentPlayer(p)
     }
 
     @SuppressLint("CheckResult")
@@ -135,7 +135,7 @@ class WebSocketService {
                         // Initialize turn-based service
                         turnBasedService.initialize(stompClient!!)
                         _player.value?.name?.let { playerName ->
-                            turnBasedService.setCurrentPlayer(playerName)
+                            turnBasedService.setCurrentPlayer(_player.value!!)
                         }
 
                         subscribeToGeneralTopics()
@@ -156,6 +156,7 @@ class WebSocketService {
                 }
             },
             { resetConnectionState() }
+
         )
     }
 
@@ -255,6 +256,13 @@ class WebSocketService {
 
         // Subscribe to turn-based topics for this lobby
         turnBasedService.subscribeToTurnBasedTopics(lobbyId)
+
+    }
+
+    private fun subscribeToSpecificPlayerTopics(lobbyId: String, playerId: String) {
+        logMessage("Subscribing to topics for player: $playerId")
+
+        turnBasedService.subscribeToTurnBasedPlayerTopics(lobbyId,playerId)
     }
 
     @SuppressLint("CheckResult")
@@ -318,7 +326,7 @@ class WebSocketService {
 
         _lobbyState.value = Lobby(id = LobbyStatus.CREATING.text, host = player, players = listOf(player))
         _player.value = player
-        turnBasedService.setCurrentPlayer(username)
+        turnBasedService.setCurrentPlayer(player)
         _createdLobbyId.value = null
         sendRequest(APP_CREATE_LOBBY, payload)
     }
@@ -340,7 +348,9 @@ class WebSocketService {
             }
         }
         _player.value = player
-        turnBasedService.setCurrentPlayer(username)
+        subscribeToSpecificPlayerTopics(lobbyId,player.playerID)
+
+        turnBasedService.setCurrentPlayer(player)
         sendRequest(destination, payload)
     }
 

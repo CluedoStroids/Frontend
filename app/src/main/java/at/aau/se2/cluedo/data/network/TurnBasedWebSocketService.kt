@@ -9,6 +9,7 @@ import at.aau.se2.cluedo.data.models.TurnStateResponse
 import at.aau.se2.cluedo.data.models.TurnState
 import at.aau.se2.cluedo.data.models.SuggestionRequest
 import at.aau.se2.cluedo.data.models.AccusationRequest
+import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.SkipTurnRequest
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,8 +52,6 @@ class TurnBasedWebSocketService private constructor() {
     private val gson = Gson()
     private var stompClient: StompClient? = null
 
-    private val webSocketService = WebSocketService.getInstance()
-
     // Turn-based system state flows
     private val _currentTurnState = MutableStateFlow<TurnStateResponse?>(null)
     val currentTurnState: StateFlow<TurnStateResponse?> = _currentTurnState.asStateFlow()
@@ -69,17 +68,20 @@ class TurnBasedWebSocketService private constructor() {
     private val _suggestionData = MutableStateFlow<SuggestionRequest?>(null)
     val suggestionData: StateFlow<SuggestionRequest?> = _suggestionData
 
-    private var _processSuggestion = MutableStateFlow<Boolean>(false)
+    private val _processSuggestion = MutableStateFlow<Boolean>(false)
     val processSuggestion: StateFlow<Boolean> = _processSuggestion
 
     private var currentPlayerName: String? = null
+    private var currentPlayer: Player? = null
 
     fun initialize(stompClient: StompClient) {
         this.stompClient = stompClient
     }
 
-    fun setCurrentPlayer(playerName: String) {
-        this.currentPlayerName = playerName
+    fun setCurrentPlayer(player: Player) {
+        this.currentPlayerName = player.name
+        this.currentPlayer = player
+
     }
 
     /**
@@ -127,15 +129,6 @@ class TurnBasedWebSocketService private constructor() {
             handleSuggestionResponse(message, lobbyId)
         }
 
-        // Subscribe to suggestion responses
-        var playerID = webSocketService.player.value?.playerID
-        Log.d("SUGGEST-TURN-INFO", "PlayerID (debugging): ${playerID}")
-        stompClient?.topic("$TOPIC_SUGGESTION_HANDLE$lobbyId/${playerID}")?.subscribe { message ->
-            Log.d("SUGGEST-TURN", "Suggestion Turn response received: ${message.payload}")
-            val responseMap = gson.fromJson(message.payload, Map::class.java)
-            _processSuggestion.value = responseMap["processSuggestion"] as Boolean;
-        }
-
         // Subscribe to accusation responses
         stompClient?.topic("$TOPIC_ACCUSATION_MADE$lobbyId")?.subscribe { message ->
             Log.d("TurnBasedWS", "Accusation response received: ${message.payload}")
@@ -150,6 +143,20 @@ class TurnBasedWebSocketService private constructor() {
             val turnState = gson.fromJson(message.payload, TurnStateResponse::class.java)
             _currentTurnState.value = turnState
             updatePlayerTurnStatus(turnState)
+        }
+    }
+
+    /**
+     * Subscribe to all only player relevant topics.
+     */
+    @SuppressLint("CheckResult")
+    fun subscribeToTurnBasedPlayerTopics(lobbyId: String, playerId: String) {
+        Log.d("TurnBasedWS", "Subscribing to turn-based topics for lobby: $lobbyId")
+
+        stompClient?.topic("$TOPIC_SUGGESTION_HANDLE$lobbyId/$playerId")?.subscribe { message ->
+            Log.d("SUGGEST-TURN", "Suggestion Turn response received: ${message.payload}")
+            val responseMap = gson.fromJson(message.payload, Map::class.java)
+            _processSuggestion.value = responseMap["processSuggestion"] as Boolean;
         }
     }
 
