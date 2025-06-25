@@ -117,7 +117,7 @@ class WebSocketService {
 
     public fun setPlayer(p: Player) {
         this._player.value = p
-        turnBasedService.setCurrentPlayer(p.name)
+        turnBasedService.setCurrentPlayer(p)
     }
 
     @SuppressLint("CheckResult")
@@ -135,8 +135,8 @@ class WebSocketService {
 
                         // Initialize turn-based service
                         turnBasedService.initialize(stompClient!!)
-                        _player.value?.name?.let { playerName ->
-                            turnBasedService.setCurrentPlayer(playerName)
+                        _player.value?.let { player ->
+                            turnBasedService.setCurrentPlayer(player)
                         }
 
                         subscribeToGeneralTopics()
@@ -291,7 +291,7 @@ class WebSocketService {
                     Log.i("START", "Player in game: ${player.name} (${player.character})")
                 }
 
-                subscribeToSpecificPlayerTopics(lobbyId, player.value?.playerID.toString())
+                subscribeToSpecificPlayerTopics(lobbyId, _player.value?.playerID ?: "")
 
                 // Force a delay to ensure UI updates before navigation
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -337,7 +337,7 @@ class WebSocketService {
         _lobbyState.value =
             Lobby(id = LobbyStatus.CREATING.text, host = player, players = listOf(player))
         _player.value = player
-        turnBasedService.setCurrentPlayer(username)//eventuell player
+        turnBasedService.setCurrentPlayer(player)
         _createdLobbyId.value = null
         sendRequest(APP_CREATE_LOBBY, payload)
     }
@@ -364,7 +364,7 @@ class WebSocketService {
             }
         }
         _player.value = player
-        turnBasedService.setCurrentPlayer(username) // eventuell player
+        turnBasedService.setCurrentPlayer(player)
         sendRequest(destination, payload)
     }
 

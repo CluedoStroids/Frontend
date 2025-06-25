@@ -68,7 +68,7 @@ class GameBoard @JvmOverloads constructor(
             }
         }
 
-        WebSocketService.getInstance().subscribeToMovementUpdates() { gameData ->
+        WebSocketService.getInstance().subscribeToMovementUpdates(id!!) { gameData ->
             post {
                 updateGameData(gameData)
                 if (inRoom&&leaveRoom){
@@ -131,7 +131,7 @@ class GameBoard @JvmOverloads constructor(
         if(inRoom&&!inDoor) {
             leaveRoom()
             moves.add("W")
-            WebSocketService.getInstance().performMovement(moves)
+            WebSocketService.getInstance().performMovement(id!!, moves)
             invalidate()
             return
         }
@@ -148,7 +148,7 @@ class GameBoard @JvmOverloads constructor(
                 if (playerPosY < 0) {
                     playerPosY = 0
                 }
-                WebSocketService.getInstance().performMovement(moves)
+                WebSocketService.getInstance().performMovement(id!!, moves)
                 if(!inRoom){
                     safeCoord()
                 }
@@ -162,7 +162,7 @@ class GameBoard @JvmOverloads constructor(
         if(inRoom&&!inDoor) {
             leaveRoom()
             moves.add("S")
-            WebSocketService.getInstance().performMovement(moves)
+            WebSocketService.getInstance().performMovement(id!!, moves)
             invalidate()
             return
         }
@@ -178,7 +178,7 @@ class GameBoard @JvmOverloads constructor(
                 playerPosY--
             }else{
                 moves.add("S") // Bewegung merken
-                WebSocketService.getInstance().performMovement(moves)
+                WebSocketService.getInstance().performMovement(id!!, moves)
                 if(!inRoom){
                     safeCoord()
                 }
@@ -193,7 +193,7 @@ class GameBoard @JvmOverloads constructor(
         if(inRoom&&!inDoor) {
             leaveRoom()
             moves.add("A")
-            WebSocketService.getInstance().performMovement(moves)
+            WebSocketService.getInstance().performMovement(id!!, moves)
 
             invalidate()
             return
@@ -211,7 +211,7 @@ class GameBoard @JvmOverloads constructor(
             else{
                 moves.add("A") // Bewegung merken
                 // Grenzen prüfen
-                WebSocketService.getInstance().performMovement(moves)
+                WebSocketService.getInstance().performMovement(id!!, moves)
                 if(!inRoom){
                     safeCoord()
                 }
@@ -225,7 +225,7 @@ class GameBoard @JvmOverloads constructor(
         if(inRoom&&!inDoor) {
             leaveRoom()
             moves.add("D")
-            WebSocketService.getInstance().performMovement(moves)
+            WebSocketService.getInstance().performMovement(id!!, moves)
             invalidate()
             return
         }
@@ -242,7 +242,7 @@ class GameBoard @JvmOverloads constructor(
                 playerPosX--
             }else{
                 moves.add("D") // Bewegung merken
-                WebSocketService.getInstance().performMovement(moves)
+                WebSocketService.getInstance().performMovement(id!!, moves)
                 if(!inRoom){
                     safeCoord()
                 }
@@ -339,10 +339,10 @@ class GameBoard @JvmOverloads constructor(
         gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
     }
     fun done(){
-        var id = WebSocketService.getInstance().lobbyState.value?.id
+        var lobbyId = WebSocketService.getInstance().lobbyState.value?.id
 
-        if (id != null) {
-            WebSocketService.getInstance().performMovement(moves)
+        if (lobbyId != null) {
+            WebSocketService.getInstance().performMovement(lobbyId, moves)
         }
 
         invalidate()
