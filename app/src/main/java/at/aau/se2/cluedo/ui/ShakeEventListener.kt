@@ -35,8 +35,6 @@ class ShakeEventListener : SensorEventListener {
             shakeListener?.invoke()
         }
     }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        //not used but must be overwritten
-    }
+    //This function is needed for the ShakeEventListener to work, but it doesn't need to be implemented.
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }

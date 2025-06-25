@@ -322,7 +322,7 @@ class GameBoardFragment : Fragment() {
                 webSocketService?.diceOneResult?.collect { value ->
                     value?.let {
                         diceOneValue = it
-                        binding.diceOneValueTextView2.text = diceOneValue.toString()
+                        binding.diceOneValueTextView2.text = String.format(diceOneValue.toString())
                     }
                 }
             }
@@ -330,7 +330,7 @@ class GameBoardFragment : Fragment() {
                 webSocketService?.diceTwoResult?.collect { value ->
                     value?.let {
                         diceTwoValue = it
-                        binding.diceTwoValueTextView2.text = diceTwoValue.toString()
+                        binding.diceTwoValueTextView2.text = String.format(diceTwoValue.toString())
                     }
                 }
             }
@@ -595,10 +595,10 @@ class GameBoardFragment : Fragment() {
     private fun subtractMovement() {
         if (diceOneValue > 0) {
             diceOneValue -= 1
-            binding.diceOneValueTextView2.text = diceOneValue.toString()
+            binding.diceOneValueTextView2.text = String.format(diceOneValue.toString())
         } else {
             diceTwoValue -= 1
-            binding.diceTwoValueTextView2.text = diceTwoValue.toString()
+            binding.diceTwoValueTextView2.text = String.format(diceTwoValue.toString())
         }
     }
 
