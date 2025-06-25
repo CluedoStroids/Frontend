@@ -9,17 +9,21 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.example.myapplication.databinding.FragmentEliminationScreenBinding
+import com.example.myapplication.databinding.FragmentEliminationUpdateBinding
+import com.example.myapplication.databinding.FragmentInvestigationUpdateBinding
 
 class InvestigationUpdateFragment : Fragment() {
+
+    private var _binding: FragmentInvestigationUpdateBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val layoutId = requireContext().resources.getIdentifier(
-            "fragment_investigation_update", "layout", requireContext().packageName
-        )
-        return inflater.inflate(layoutId, container, false)
+        _binding = FragmentInvestigationUpdateBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -32,9 +36,9 @@ class InvestigationUpdateFragment : Fragment() {
         val backButtonId = context.resources.getIdentifier("button_back_to_lobby", "id", context.packageName)
         val exitButtonId = context.resources.getIdentifier("button_exit_game", "id", context.packageName)
 
-        val updateText: TextView = view.findViewById(updateTextId)
-        val backButton: Button = view.findViewById(backButtonId)
-        val exitButton: Button = view.findViewById(exitButtonId)
+        val updateText: TextView = binding.updateText
+        val backButton: Button = binding.buttonBackToLobby
+        val exitButton: Button = binding.buttonExitGame
 
         val args = arguments
         val winner = args?.getString("winnerName") ?: "Miss Scarlet"
