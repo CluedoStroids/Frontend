@@ -32,10 +32,6 @@ class InvestigationUpdateFragment : Fragment() {
         val context = requireContext()
         val navController = findNavController()
 
-        val updateTextId = context.resources.getIdentifier("updateText", "id", context.packageName)
-        val backButtonId = context.resources.getIdentifier("button_back_to_lobby", "id", context.packageName)
-        val exitButtonId = context.resources.getIdentifier("button_exit_game", "id", context.packageName)
-
         val updateText: TextView = binding.updateText
         val backButton: Button = binding.buttonBackToLobby
         val exitButton: Button = binding.buttonExitGame
