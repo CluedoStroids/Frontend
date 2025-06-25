@@ -41,7 +41,6 @@ import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.launch
-import kotlin.getValue
 
 /**
  * A simple [Fragment] subclass.
@@ -356,106 +355,119 @@ class GameBoardFragment : Fragment() {
                     }
                 }
 
-                launch {
-                    lobbyViewModel.lobbyState.collect { lobby ->
-                        val currentPlayer = lobby?.players?.find { it.isCurrentPlayer == true }
-                        val isInRoom =
-                            roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
-                        // Note: Turn-based validation will be handled by canPerformAction
-                        // This is kept for backward compatibility
-                        binding.makeSuspicionButton.isEnabled = isInRoom
-                    }
-                }
+                launch { observeLobbyState() }
 
                 // Observe turn state changes
-                launch {
-                    turnBasedService.currentTurnState.collect { turnState ->
-                        turnState?.let {
-                            updateUIForTurnState(it)
-                            // Also update button states when turn state changes
-                            val isMyTurn = turnBasedService.isCurrentPlayerTurn.value
-                            updateButtonStates(isMyTurn)
-                        }
-                    }
-                }
+                launch { observeCurrentTurnState() }
 
                 // Observe if it's current player's turn
-                launch {
-                    turnBasedService.isCurrentPlayerTurn.collect { isMyTurn ->
-                        Log.d(
-                            "GameBoardFragment",
-                            "DEBUG: isCurrentPlayerTurn flow emitted: $isMyTurn"
-                        )
-
-                        // Force UI update on main thread
-                        requireActivity().runOnUiThread {
-                            updateButtonStates(isMyTurn)
-                        }
-                    }
-                }
+                launch { observeCurrentPlayerTurn() }
 
                 // Observe game state changes to initialize turns
-                launch {
-                    lobbyViewModel.gameState.collect { gameState ->
-                        gameState?.let {
-                            // Initialize turns when game state is available
-                            val lobbyId = it.lobbyId
-                            if (lobbyId.isNotBlank()) {
-                                turnBasedService.initializeTurns(lobbyId)
-                            }
-                        }
-                    }
-                }
+                launch { observeGameState() }
 
                 /**
                  * Always check if a suggestion occurs. If yes, the fields are'nt null and a InformationDialog
                  * is shwon to each player.
                  */
-                launch{
-                    gameViewModel.suggestionNotificationData.collect { suggestion ->
-                        Log.d("SUGGEST","Received: ${suggestion?.playerName.toString()} ,${suggestion?.room.toString()},"+
-                                " ${suggestion?.weapon.toString()} , ${suggestion?.suspect.toString()}")
-
-                        if(suggestion?.playerName!=null){
-                            showSuggestionNotification(suggestion.playerName.toString(),
-                                suggestion.room.toString(), suggestion.weapon.toString(), suggestion.suspect.toString()
-                            )
-                        }
-
-                    }
-                }
+                launch{ observeSuggestionNotificationData() }
 
                 /**
                  * When handling a suggestion, check if any suggestion is received and handle your turn
                  * by either showing a card, or skipping, to pass it to the next player.
                  */
-                launch{
-                    gameViewModel.processingSuggestion.collect { processing ->
-                        Log.d("SUGGEST","Received: ${processing}")
-
-                        if(processing){
-                            showSuggestionHandlePopup()
-                        }
-
-                    }
-                }
+                launch{ observeProcessingSuggestion() }
 
                 /**
                  * When handling a suggestion, check if any suggestion is received and handle your turn
                  * by either showing a card, or skipping, to pass it to the next player.
                  */
-                launch{
-                    gameViewModel.resultSuggestion.collect { result ->
-                        Log.d("SUGGEST","Received: ${result}")
-
-                        if(result != null){
-                            showSuggestionResultPopup(result.playerName,result.cardName)
-                        }
-
-                    }
-                }
+                launch{ observeResultSuggestion() }
 
             }
+        }
+    }
+
+    private suspend fun observeLobbyState(){
+        lobbyViewModel.lobbyState.collect { lobby ->
+            val currentPlayer = lobby?.players?.find { it.isCurrentPlayer == true }
+            val isInRoom =
+                roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
+            // Note: Turn-based validation will be handled by canPerformAction
+            // This is kept for backward compatibility
+            binding.makeSuspicionButton.isEnabled = isInRoom
+        }
+    }
+    private suspend fun observeCurrentTurnState(){
+        turnBasedService.currentTurnState.collect { turnState ->
+            turnState?.let {
+                updateUIForTurnState(it)
+                // Also update button states when turn state changes
+                val isMyTurn = turnBasedService.isCurrentPlayerTurn.value
+                updateButtonStates(isMyTurn)
+            }
+        }
+    }
+
+    private suspend fun observeCurrentPlayerTurn(){
+        turnBasedService.isCurrentPlayerTurn.collect { isMyTurn ->
+            Log.d(
+                "GameBoardFragment",
+                "DEBUG: isCurrentPlayerTurn flow emitted: $isMyTurn"
+            )
+
+            // Force UI update on main thread
+            requireActivity().runOnUiThread {
+                updateButtonStates(isMyTurn)
+            }
+        }
+    }
+
+    private suspend fun observeSuggestionNotificationData(){
+        gameViewModel.suggestionNotificationData.collect { suggestion ->
+            Log.d("SUGGEST","Received: ${suggestion?.playerName.toString()} ,${suggestion?.room.toString()},"+
+                    " ${suggestion?.weapon.toString()} , ${suggestion?.suspect.toString()}")
+
+            if(suggestion?.playerName!=null){
+                showSuggestionNotification(suggestion.playerName.toString(),
+                    suggestion.room.toString(), suggestion.weapon.toString(), suggestion.suspect.toString()
+                )
+            }
+
+        }
+    }
+
+    private suspend fun observeGameState(){
+        lobbyViewModel.gameState.collect { gameState ->
+            gameState?.let {
+                // Initialize turns when game state is available
+                val lobbyId = it.lobbyId
+                if (lobbyId.isNotBlank()) {
+                    turnBasedService.initializeTurns(lobbyId)
+                }
+            }
+        }
+    }
+
+    private suspend fun observeProcessingSuggestion(){
+        gameViewModel.processingSuggestion.collect { processing ->
+            Log.d("SUGGEST","Received: ${processing}")
+
+            if(processing){
+                showSuggestionHandlePopup()
+            }
+
+        }
+    }
+
+    private suspend fun observeResultSuggestion(){
+        gameViewModel.resultSuggestion.collect { result ->
+            Log.d("SUGGEST","Received: ${result}")
+
+            if(result != null){
+                showSuggestionResultPopup(result.playerName,result.cardName)
+            }
+
         }
     }
 
@@ -674,7 +686,7 @@ class GameBoardFragment : Fragment() {
             val adapter = CardAdapter(gameViewModel.getMatchingCards()) { selection ->
                 selectedCard = selection
                 Log.d("SUGGEST-TURN",""+selection)
-                confirmButton.isEnabled = (selection != null)
+                confirmButton.isEnabled = true
             }
             recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             recyclerView.adapter = adapter
@@ -682,13 +694,10 @@ class GameBoardFragment : Fragment() {
 
         confirmButton.setOnClickListener {
             dialog.dismiss()
-            selectedCard?.let { cardId ->
+            selectedCard.let { cardId ->
                 Log.d("SuggestionPopup", "Selected card ID: $cardId")
                 // Call your function to send the selected card
                 // For example: gameViewModel.sendSelectedCard(cardId)
-            } ?: run {
-                // Handle case where no card was selected but confirm was clicked (if confirm is always enabled)
-                Log.w("SuggestionPopup", "Confirm clicked but no card was selected.")
             }
             val lobbyId = lobbyViewModel.lobbyState.value?.id.toString()
             gameViewModel.sendSuggestionResponse(lobbyId,selectedCard.toString())

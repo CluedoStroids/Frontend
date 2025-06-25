@@ -159,15 +159,12 @@ class TurnBasedWebSocketService private constructor() {
         Log.d("TurnBasedWS", "Subscribing to turn-based topics for lobby: $lobbyId")
 
         stompClient?.topic("$TOPIC_SUGGESTION_HANDLE$lobbyId/$playerId")?.subscribe { message ->
-            Log.d("SUGGEST-TURN", "Suggestion Turn response received: ${message.payload}")
             val responseMap = gson.fromJson(message.payload, Map::class.java)
             _processSuggestion.value = responseMap["processSuggestion"] as Boolean;
         }
 
         stompClient?.topic("$TOPIC_SUGGESTION_RESULT$lobbyId/$playerId")?.subscribe { message ->
-            Log.d("SUGGEST-TURN", "Suggestion Turn response received: ${message.payload}")
             val responseMap = gson.fromJson(message.payload, Map::class.java)
-            Log.d("SUGGEST-TURN",responseMap["receivedCard"] as String + "from: "+responseMap["sendingPlayer"] as String)
             _resultSuggestion.value = SuggestionResponse(playerName = responseMap["sendingPlayer"] as String,
                                                          cardName = responseMap["receivedCard"]as String)
         }
@@ -364,7 +361,6 @@ class TurnBasedWebSocketService private constructor() {
             cardName = cardName
         )
         val payload = gson.toJson(request)
-        Log.d("SUGGEST-TURN","Sent!: "+request)
         stompClient?.send("$APP_MAKE_SUGGESTION_RESPONSE$lobbyId", payload)?.subscribe()
     }
 
