@@ -519,10 +519,10 @@ class GameBoardFragment : Fragment() {
     private fun subtractMovement() {
         if (diceOneValue > 0) {
             diceOneValue -= 1
-            binding.diceOneValueTextView2.text = diceOneValue.toString()
+            binding.diceOneValueTextView2.text = String.format(diceOneValue.toString())
         } else {
             diceTwoValue -= 1
-            binding.diceTwoValueTextView2.text = diceTwoValue.toString()
+            binding.diceTwoValueTextView2.text = String.format(diceTwoValue.toString())
         }
     }
 
