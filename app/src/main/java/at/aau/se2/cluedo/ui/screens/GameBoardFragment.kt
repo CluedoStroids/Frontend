@@ -1,25 +1,32 @@
 package at.aau.se2.cluedo.ui.screens
 
+import android.annotation.SuppressLint
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.TurnState
 import at.aau.se2.cluedo.data.models.TurnStateResponse
@@ -29,6 +36,7 @@ import at.aau.se2.cluedo.viewmodels.CardAdapter
 import at.aau.se2.cluedo.viewmodels.GameBoard
 import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import at.aau.se2.cluedo.ui.ShakeEventListener
+import at.aau.se2.cluedo.viewmodels.GameViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -49,6 +57,8 @@ class GameBoardFragment : Fragment() {
     private var _binding: FragmentGameBoardBinding? = null
     private val binding get() = _binding!!
 
+    private val gameViewModel: GameViewModel by viewModels()
+
     private val roomCoordinates = setOf(
         Pair(0, 0), Pair(1, 0), Pair(0, 1), Pair(1, 1), // Küche
         Pair(0, 4), Pair(1, 4), Pair(0, 5), Pair(1, 5), // Speisezimmer
@@ -68,7 +78,9 @@ class GameBoardFragment : Fragment() {
     private val shakeListener = ShakeEventListener()
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
-    private lateinit var cardsRecyclerView: RecyclerView
+
+    private lateinit var suggestionNotificationDialog: AlertDialog
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         init()
@@ -167,13 +179,15 @@ class GameBoardFragment : Fragment() {
         val recyclerView = binding.playerCardsRecyclerview
         recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        val cards = WebSocketService.getInstance().player.value?.cards
-        recyclerView.adapter = CardAdapter(BasicCard.getCardIDs(cards))
+        var cards = WebSocketService.getInstance().player.value?.cards
+        recyclerView.adapter = CardAdapter(cards)
     }
 
     private fun handleGameState() {
         val gameState = lobbyViewModel.gameState.value
         if (gameState != null) {
+
+            // Log all players to help with debugging
             showToast("Game state available: ${gameState.players.size} players")
             gameState.players.forEach { player ->
                 lobbyViewModel.logMessage("Player in game: ${player.name} (${player.character})")
@@ -229,7 +243,7 @@ class GameBoardFragment : Fragment() {
         }
 
         setupDirectionalButtons(upButton, downButton, leftButton, rightButton)
-        
+
         doneButton.setOnClickListener {
             gameBoard.done()
             toggleMovementButtons(moveButton, upButton, downButton, leftButton, rightButton, doneButton, false)
@@ -269,8 +283,8 @@ class GameBoardFragment : Fragment() {
         }
     }
 
-    private fun toggleMovementButtons(moveButton: Button, upButton: Button, downButton: Button, 
-                                    leftButton: Button, rightButton: Button, doneButton: Button, 
+    private fun toggleMovementButtons(moveButton: Button, upButton: Button, downButton: Button,
+                                    leftButton: Button, rightButton: Button, doneButton: Button,
                                     showMovementButtons: Boolean) {
         if (showMovementButtons) {
             moveButton.visibility = View.GONE
@@ -341,57 +355,119 @@ class GameBoardFragment : Fragment() {
                     }
                 }
 
-                launch {
-                    lobbyViewModel.lobbyState.collect { lobby ->
-                        val currentPlayer = lobby?.players?.find { it.isCurrentPlayer == true }
-                        val isInRoom =
-                            roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
-                        // Note: Turn-based validation will be handled by canPerformAction
-                        // This is kept for backward compatibility
-                        binding.makeSuspicionButton.isEnabled = isInRoom
-                    }
-                }
+                launch { observeLobbyState() }
 
                 // Observe turn state changes
-                launch {
-                    turnBasedService.currentTurnState.collect { turnState ->
-                        turnState?.let {
-                            updateUIForTurnState(it)
-                            // Also update button states when turn state changes
-                            val isMyTurn = turnBasedService.isCurrentPlayerTurn.value
-                            updateButtonStates(isMyTurn)
-                        }
-                    }
-                }
+                launch { observeCurrentTurnState() }
 
                 // Observe if it's current player's turn
-                launch {
-                    turnBasedService.isCurrentPlayerTurn.collect { isMyTurn ->
-                        Log.d(
-                            "GameBoardFragment",
-                            "DEBUG: isCurrentPlayerTurn flow emitted: $isMyTurn"
-                        )
-
-                        // Force UI update on main thread
-                        requireActivity().runOnUiThread {
-                            updateButtonStates(isMyTurn)
-                        }
-                    }
-                }
+                launch { observeCurrentPlayerTurn() }
 
                 // Observe game state changes to initialize turns
-                launch {
-                    lobbyViewModel.gameState.collect { gameState ->
-                        gameState?.let {
-                            // Initialize turns when game state is available
-                            val lobbyId = it.lobbyId
-                            if (lobbyId.isNotBlank()) {
-                                turnBasedService.initializeTurns(lobbyId)
-                            }
-                        }
-                    }
+                launch { observeGameState() }
+
+                /**
+                 * Always check if a suggestion occurs. If yes, the fields are'nt null and a InformationDialog
+                 * is shwon to each player.
+                 */
+                launch{ observeSuggestionNotificationData() }
+
+                /**
+                 * When handling a suggestion, check if any suggestion is received and handle your turn
+                 * by either showing a card, or skipping, to pass it to the next player.
+                 */
+                launch{ observeProcessingSuggestion() }
+
+                /**
+                 * When handling a suggestion, check if any suggestion is received and handle your turn
+                 * by either showing a card, or skipping, to pass it to the next player.
+                 */
+                launch{ observeResultSuggestion() }
+
+            }
+        }
+    }
+
+    private suspend fun observeLobbyState(){
+        lobbyViewModel.lobbyState.collect { lobby ->
+            val currentPlayer = lobby?.players?.find { it.isCurrentPlayer == true }
+            val isInRoom =
+                roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
+            // Note: Turn-based validation will be handled by canPerformAction
+            // This is kept for backward compatibility
+            binding.makeSuspicionButton.isEnabled = isInRoom
+        }
+    }
+    private suspend fun observeCurrentTurnState(){
+        turnBasedService.currentTurnState.collect { turnState ->
+            turnState?.let {
+                updateUIForTurnState(it)
+                // Also update button states when turn state changes
+                val isMyTurn = turnBasedService.isCurrentPlayerTurn.value
+                updateButtonStates(isMyTurn)
+            }
+        }
+    }
+
+    private suspend fun observeCurrentPlayerTurn(){
+        turnBasedService.isCurrentPlayerTurn.collect { isMyTurn ->
+            Log.d(
+                "GameBoardFragment",
+                "DEBUG: isCurrentPlayerTurn flow emitted: $isMyTurn"
+            )
+
+            // Force UI update on main thread
+            requireActivity().runOnUiThread {
+                updateButtonStates(isMyTurn)
+            }
+        }
+    }
+
+    private suspend fun observeSuggestionNotificationData(){
+        gameViewModel.suggestionNotificationData.collect { suggestion ->
+            Log.d("SUGGEST","Received: ${suggestion?.playerName.toString()} ,${suggestion?.room.toString()},"+
+                    " ${suggestion?.weapon.toString()} , ${suggestion?.suspect.toString()}")
+
+            if(suggestion?.playerName!=null){
+                showSuggestionNotification(suggestion.playerName.toString(),
+                    suggestion.room.toString(), suggestion.weapon.toString(), suggestion.suspect.toString()
+                )
+            }
+
+        }
+    }
+
+    private suspend fun observeGameState(){
+        lobbyViewModel.gameState.collect { gameState ->
+            gameState?.let {
+                // Initialize turns when game state is available
+                val lobbyId = it.lobbyId
+                if (lobbyId.isNotBlank()) {
+                    turnBasedService.initializeTurns(lobbyId)
                 }
             }
+        }
+    }
+
+    private suspend fun observeProcessingSuggestion(){
+        gameViewModel.processingSuggestion.collect { processing ->
+            Log.d("SUGGEST","Received: ${processing}")
+
+            if(processing){
+                showSuggestionHandlePopup()
+            }
+
+        }
+    }
+
+    private suspend fun observeResultSuggestion(){
+        gameViewModel.resultSuggestion.collect { result ->
+            Log.d("SUGGEST","Received: ${result}")
+
+            if(result != null){
+                showSuggestionResultPopup(result.playerName,result.cardName)
+            }
+
         }
     }
 
@@ -526,12 +602,172 @@ class GameBoardFragment : Fragment() {
         }
     }
 
+    /**
+     * Displays a popup notification about a suggestion.
+     * @param playerName The name of the player making the suggestion.
+     * @param room
+     * @param weapon
+     * @param character
+     */
+    @SuppressLint("SetTextI18n")
+    fun showSuggestionNotification(
+        playerName: String,
+        room: String,
+        weapon: String,
+        character: String,
+        durationMillis: Long = 60000
+    ) {
+        var dialogBuilder = AlertDialog.Builder(requireContext())
+
+        dialogBuilder.setTitle("$playerName suggests: ")
+        dialogBuilder.setMessage("$character with $weapon in $room")
+
+        dialogBuilder.setPositiveButton("Acknowledge") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        suggestionNotificationDialog = dialogBuilder.create()
+
+        val window = suggestionNotificationDialog.window
+        window?.let {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(it.attributes)
+
+            // Set the desired gravity for positioning
+            layoutParams.gravity = Gravity.FILL
+
+            layoutParams.x = 0
+            layoutParams.y = 0
+
+            // Optional: Adjust window type or flags if necessary (usually not needed for simple positioning)
+            // layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL
+            // layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL // Allows touches outside the dialog
+
+            it.attributes = layoutParams
+        }
+
+        suggestionNotificationDialog.show()
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (suggestionNotificationDialog.isShowing) { //check if Dialog is still showing, otherwise dismiss
+                suggestionNotificationDialog.dismiss()
+            }
+        }, durationMillis)
+
+    }
+
+    /**
+     * Displays a popup notification about a suggestion.
+     * @param playerName The name of the player making the suggestion.
+     * @param room
+     * @param weapon
+     * @param character
+     */
+    @SuppressLint("SetTextI18n")
+    fun showSuggestionHandlePopup(
+
+    ) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.card_selection_popop, null)
+        val suggestionDialog = dialogView.findViewById<TextView>(R.id.textSuggestionDialog)
+        val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerViewSingleSelection)
+        val confirmButton = dialogView.findViewById<Button>(R.id.btnConfirmSelection)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        var selectedCard: String = ""
+
+        if(gameViewModel.getMatchingCards().isEmpty()){
+            suggestionDialog.text = "You dont have matching cards!"
+            confirmButton.text = "Skip"
+        }else{
+            val adapter = CardAdapter(gameViewModel.getMatchingCards()) { selection ->
+                selectedCard = selection
+                Log.d("SUGGEST-TURN",""+selection)
+                confirmButton.isEnabled = true
+            }
+            recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            recyclerView.adapter = adapter
+        }
+
+        confirmButton.setOnClickListener {
+            dialog.dismiss()
+            selectedCard.let { cardId ->
+                Log.d("SuggestionPopup", "Selected card ID: $cardId")
+                // Call your function to send the selected card
+                // For example: gameViewModel.sendSelectedCard(cardId)
+            }
+            val lobbyId = lobbyViewModel.lobbyState.value?.id.toString()
+            gameViewModel.sendSuggestionResponse(lobbyId,selectedCard.toString())
+
+        }
+
+        dialog.show()
+
+    }
+
+    /**
+     * Displays a popup notification about a suggestion.
+     * @param playerName The name of the player making the suggestion.
+     * @param room
+     * @param weapon
+     * @param character
+     */
+    @SuppressLint("SetTextI18n")
+    fun showSuggestionResultPopup(
+        playerName: String,
+        cardName: String,
+        durationMillis: Long = 60000
+    ) {
+        var dialogBuilder = AlertDialog.Builder(requireContext())
+
+        dialogBuilder.setTitle("$playerName shows you: ")
+        dialogBuilder.setMessage("$cardName")
+
+        dialogBuilder.setPositiveButton("Acknowledge") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        suggestionNotificationDialog = dialogBuilder.create()
+
+        val window = suggestionNotificationDialog.window
+        window?.let {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(it.attributes)
+
+            // Set the desired gravity for positioning
+            layoutParams.gravity = Gravity.FILL
+
+            layoutParams.x = 0
+            layoutParams.y = 0
+
+            // Optional: Adjust window type or flags if necessary (usually not needed for simple positioning)
+            // layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL
+            // layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL // Allows touches outside the dialog
+
+            it.attributes = layoutParams
+        }
+
+        suggestionNotificationDialog.show()
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (suggestionNotificationDialog.isShowing) { //check if Dialog is still showing, otherwise dismiss
+                suggestionNotificationDialog.dismiss()
+            }
+        }, durationMillis)
+
+    }
+
+
+
     override fun onResume() {
         super.onResume()
         accelerometer?.also { acc ->
             sensorManager.registerListener(shakeListener, acc, SensorManager.SENSOR_DELAY_UI)
         }
-        
+
         val lobbyId = lobbyViewModel.createdLobbyId.value
         if (!lobbyId.isNullOrBlank()) {
             turnBasedService.getTurnState(lobbyId)

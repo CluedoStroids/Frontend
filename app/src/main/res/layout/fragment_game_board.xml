@@ -102,23 +102,23 @@
             android:id="@+id/roll_dice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="56dp"
+            android:layout_marginBottom="128dp"
             android:text="@string/roll_dice"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.719"
+            app:layout_constraintHorizontal_bias="0.963"
             app:layout_constraintStart_toStartOf="parent" />
 
         <Button
             android:id="@+id/skipTurnButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:text="@string/skip_turn"
             android:visibility="visible"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.719"
+            app:layout_constraintHorizontal_bias="0.962"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/roll_dice" />
 
@@ -185,6 +185,8 @@
             android:id="@+id/cheatingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="28dp"
+            android:layout_marginBottom="68dp"
             android:text="Cheating"
             app:layout_constraintBottom_toBottomOf="@+id/solveCaseButton"
             app:layout_constraintEnd_toEndOf="parent" />

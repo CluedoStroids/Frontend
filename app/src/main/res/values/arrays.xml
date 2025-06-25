@@ -13,22 +13,22 @@
         <item>Select a room</item>
         <item>Kitchen</item>
         <item>Dining Room</item>
-        <item>Lounge</item>
+        <item>Wintergarden</item>
         <item>Music Room</item>
         <item>Hall</item>
-        <item>Conservatory</item>
+        <item>Salon</item>
         <item>Billiard Room</item>
         <item>Library</item>
-        <item>Study</item>
+        <item>Office</item>
     </string-array>
 
     <string-array name="weapon_options">
         <item>Select a weapon</item>
-        <item>Knife</item>
+        <item>Dagger</item>
         <item>Candlestick</item>
-        <item>Revolver</item>
+        <item>Pipe</item>
         <item>Rope</item>
-        <item>Lead Pipe</item>
+        <item>Pistol</item>
         <item>Wrench</item>
     </string-array>
 </resources>

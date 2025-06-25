@@ -11,13 +11,15 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import at.aau.se2.cluedo.data.models.GameStartedResponse
+import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.json.JSONObject
 
 
 
-class LobbyViewmodel(val webSocketService: WebSocketService = WebSocketService.getInstance()) :
+class LobbyViewmodel(val webSocketService: WebSocketService = WebSocketService.getInstance(),
+                     val turnBasedWebSocketService: TurnBasedWebSocketService = TurnBasedWebSocketService.getInstance()) :
     ViewModel() {
 
     val isConnected: StateFlow<Boolean> = webSocketService.isConnected
@@ -39,7 +41,6 @@ class LobbyViewmodel(val webSocketService: WebSocketService = WebSocketService.g
         mutableMapOf<String, MutableMap<String, Boolean>>() // category -> (player -> checked)
     )
     val playerNotes: StateFlow<MutableMap<String, MutableMap<String, Boolean>>> = _playerNotes
-
 
     fun connect() {
         webSocketService.connect()
@@ -163,7 +164,6 @@ class LobbyViewmodel(val webSocketService: WebSocketService = WebSocketService.g
     fun isNoteChecked(category: String, player: String): Boolean {
         return _playerNotes.value[category]?.get(player) == true
     }
-
 
     override fun onCleared() {
         super.onCleared()
