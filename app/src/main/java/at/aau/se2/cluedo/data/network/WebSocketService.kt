@@ -78,31 +78,31 @@ class WebSocketService {
     // Turn-based functionality
     private val turnBasedService = TurnBasedWebSocketService.getInstance()
 
-    private val _isConnected = MutableStateFlow(false)
+    private var _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
-    private val _lobbyState = MutableStateFlow<Lobby?>(null)
+    private var _lobbyState = MutableStateFlow<Lobby?>(null)
     val lobbyState: StateFlow<Lobby?> = _lobbyState.asStateFlow()
 
-    private val _gameDataState = MutableStateFlow<GameData?>(null)
+    private var _gameDataState = MutableStateFlow<GameData?>(null)
     val gameDataState = _gameDataState.asStateFlow()
 
-    val _player = MutableStateFlow<Player?>(null)           //Client player object
+    private var _player = MutableStateFlow<Player?>(null)           //Client player object
     val player: StateFlow<Player?> = _player.asStateFlow()  //Client player object
 
-    private val _createdLobbyId = MutableStateFlow<String?>(null)
+    private var _createdLobbyId = MutableStateFlow<String?>(null)
     val createdLobbyId: StateFlow<String?> = _createdLobbyId.asStateFlow()
 
-    private val _canStartGame = MutableStateFlow(false)
+    private var _canStartGame = MutableStateFlow(false)
     val canStartGame: StateFlow<Boolean> = _canStartGame.asStateFlow()
 
-    private val _gameStarted = MutableStateFlow(false)
+    private var _gameStarted = MutableStateFlow(false)
     val gameStarted: StateFlow<Boolean> = _gameStarted.asStateFlow()
 
-    private val _gameState = MutableStateFlow<GameStartedResponse?>(null)
+    private var _gameState = MutableStateFlow<GameStartedResponse?>(null)
     val gameState: StateFlow<GameStartedResponse?> = _gameState.asStateFlow()
 
-    private val _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
+    private var _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
     val errorMessages: SharedFlow<String> = _errorMessages.asSharedFlow()
 
     init {
@@ -116,7 +116,7 @@ class WebSocketService {
 
     public fun setPlayer(p: Player) {
         this._player.value = p
-        turnBasedService.setCurrentPlayer(p.name)
+        turnBasedService.setCurrentPlayer(p)
     }
 
     @SuppressLint("CheckResult")
@@ -135,7 +135,7 @@ class WebSocketService {
                         // Initialize turn-based service
                         turnBasedService.initialize(stompClient!!)
                         _player.value?.name?.let { playerName ->
-                            turnBasedService.setCurrentPlayer(playerName)
+                            turnBasedService.setCurrentPlayer(_player.value!!)
                         }
 
                         subscribeToGeneralTopics()
@@ -156,6 +156,7 @@ class WebSocketService {
                 }
             },
             { resetConnectionState() }
+
         )
     }
 
@@ -255,6 +256,13 @@ class WebSocketService {
 
         // Subscribe to turn-based topics for this lobby
         turnBasedService.subscribeToTurnBasedTopics(lobbyId)
+
+    }
+
+    private fun subscribeToSpecificPlayerTopics(lobbyId: String, playerId: String) {
+        logMessage("Subscribing to topics for player: $playerId")
+
+        turnBasedService.subscribeToTurnBasedPlayerTopics(lobbyId,playerId)
     }
 
     @SuppressLint("CheckResult")
@@ -276,11 +284,13 @@ class WebSocketService {
 
                 // Log all players in the game
                 response.players.forEach { player ->
-                    if (player.name.equals(_player.value?.name)) {
+                    if(player.name==(_player.value?.name)){
                         _player.value = player
                     }
                     Log.i("START", "Player in game: ${player.name} (${player.character})")
                 }
+
+                subscribeToSpecificPlayerTopics(lobbyId, player.value?.playerID.toString())
 
                 // Force a delay to ensure UI updates before navigation
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -326,7 +336,7 @@ class WebSocketService {
         _lobbyState.value =
             Lobby(id = LobbyStatus.CREATING.text, host = player, players = listOf(player))
         _player.value = player
-        turnBasedService.setCurrentPlayer(username)
+        turnBasedService.setCurrentPlayer(player)
         _createdLobbyId.value = null
         sendRequest(APP_CREATE_LOBBY, payload)
     }
@@ -353,7 +363,8 @@ class WebSocketService {
             }
         }
         _player.value = player
-        turnBasedService.setCurrentPlayer(username)
+
+        turnBasedService.setCurrentPlayer(player)
         sendRequest(destination, payload)
     }
 
@@ -494,6 +505,7 @@ class WebSocketService {
         stompClient?.send(destination, payload)?.subscribe()
     }
 
+    @SuppressLint("CheckResult")
     fun subscribeToMovementUpdates(lobbyId: String, callback: (GameData) -> Unit) {
         val topic = "/topic/performMovement/$lobbyId"
 

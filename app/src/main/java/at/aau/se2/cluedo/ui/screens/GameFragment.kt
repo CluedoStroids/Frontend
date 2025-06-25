@@ -11,7 +11,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import com.example.myapplication.R
@@ -19,6 +18,7 @@ import com.example.myapplication.databinding.FragmentGameBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.viewmodels.CardAdapter
+import at.aau.se2.cluedo.viewmodels.GameViewModel
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -41,6 +41,8 @@ class GameFragment : Fragment() {
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
     private val lobbyViewModel: LobbyViewmodel by activityViewModels()
+    private val gameViewModel: GameViewModel by viewModels()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -101,18 +103,18 @@ class GameFragment : Fragment() {
      */
     private fun setupUI() {
 
-      /*  binding.notesButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameFragment_to_notesFragment)
-        }
+        /*  binding.notesButton.setOnClickListener {
+              findNavController().navigate(R.id.action_gameFragment_to_notesFragment)
+          }
 
-        binding.solveCaseButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameFragment_to_solveCaseFragment)
-        }
+          binding.solveCaseButton.setOnClickListener {
+              findNavController().navigate(R.id.action_gameFragment_to_solveCaseFragment)
+          }
 
-        binding.makeSuspicionButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameFragment_to_suspicionPopupFragment)
-        }
-*/
+          binding.makeSuspicionButton.setOnClickListener {
+              findNavController().navigate(R.id.action_gameFragment_to_suspicionPopupFragment)
+          }
+  */
 
         binding.playersListTextView.movementMethod = ScrollingMovementMethod()
         binding.gameInfoTextView.movementMethod = ScrollingMovementMethod()
@@ -136,14 +138,32 @@ class GameFragment : Fragment() {
         }
 
         //Change Icon of FloatingActionButton (openCardsButton) depending on state of BottomSheet
-        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         binding.cardsOpenButton.setImageResource(R.drawable.cards_close_icon)
                     }
+
                     BottomSheetBehavior.STATE_HIDDEN -> {
                         binding.cardsOpenButton.setImageResource(R.drawable.cards_open_icon)
+                    }
+
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        // not needed but must be overridden
+                    }
+
+                    BottomSheetBehavior.STATE_DRAGGING -> {
+                        // not needed but must be overridden
+                    }
+
+                    BottomSheetBehavior.STATE_HALF_EXPANDED -> {
+                        // not needed but must be overridden
+                    }
+
+                    BottomSheetBehavior.STATE_SETTLING -> {
+                        // not needed but must be overridden
                     }
                 }
             }
@@ -155,9 +175,10 @@ class GameFragment : Fragment() {
         })
 
         val recyclerView = binding.playerCardsRecyclerview
-        recyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         var cards = WebSocketService.getInstance().player.value?.cards
-        recyclerView.adapter = CardAdapter(BasicCard.getCardIDs(cards))
+        recyclerView.adapter = CardAdapter(cards)
 
     }
 
@@ -268,13 +289,13 @@ private fun toggleBottomSheet() {
     }
 }
 
-private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
-    Toast.makeText(requireContext(), message, duration).show()
-}
+    private fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
+        Toast.makeText(requireContext(), message, duration).show()
+    }
 
-override fun onDestroyView() {
-    super.onDestroyView()
-    _binding = null
-}
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
 }

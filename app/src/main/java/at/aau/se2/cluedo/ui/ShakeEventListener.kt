@@ -36,5 +36,7 @@ class ShakeEventListener : SensorEventListener {
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        //not used but must be overwritten
+    }
 }

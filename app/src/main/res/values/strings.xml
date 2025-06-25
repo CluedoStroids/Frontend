@@ -21,10 +21,6 @@
     <string name="you_rolled">You rolled a %1$d. Move your character.</string>
     <string name="movement">Perform movement</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
     <string name="submit_suggestion">Make a suspicion</string>
     <string name="cancel">Cancel</string>
     <string name="you_ve_cracked_the_case">You have cracked the case!</string>
@@ -55,6 +51,9 @@
     <string name="make_a_suspicion">Make a suspicion</string>
     <string name="version_number">v3.0</string>
     <string name="active_lobby_id_text">Active Lobby ID: %1$s</string>
+    <string name="opencardsbottomsheet">OpenCardsBottomSheet</string>
+    <string name="player_cards">Player Cards</string>
+    <string name="selected">Selected</string>
     <plurals name="game_state_players">
         <item quantity="one">Game state received with %1$d player</item>
         <item quantity="other">Game state received with %1$d players</item>

@@ -9,17 +9,19 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.example.myapplication.databinding.FragmentEliminationScreenBinding
 
 class EliminationScreenFragment : Fragment() {
+
+    private var _binding: FragmentEliminationScreenBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val layoutId = requireContext().resources.getIdentifier(
-            "fragment_elimination_screen", "layout", requireContext().packageName
-        )
-        return inflater.inflate(layoutId, container, false)
+        _binding = FragmentEliminationScreenBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -28,13 +30,9 @@ class EliminationScreenFragment : Fragment() {
         val context = requireContext()
         val navController = findNavController()
 
-        val eliminationTextId = context.resources.getIdentifier("eliminationText", "id", context.packageName)
-        val backButtonId = context.resources.getIdentifier("button_back_to_lobby", "id", context.packageName)
-        val exitButtonId = context.resources.getIdentifier("button_exit_game", "id", context.packageName)
-
-        val eliminationText: TextView = view.findViewById(eliminationTextId)
-        val backButton: Button = view.findViewById(backButtonId)
-        val exitButton: Button = view.findViewById(exitButtonId)
+        val eliminationText: TextView = binding.eliminationText
+        val backButton: Button = binding.buttonBackToLobby
+        val exitButton: Button = binding.buttonExitGame
 
         val args = arguments
         val suspect = args?.getString("suspect") ?: "Mrs. White"
