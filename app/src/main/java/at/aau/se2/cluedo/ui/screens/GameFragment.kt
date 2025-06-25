@@ -100,18 +100,6 @@ class GameFragment : Fragment() {
      */
     private fun setupUI() {
 
-      /*  binding.notesButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameFragment_to_notesFragment)
-        }
-
-        binding.solveCaseButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameFragment_to_solveCaseFragment)
-        }
-
-        binding.makeSuspicionButton.setOnClickListener {
-            findNavController().navigate(R.id.action_gameFragment_to_suspicionPopupFragment)
-        }
-*/
 
         binding.playersListTextView.movementMethod = ScrollingMovementMethod()
         binding.gameInfoTextView.movementMethod = ScrollingMovementMethod()

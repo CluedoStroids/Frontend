@@ -489,7 +489,7 @@ class WebSocketService {
         stompClient?.topic(TOPIC_GET_PLAYERS)?.subscribe({ stompMessage ->
             try {
                 val result = gson.fromJson(stompMessage.payload, List::class.java)
-                playerList = result as? List<Player>
+                playerList = result as List<Player>?
             } catch (e: Exception) {
                 _errorMessages.tryEmit("Invalid result format: ${e.message}")
             }

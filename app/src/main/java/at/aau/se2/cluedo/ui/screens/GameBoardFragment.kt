@@ -199,7 +199,6 @@ class GameBoardFragment : Fragment() {
 
 
         gameBoard.init()
-        updatePlayers()
 
         // Observe view model changes first
         observeViewModel()
@@ -464,9 +463,6 @@ class GameBoardFragment : Fragment() {
         }
     }
 
-    private fun updatePlayers() {
-
-    }
 
     private fun updatePlayersUI(gameState: GameStartedResponse) {
         // Update players list
