@@ -12,10 +12,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import at.aau.se2.cluedo.data.models.Lobby
 import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
-import at.aau.se2.cluedo.data.models.Player
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentJoinLobbyBinding
 import kotlinx.coroutines.launch

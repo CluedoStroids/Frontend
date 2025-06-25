@@ -1,6 +1,5 @@
 package at.aau.se2.cluedo.ui.screens
 
-import android.R.attr.gravity
 import android.annotation.SuppressLint
 import android.hardware.Sensor
 import android.hardware.SensorManager
@@ -18,7 +17,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.os.HandlerCompat.postDelayed
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -29,13 +27,11 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.TurnState
 import at.aau.se2.cluedo.data.models.TurnStateResponse
 import at.aau.se2.cluedo.data.network.WebSocketService
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
-import at.aau.se2.cluedo.ui.MainActivity
 import at.aau.se2.cluedo.viewmodels.CardAdapter
 import at.aau.se2.cluedo.viewmodels.GameBoard
 import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
@@ -43,7 +39,6 @@ import at.aau.se2.cluedo.ui.ShakeEventListener
 import at.aau.se2.cluedo.viewmodels.GameViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
-import com.example.myapplication.databinding.SuggestionNotificationBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.launch
 import kotlin.getValue

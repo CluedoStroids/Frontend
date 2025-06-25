@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.viewmodels.NavigationTarget
 import com.example.myapplication.databinding.FragmentAccusationBinding
-import com.example.myapplication.databinding.FragmentGameBinding
 
 class AccusationFragment : Fragment() {
 

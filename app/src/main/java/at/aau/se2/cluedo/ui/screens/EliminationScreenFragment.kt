@@ -9,7 +9,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.example.myapplication.databinding.FragmentAccusationBinding
 import com.example.myapplication.databinding.FragmentEliminationScreenBinding
 
 class EliminationScreenFragment : Fragment() {
