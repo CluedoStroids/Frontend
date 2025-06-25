@@ -19,11 +19,9 @@ import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.data.models.PerformMoveResponse
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
-import at.aau.se2.cluedo.data.models.AccusationRequest
 import at.aau.se2.cluedo.data.models.StartGameRequest
 import at.aau.se2.cluedo.data.models.SuspectCheating
 import com.google.gson.Gson
-import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -50,7 +48,6 @@ class WebSocketService {
         private const val APP_CAN_START_GAME_PREFIX = "/app/canStartGame/"
         private const val TOPIC_CAN_START_GAME_PREFIX = "/topic/canStartGame/"
         private const val APP_START_GAME_PREFIX = "/app/startGame/"
-        private const val APP_ACCUSATION = "/app/accusation"
         private const val TOPIC_GAME_STARTED_PREFIX = "/topic/gameStarted/"
         private const val TOPIC_GAME_DATA_PREFIX = "/topic/gameData/"
         private const val APP_GET_GAME_DATA = "/app/getGameData/"
@@ -81,31 +78,31 @@ class WebSocketService {
     // Turn-based functionality
     private val turnBasedService = TurnBasedWebSocketService.getInstance()
 
-    private val _isConnected = MutableStateFlow(false)
+    private var _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
-    private val _lobbyState = MutableStateFlow<Lobby?>(null)
+    private var _lobbyState = MutableStateFlow<Lobby?>(null)
     val lobbyState: StateFlow<Lobby?> = _lobbyState.asStateFlow()
 
-    private val _gameDataState = MutableStateFlow<GameData?>(null)
+    private var _gameDataState = MutableStateFlow<GameData?>(null)
     val gameDataState = _gameDataState.asStateFlow()
 
-    val _player = MutableStateFlow<Player?>(null)           //Client player object
+    private var _player = MutableStateFlow<Player?>(null)           //Client player object
     val player: StateFlow<Player?> = _player.asStateFlow()  //Client player object
 
-    private val _createdLobbyId = MutableStateFlow<String?>(null)
+    private var _createdLobbyId = MutableStateFlow<String?>(null)
     val createdLobbyId: StateFlow<String?> = _createdLobbyId.asStateFlow()
 
-    private val _canStartGame = MutableStateFlow(false)
+    private var _canStartGame = MutableStateFlow(false)
     val canStartGame: StateFlow<Boolean> = _canStartGame.asStateFlow()
 
-    private val _gameStarted = MutableStateFlow(false)
+    private var _gameStarted = MutableStateFlow(false)
     val gameStarted: StateFlow<Boolean> = _gameStarted.asStateFlow()
 
-    private val _gameState = MutableStateFlow<GameStartedResponse?>(null)
+    private var _gameState = MutableStateFlow<GameStartedResponse?>(null)
     val gameState: StateFlow<GameStartedResponse?> = _gameState.asStateFlow()
 
-    private val _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
+    private var _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
     val errorMessages: SharedFlow<String> = _errorMessages.asSharedFlow()
 
     init {
@@ -159,6 +156,7 @@ class WebSocketService {
                 }
             },
             { resetConnectionState() }
+
         )
     }
 
@@ -258,6 +256,13 @@ class WebSocketService {
 
         // Subscribe to turn-based topics for this lobby
         turnBasedService.subscribeToTurnBasedTopics(lobbyId)
+
+    }
+
+    private fun subscribeToSpecificPlayerTopics(lobbyId: String, playerId: String) {
+        logMessage("Subscribing to topics for player: $playerId")
+
+        turnBasedService.subscribeToTurnBasedPlayerTopics(lobbyId,playerId)
     }
 
     @SuppressLint("CheckResult")
@@ -279,11 +284,13 @@ class WebSocketService {
 
                 // Log all players in the game
                 response.players.forEach { player ->
-                    if (player.name.equals(_player.value?.name)) {
+                    if(player.name==(_player.value?.name)){
                         _player.value = player
                     }
                     Log.i("START", "Player in game: ${player.name} (${player.character})")
                 }
+
+                subscribeToSpecificPlayerTopics(lobbyId, player.value?.playerID.toString())
 
                 // Force a delay to ensure UI updates before navigation
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -311,17 +318,9 @@ class WebSocketService {
 
     @SuppressLint("CheckResult")
     private fun sendRequest(destination: String, payload: String, onSuccess: (() -> Unit)? = null) {
-        if (!_isConnected.value) {
-            _errorMessages.tryEmit("Cannot send request: Not connected")
-            return
+        stompClient?.send(destination, payload)?.subscribe {
+            onSuccess?.invoke()
         }
-        stompClient?.send(destination, payload)?.subscribe(
-            {
-                onSuccess?.invoke()
-                _errorMessages.tryEmit("Successfully sent message to $destination")
-            },
-            { error -> _errorMessages.tryEmit("Failed to send STOMP message to $destination: ${error.message}") }
-        )
     }
 
     fun createLobby(
@@ -337,7 +336,7 @@ class WebSocketService {
         _lobbyState.value =
             Lobby(id = LobbyStatus.CREATING.text, host = player, players = listOf(player))
         _player.value = player
-        turnBasedService.setCurrentPlayer(username)
+        turnBasedService.setCurrentPlayer(username)//eventuell player
         _createdLobbyId.value = null
         sendRequest(APP_CREATE_LOBBY, payload)
     }
@@ -364,7 +363,7 @@ class WebSocketService {
             }
         }
         _player.value = player
-        turnBasedService.setCurrentPlayer(username)
+        turnBasedService.setCurrentPlayer(username) // eventuell player
         sendRequest(destination, payload)
     }
 
@@ -486,55 +485,29 @@ class WebSocketService {
 
     @SuppressLint("CheckResult")
     private fun subscribePlayersResult() {
-        stompClient?.topic(TOPIC_GET_PLAYERS)?.subscribe({ stompMessage ->
-            try {
-                val result = gson.fromJson(stompMessage.payload, List::class.java)
-                playerList = result as? List<Player>
-            } catch (e: Exception) {
-                _errorMessages.tryEmit("Invalid result format: ${e.message}")
-            }
-        }, {
-            _errorMessages.tryEmit("Error subscribing to diceResult topic")
-        })
+        stompClient?.topic(TOPIC_GET_PLAYERS)?.subscribe { stompMessage ->
+            val result = gson.fromJson(stompMessage.payload, List::class.java)
+            playerList = result as List<Player>?
+        }
     }
 
     @SuppressLint("CheckResult")
     fun players() {
-        println("Get Players")
-        if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
-            return
-        }
-        stompClient?.send(APP_GET_PLAYERS, "")?.subscribe(
-            {
-                _errorMessages.tryEmit("Players Requested")
-            },
-            { error -> _errorMessages.tryEmit("Error from trying to get all Players: ${error.message}") })
-
+        stompClient?.send(APP_GET_PLAYERS, "")?.subscribe()
     }
 
     @SuppressLint("CheckResult")
-    fun performMovement(moves: List<String>) {
-        println("Movein")
-        if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
-            return
-        }
-        val request = PerformMoveResponse(player = player.value!!, moves = moves)
+    fun performMovement(lobbyId:String,moves: List<String>) {
+        val request = PerformMoveResponse(player = player.value!!, moves=moves)
         val payload = gson.toJson(request)
-        val destination = "$APP_PERFORM_MOVE${lobbyState.value?.id}"
-
-        stompClient?.send(destination, payload)?.subscribe(
-            {
-                _errorMessages.tryEmit("PerformMovement")
-            },
-            { error -> _errorMessages.tryEmit("Error from trying to get all Players: ${error.message}") })
-        //subscribeGetGameData(lobbyId)
-
+        val destination = "$APP_PERFORM_MOVE${lobbyId}"
+        stompClient?.send(destination, payload)?.subscribe()
     }
 
-    fun subscribeToMovementUpdates(callback: (GameData) -> Unit) {
-        val topic = "/topic/performMovement/${lobbyState.value?.id}"
+    @SuppressLint("CheckResult")
+    fun subscribeToMovementUpdates(lobbyId: String, callback: (GameData) -> Unit) {
+        val topic = "/topic/performMovement/$lobbyId"
+
         stompClient?.topic(topic)?.subscribe { stompMessage ->
             val payload = stompMessage.payload
             val gameData = gson.fromJson(payload, GameData::class.java)
@@ -556,19 +529,6 @@ class WebSocketService {
         _gameStarted.value = true
     }
 
-
-    @SuppressLint("CheckResult")
-    fun sendAccusation(
-        lobbyId: String,
-        username: String,
-        suspect: String,
-        room: String,
-        weapon: String
-    ) {
-        val request = AccusationRequest(lobbyId, username, suspect, room, weapon)
-        val payload = gson.toJson(request)
-        stompClient?.send("/app/solve-case", payload)?.subscribe()
-    }
 
     @SuppressLint("CheckResult")
     fun sendSuggestion(suspect: String, weapon: String, room: String) {
@@ -616,13 +576,7 @@ class WebSocketService {
                 _gameDataState.value = tempGameState
             }
         }
-        stompClient?.send(destination, payload)?.subscribe(
-            {
-            },
-            { error ->
-                _errorMessages.tryEmit("Failed to leave lobby: ${error.message}")
-            }
-        )
+        stompClient?.send(destination, payload)?.subscribe()
     }
 
     @SuppressLint("CheckResult")
@@ -707,5 +661,11 @@ class WebSocketService {
             val payload = gson.toJson(message)
             stompClient?.send("/app/cheating", payload)?.subscribe()
         }
+        fun subscribe(topic: String, callback: (String) -> Unit) {
+        stompClient?.topic(topic)?.subscribe { stompMessage ->
+            callback(stompMessage.payload)
+        }
     }
+
+}
 

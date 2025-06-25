@@ -12,14 +12,14 @@ package at.aau.se2.cluedo.data.models
         fun `AccusationRequest should hold correct values`() {
             val request = AccusationRequest(
                 lobbyId = "lobby123",
-                playerName = "Matthias",
+                username = "Matthias",
                 suspect = "Miss Scarlet",
                 weapon = "Rope",
                 room = "Kitchen"
             )
 
             assertEquals("lobby123", request.lobbyId)
-            assertEquals("Matthias", request.playerName)
+            assertEquals("Matthias", request.username)
             assertEquals("Miss Scarlet", request.suspect)
             assertEquals("Rope", request.weapon)
             assertEquals("Kitchen", request.room)
@@ -30,7 +30,7 @@ package at.aau.se2.cluedo.data.models
             val request = AccusationRequest()
 
             assertEquals("", request.lobbyId)
-            assertEquals("", request.playerName)
+            assertEquals("", request.username)
             assertEquals("", request.suspect)
             assertEquals("", request.weapon)
             assertEquals("", request.room)

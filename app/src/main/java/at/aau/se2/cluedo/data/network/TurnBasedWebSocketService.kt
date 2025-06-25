@@ -9,7 +9,9 @@ import at.aau.se2.cluedo.data.models.TurnStateResponse
 import at.aau.se2.cluedo.data.models.TurnState
 import at.aau.se2.cluedo.data.models.SuggestionRequest
 import at.aau.se2.cluedo.data.models.AccusationRequest
+import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.SkipTurnRequest
+import at.aau.se2.cluedo.data.models.SuggestionResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +33,10 @@ class TurnBasedWebSocketService private constructor() {
         private const val APP_COMPLETE_MOVEMENT = "/app/completeMovement/"
         private const val TOPIC_MOVEMENT_COMPLETED = "/topic/movementCompleted/"
         private const val APP_MAKE_SUGGESTION = "/app/makeSuggestion/"
+        private const val APP_MAKE_SUGGESTION_RESPONSE = "/app/processSuggestion/"
         private const val TOPIC_SUGGESTION_MADE = "/topic/suggestionMade/"
+        private const val TOPIC_SUGGESTION_HANDLE = "/topic/processSuggestion/"
+        private const val TOPIC_SUGGESTION_RESULT = "/topic/resultSuggestion/"
         private const val APP_MAKE_ACCUSATION = "/app/makeAccusation/"
         private const val TOPIC_ACCUSATION_MADE = "/topic/accusationMade/"
         private const val APP_SKIP_TURN = "/app/skipTurn/"
@@ -51,26 +56,38 @@ class TurnBasedWebSocketService private constructor() {
     private var stompClient: StompClient? = null
 
     // Turn-based system state flows
-    private val _currentTurnState = MutableStateFlow<TurnStateResponse?>(null)
+    private var _currentTurnState = MutableStateFlow<TurnStateResponse?>(null)
     val currentTurnState: StateFlow<TurnStateResponse?> = _currentTurnState.asStateFlow()
 
-    private val _isCurrentPlayerTurn = MutableStateFlow(false)
+    private var _isCurrentPlayerTurn = MutableStateFlow(false)
     val isCurrentPlayerTurn: StateFlow<Boolean> = _isCurrentPlayerTurn.asStateFlow()
 
-    private val _diceOneResult = MutableStateFlow<Int?>(null)
+    private var _diceOneResult = MutableStateFlow<Int?>(null)
     val diceOneResult: StateFlow<Int?> = _diceOneResult.asStateFlow()
 
-    private val _diceTwoResult = MutableStateFlow<Int?>(null)
+    private var _diceTwoResult = MutableStateFlow<Int?>(null)
     val diceTwoResult: StateFlow<Int?> = _diceTwoResult.asStateFlow()
 
+    private var _suggestionData = MutableStateFlow<SuggestionRequest?>(null)
+    val suggestionData: StateFlow<SuggestionRequest?> = _suggestionData
+
+    private var _processSuggestion = MutableStateFlow<Boolean>(false)
+    val processSuggestion: StateFlow<Boolean> = _processSuggestion
+
+    private var _resultSuggestion = MutableStateFlow<SuggestionResponse?>(null)
+    val resultSuggestion: StateFlow<SuggestionResponse?> = _resultSuggestion
+
     private var currentPlayerName: String? = null
+    private var currentPlayer: Player? = null
 
     fun initialize(stompClient: StompClient) {
         this.stompClient = stompClient
     }
 
-    fun setCurrentPlayer(playerName: String) {
-        this.currentPlayerName = playerName
+    fun setCurrentPlayer(player: Player) {
+        this.currentPlayerName = player.name
+        this.currentPlayer = player
+
     }
 
     /**
@@ -121,8 +138,7 @@ class TurnBasedWebSocketService private constructor() {
         // Subscribe to accusation responses
         stompClient?.topic("$TOPIC_ACCUSATION_MADE$lobbyId")?.subscribe { message ->
             Log.d("TurnBasedWS", "Accusation response received: ${message.payload}")
-            // Accusations don't return TurnStateResponse, just success/failure info
-            // The turn state should be updated through other means
+            handleAccusationResponse(message, lobbyId)
         }
 
         // Subscribe to skip turn responses
@@ -133,6 +149,26 @@ class TurnBasedWebSocketService private constructor() {
             _currentTurnState.value = turnState
             updatePlayerTurnStatus(turnState)
         }
+    }
+
+    /**
+     * Subscribe to all only player relevant topics.
+     */
+    @SuppressLint("CheckResult")
+    fun subscribeToTurnBasedPlayerTopics(lobbyId: String, playerId: String) {
+        Log.d("TurnBasedWS", "Subscribing to turn-based topics for lobby: $lobbyId")
+
+        stompClient?.topic("$TOPIC_SUGGESTION_HANDLE$lobbyId/$playerId")?.subscribe { message ->
+            val responseMap = gson.fromJson(message.payload, Map::class.java)
+            _processSuggestion.value = responseMap["processSuggestion"] as Boolean;
+        }
+
+        stompClient?.topic("$TOPIC_SUGGESTION_RESULT$lobbyId/$playerId")?.subscribe { message ->
+            val responseMap = gson.fromJson(message.payload, Map::class.java)
+            _resultSuggestion.value = SuggestionResponse(playerName = responseMap["sendingPlayer"] as String,
+                                                         cardName = responseMap["receivedCard"]as String)
+        }
+
     }
 
     private fun handleTurnStateChange(message: StompMessage, lobbyId: String) {
@@ -166,13 +202,23 @@ class TurnBasedWebSocketService private constructor() {
     }
 
     private fun handleSuggestionResponse(message: StompMessage, lobbyId: String) {
-        Log.d("TurnBasedWS", "Suggestion response received: ${message.payload}")
+        Log.d("SUGGEST", "Suggestion response received: ${message.payload}")
         val responseMap = gson.fromJson(message.payload, Map::class.java)
 
         val success = responseMap["success"] as? Boolean ?: false
         val messageText = responseMap["message"] as? String ?: ""
 
-        Log.d("TurnBasedWS", "Suggestion result: success=$success, message=$messageText")
+        Log.d("SUGGEST", "Suggestion result: success=$success, message=$messageText")
+
+        val suggestionData = SuggestionRequest(
+            (responseMap["player"] as? String).toString(),
+            (responseMap["playerId"] as? String).toString(),
+            (responseMap["suspect"] as? String).toString(),
+            (responseMap["weapon"] as? String).toString(),
+            (responseMap["room"] as? String).toString()
+            )
+
+        _suggestionData.value = suggestionData
 
         if (success) {
             // After a successful suggestion, the turn should advance to the next player
@@ -231,6 +277,20 @@ class TurnBasedWebSocketService private constructor() {
         }
     }
 
+    private fun handleAccusationResponse(message: StompMessage, lobbyId: String) {
+        Log.d("TurnBasedWS", "Accusation response received: ${message.payload}")
+        val responseMap = gson.fromJson(message.payload, Map::class.java)
+
+        val success = responseMap["success"] as? Boolean ?: false
+        val correct = responseMap["correct"] as? Boolean ?: false
+        val playerEliminated = responseMap["playerEliminated"] as? Boolean ?: false
+        val messageText = responseMap["message"] as? String ?: ""
+
+        Log.d("TurnBasedWS", "Accusation result: success=$success, correct=$correct, playerEliminated=$playerEliminated, message=$messageText")
+
+        getTurnState(lobbyId)
+    }
+
     private fun updatePlayerTurnStatus(turnState: TurnStateResponse) {
         val isMyTurn = currentPlayerName == turnState.currentPlayerName
         _isCurrentPlayerTurn.value = isMyTurn
@@ -279,24 +339,36 @@ class TurnBasedWebSocketService private constructor() {
         stompClient?.send("$APP_COMPLETE_MOVEMENT$lobbyId", payload)?.subscribe()
     }
 
-
-
     @SuppressLint("CheckResult")
-    fun makeSuggestion(lobbyId: String, playerName: String, suspect: String, weapon: String, room: String) {
+    fun makeSuggestion(lobbyId: String, playerName: String,playerId: String, suspect: String, weapon: String, room: String) {
         val request = SuggestionRequest(
             playerName = playerName,
+            playerId = playerId,
             suspect = suspect,
             weapon = weapon,
             room = room
         )
         val payload = gson.toJson(request)
+        Log.d("SUGGEST","Sent!: ${suspect} ,${weapon},"+
+                " ${room} , ${playerName} , $playerId")
         stompClient?.send("$APP_MAKE_SUGGESTION$lobbyId", payload)?.subscribe()
+    }
+
+    @SuppressLint("CheckResult")
+    fun makeSuggestionResponse(lobbyId: String, playerId: String, cardName: String) {
+        val request = SuggestionResponse(
+            playerId = playerId,
+            cardName = cardName
+        )
+        val payload = gson.toJson(request)
+        stompClient?.send("$APP_MAKE_SUGGESTION_RESPONSE$lobbyId", payload)?.subscribe()
     }
 
     @SuppressLint("CheckResult")
     fun makeAccusation(lobbyId: String, playerName: String, suspect: String, weapon: String, room: String) {
         val request = AccusationRequest(
-            playerName = playerName,
+            lobbyId = lobbyId,
+            username = playerName,
             suspect = suspect,
             weapon = weapon,
             room = room
@@ -329,7 +401,7 @@ class TurnBasedWebSocketService private constructor() {
         val result = when (action) {
             "ROLL_DICE" -> turnState.turnState == TurnState.PLAYERS_TURN_ROLL_DICE.value
             "MOVE" -> turnState.turnState == TurnState.PLAYERS_TURN_MOVE.value
-            "SUGGEST" -> turnState.turnState == TurnState.PLAYERS_TURN_SUGGEST.value && (turnState.canMakeSuggestion == true)
+            "SUGGEST" -> true//turnState.turnState == TurnState.PLAYERS_TURN_SUGGEST.value && (turnState.canMakeSuggestion == true)
             "ACCUSE" -> turnState.canMakeAccusation == true
             else -> false
         }

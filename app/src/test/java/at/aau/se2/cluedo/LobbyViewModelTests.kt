@@ -6,7 +6,7 @@ import at.aau.se2.cluedo.data.models.Lobby
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.network.WebSocketService
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,14 +24,13 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.*
-import kotlinx.coroutines.test.runTest
 
 
 class LobbyViewModelTests {
     private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var mockWebSocketService: WebSocketService
-    private lateinit var viewModel: LobbyViewModel
+    private lateinit var viewModel: LobbyViewmodel
 
     private val isConnectedFlow = MutableStateFlow(true)
     private val lobbyStateFlow = MutableStateFlow<Lobby?>(null)
@@ -54,7 +53,7 @@ class LobbyViewModelTests {
         whenever(mockWebSocketService.gameStarted).thenReturn(gameStartedFlow)
         whenever(mockWebSocketService.gameState).thenReturn(gameStateFlow)
 
-        viewModel = LobbyViewModel(mockWebSocketService)
+        viewModel = LobbyViewmodel(mockWebSocketService)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -318,17 +317,6 @@ class LobbyViewModelTests {
     fun `isPlayerInRoom returns false when coordinates are null`() {
         val player = Player(name = "Test", x = 99, y = 99)
         assertFalse(viewModel.isPlayerInRoom(player))
-    }
-
-    @Test
-    fun `sendAccusation delegates to WebSocketService`() {
-        val mockWebSocketService = mock<WebSocketService>()
-        val viewModel = LobbyViewModel(mockWebSocketService)
-
-        viewModel.sendAccusationDirectForTest(lobbyId = "lobby123", username = "Matthias", suspect = "Miss Scarlet", room = "Kitchen", weapon = "Rope")
-
-        verify(mockWebSocketService).sendAccusation(
-            "lobby123", "Matthias", "Miss Scarlet", "Kitchen", "Rope")
     }
 
 
