@@ -23,12 +23,17 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.viewmodels.NavigationTarget
+import com.example.myapplication.databinding.FragmentAccusationBinding
+import com.example.myapplication.databinding.FragmentGameBinding
 
 class AccusationFragment : Fragment() {
 
     private val lobbyViewModel: LobbyViewmodel by viewModels()
     private val turnBasedService = TurnBasedWebSocketService.getInstance()
     private val webSocketService = WebSocketService.getInstance()
+
+    private var _binding: FragmentAccusationBinding? = null
+    private val binding get() = _binding!!
 
     private var isPlayerEliminated: Boolean = false
 
@@ -41,32 +46,9 @@ class AccusationFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val context = requireContext()
-        val layoutId = context.resources.getIdentifier("fragment_accusation", "layout", context.packageName)
-        val view = inflater.inflate(layoutId, container, false)
 
-        val suspectSpinnerId = context.resources.getIdentifier("suspectSpinner", "id", context.packageName)
-        val roomSpinnerId = context.resources.getIdentifier("roomSpinner", "id", context.packageName)
-        val weaponSpinnerId = context.resources.getIdentifier("weaponSpinner", "id", context.packageName)
-        val accuseButtonId = context.resources.getIdentifier("button_solve_case", "id", context.packageName)
-        val cancelButtonId = context.resources.getIdentifier("button_cancel", "id", context.packageName)
-
-        suspectSpinner = view.findViewById(suspectSpinnerId)
-        roomSpinner = view.findViewById(roomSpinnerId)
-        weaponSpinner = view.findViewById(weaponSpinnerId)
-        accuseButton = view.findViewById(accuseButtonId)
-
-        val cancelButton: Button = view.findViewById(cancelButtonId)
-        cancelButton.setOnClickListener {
-            animateAndClose(it)
-            findNavController().navigate(R.id.gameBoardIMG)
-        }
-
-        accuseButton.setOnClickListener {
-            makeAccusation()
-        }
-
-        return view
+        _binding = FragmentAccusationBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onDestroyView() {
@@ -76,6 +58,22 @@ class AccusationFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        suspectSpinner = binding.suspectSpinner
+        roomSpinner = binding.roomSpinner
+        weaponSpinner = binding.weaponSpinner
+        accuseButton = binding.buttonSolveCase
+
+        val cancelButton: Button = binding.buttonCancel
+        cancelButton.setOnClickListener {
+            animateAndClose(it)
+            findNavController().navigate(R.id.gameBoardIMG)
+        }
+
+        accuseButton.setOnClickListener {
+            makeAccusation()
+        }
+
         setupSpinners()
 
         // Subscribe to accusation results for this lobby
