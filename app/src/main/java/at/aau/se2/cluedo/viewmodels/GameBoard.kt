@@ -51,6 +51,8 @@ class GameBoard @JvmOverloads constructor(
     private var playerArrPos:Int=0
     private var firstRound:Boolean=true
     private var inRoom: Boolean=false
+    private var inDoor: Boolean=false
+    private var leaveRoom: Boolean=false
     private var outsideCoordX=0
     private var outsideCoordY=0
     var id:String? =""
@@ -69,7 +71,7 @@ class GameBoard @JvmOverloads constructor(
         WebSocketService.getInstance().subscribeToMovementUpdates() { gameData ->
             post {
                 updateGameData(gameData)
-                if (inRoom){
+                if (inRoom&&leaveRoom){
                     updateGameData(gameData)
                 }
             }
@@ -126,11 +128,15 @@ class GameBoard @JvmOverloads constructor(
 
     @SuppressLint("SuspiciousIndentation")
     fun moveUp() {
-        safeCoord();
-        if(inRoom) {
+        if(inRoom&&!inDoor) {
             leaveRoom()
+            moves.add("W")
+            WebSocketService.getInstance().performMovement(moves)
             invalidate()
             return
+        }
+        else{
+            inDoor=false
         }
         playerPosY--
         // Einmalige Antwort verarbeiten
@@ -143,18 +149,25 @@ class GameBoard @JvmOverloads constructor(
                     playerPosY = 0
                 }
                 WebSocketService.getInstance().performMovement(moves)
-
+                if(!inRoom){
+                    safeCoord()
+                }
             }
             moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
     }
 
     fun moveDown(){
-        safeCoord()
-        if(inRoom) {
+
+        if(inRoom&&!inDoor) {
             leaveRoom()
+            moves.add("S")
+            WebSocketService.getInstance().performMovement(moves)
             invalidate()
             return
+        }
+        else{
+            inDoor=false
         }
         playerPosY++
         if (playerPosY > 25) {
@@ -166,7 +179,9 @@ class GameBoard @JvmOverloads constructor(
             }else{
                 moves.add("S") // Bewegung merken
                 WebSocketService.getInstance().performMovement(moves)
-
+                if(!inRoom){
+                    safeCoord()
+                }
             }
             moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
@@ -174,11 +189,17 @@ class GameBoard @JvmOverloads constructor(
     }
 
     fun moveLeft(){
-        safeCoord()
-        if(inRoom) {
+
+        if(inRoom&&!inDoor) {
             leaveRoom()
+            moves.add("A")
+            WebSocketService.getInstance().performMovement(moves)
+
             invalidate()
             return
+        }
+        else{
+            inDoor=false
         }
         playerPosX--
         if (playerPosX < 0) {
@@ -191,18 +212,25 @@ class GameBoard @JvmOverloads constructor(
                 moves.add("A") // Bewegung merken
                 // Grenzen prüfen
                 WebSocketService.getInstance().performMovement(moves)
-
+                if(!inRoom){
+                    safeCoord()
+                }
             }
             moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
     }
 
     fun moveRight(){
-        safeCoord()
-        if(inRoom) {
+
+        if(inRoom&&!inDoor) {
             leaveRoom()
+            moves.add("D")
+            WebSocketService.getInstance().performMovement(moves)
             invalidate()
             return
+        }
+        else{
+            inDoor=false
         }
         playerPosX++
         // Grenzen prüfen
@@ -215,6 +243,9 @@ class GameBoard @JvmOverloads constructor(
             }else{
                 moves.add("D") // Bewegung merken
                 WebSocketService.getInstance().performMovement(moves)
+                if(!inRoom){
+                    safeCoord()
+                }
             }
             moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
@@ -232,7 +263,6 @@ class GameBoard @JvmOverloads constructor(
     fun isWall(): Boolean{
         val gameData = WebSocketService.getInstance().gameDataState.value
         val grid = gameData?.grid // Get the grid, can be null
-
         // Überprüfe, ob das Grid vorhanden und nicht leer ist
         if (grid == null || grid.isEmpty()) {
             WebSocketService.getInstance().subscribeGetGameBoard(id!!) { gameBoard ->
@@ -251,7 +281,7 @@ class GameBoard @JvmOverloads constructor(
         val column = grid[playerPosX] // Jetzt ist column ein Array
 
         // Und jetzt die y-Koordinate prüfen
-        val y = playerPosY  // Beachten Sie die Anmerkung zu +1
+        val y = playerPosY+1  // Beachten Sie die Anmerkung zu +1
 
 
         // Jetzt ist der Zugriff sicher
@@ -259,6 +289,7 @@ class GameBoard @JvmOverloads constructor(
 
         if(targetCell.cellType.equals(CellType.DOOR)){
             walkiIntoRoom(targetCell.room)
+            inDoor=true
             Log.d("Debug", "Bewegdich")
         }
         return (targetCell.cellType.equals(CellType.ROOM))||(targetCell.cellType.equals(CellType.WALL));
@@ -271,13 +302,12 @@ class GameBoard @JvmOverloads constructor(
         //val coord: IntIntPair=gm.placeInRoom(players?.get(playerArrPos)!!,room, players!!)
         inRoom=true
     }
-    fun walkingOutOfRoom(){
-        inRoom=false;
-    }
+
     fun leaveRoom(){
         //WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.room!!.playerLeavesRoom(players?.get(playerArrPos)!!)
-        playerPosY=outsideCoordY
-        playerPosX=outsideCoordX
+        inRoom=false;
+        leaveRoom=true
+        invalidate()
     }
 
     fun safeCoord(){
@@ -320,11 +350,20 @@ class GameBoard @JvmOverloads constructor(
 
     fun updateGameData(gameData: GameData?) {
         this.players = gameData?.players ?: emptyList()
-        if((firstRound||inRoom)&& players != null && players!!.isNotEmpty()) {
+        if((firstRound||inRoom||leaveRoom)&& players != null && players!!.isNotEmpty()) {
             playerPosX = players!!.get(playerArrPos).x
             playerPosY = players!!.get(playerArrPos).y
             firstRound=false
+            //if(leaveRoom==true)
+                //inDoor=true;
+            leaveRoom=false
+
         }
+        if(playerPosX != players!!.get(playerArrPos).x || playerPosY != players!!.get(playerArrPos).y ){
+            playerPosX = players!!.get(playerArrPos).x
+            playerPosY = players!!.get(playerArrPos).y
+        }
+
         // ggf. Bitmap aktualisieren oder andere Werte setzen
         invalidate()
     }
