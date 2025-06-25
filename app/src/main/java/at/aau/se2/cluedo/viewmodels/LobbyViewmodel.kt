@@ -16,9 +16,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import org.json.JSONObject
 
 
-class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
-    constructor() : this(WebSocketService.getInstance())
 
+class LobbyViewmodel(val webSocketService: WebSocketService = WebSocketService.getInstance()) :
+    ViewModel() {
 
     val isConnected: StateFlow<Boolean> = webSocketService.isConnected
     val lobbyState: StateFlow<Lobby?> = webSocketService.lobbyState
@@ -59,8 +59,7 @@ class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
             val color = getColorForCharacter(character)
 
             webSocketService.createLobby(username, character, color)
-            WebSocketService.getInstance()
-                .setPlayer(Player(name = username, character = character, color = color))
+            webSocketService.setPlayer(Player(name = username, character = character, color = color))
         }
     }
 
@@ -68,8 +67,7 @@ class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
         viewModelScope.launch {
             val color = getColorForCharacter(character)
             webSocketService.joinLobby(lobbyId, username, character, color)
-            WebSocketService.getInstance()
-                .setPlayer(Player(name = username, character = character, color = color))
+            webSocketService.setPlayer(Player(name = username, character = character, color = color))
         }
     }
 
@@ -100,12 +98,6 @@ class LobbyViewModel(val webSocketService: WebSocketService) : ViewModel() {
                 lobbyState.value?.let { lobby ->
                     if (gameState.value == null) {
                         // Create a temporary game state from the lobby
-                        val tempGameState = GameStartedResponse(
-                            lobbyId = lobby.id,
-                            players = lobby.players
-                        )
-                        // We need to manually set the game state in WebSocketService
-                        // This is a workaround since we don't have a direct setter
                         webSocketService.startGame(
                             lobby.id,
                             lobby.host.name,

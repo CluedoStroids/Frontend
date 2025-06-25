@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
 import at.aau.se2.cluedo.data.network.WebSocketService
 import com.example.myapplication.R
@@ -26,7 +26,7 @@ import at.aau.se2.cluedo.viewmodels.NavigationTarget
 
 class AccusationFragment : Fragment() {
 
-    private val lobbyViewModel: LobbyViewModel by viewModels()
+    private val lobbyViewModel: LobbyViewmodel by viewModels()
     private val turnBasedService = TurnBasedWebSocketService.getInstance()
     private val webSocketService = WebSocketService.getInstance()
 

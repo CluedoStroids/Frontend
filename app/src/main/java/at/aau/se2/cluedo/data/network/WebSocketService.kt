@@ -22,7 +22,6 @@ import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.models.StartGameRequest
 import at.aau.se2.cluedo.data.models.SuspectCheating
 import com.google.gson.Gson
-import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -309,17 +308,9 @@ class WebSocketService {
 
     @SuppressLint("CheckResult")
     private fun sendRequest(destination: String, payload: String, onSuccess: (() -> Unit)? = null) {
-        if (!_isConnected.value) {
-            _errorMessages.tryEmit("Cannot send request: Not connected")
-            return
+        stompClient?.send(destination, payload)?.subscribe {
+            onSuccess?.invoke()
         }
-        stompClient?.send(destination, payload)?.subscribe(
-            {
-                onSuccess?.invoke()
-                _errorMessages.tryEmit("Successfully sent message to $destination")
-            },
-            { error -> _errorMessages.tryEmit("Failed to send STOMP message to $destination: ${error.message}") }
-        )
     }
 
     fun createLobby(
@@ -484,51 +475,23 @@ class WebSocketService {
 
     @SuppressLint("CheckResult")
     private fun subscribePlayersResult() {
-        stompClient?.topic(TOPIC_GET_PLAYERS)?.subscribe({ stompMessage ->
-            try {
-                val result = gson.fromJson(stompMessage.payload, List::class.java)
-                playerList = result as? List<Player>
-            } catch (e: Exception) {
-                _errorMessages.tryEmit("Invalid result format: ${e.message}")
-            }
-        }, {
-            _errorMessages.tryEmit("Error subscribing to diceResult topic")
-        })
+        stompClient?.topic(TOPIC_GET_PLAYERS)?.subscribe { stompMessage ->
+            val result = gson.fromJson(stompMessage.payload, List::class.java)
+            playerList = result as List<Player>?
+        }
     }
 
     @SuppressLint("CheckResult")
     fun players() {
-        println("Get Players")
-        if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
-            return
-        }
-        stompClient?.send(APP_GET_PLAYERS, "")?.subscribe(
-            {
-                _errorMessages.tryEmit("Players Requested")
-            },
-            { error -> _errorMessages.tryEmit("Error from trying to get all Players: ${error.message}") })
-
+        stompClient?.send(APP_GET_PLAYERS, "")?.subscribe()
     }
 
     @SuppressLint("CheckResult")
-    fun performMovement(lobbyId: String, moves: List<String>) {
-        println("Movein")
-        if (!_isConnected.value) {
-            _errorMessages.tryEmit("Not connected to server")
-            return
-        }
-        val request = PerformMoveResponse(player = player.value!!, moves = moves)
+    fun performMovement(lobbyId:String,moves: List<String>) {
+        val request = PerformMoveResponse(player = player.value!!, moves=moves)
         val payload = gson.toJson(request)
         val destination = "$APP_PERFORM_MOVE${lobbyId}"
-
-        stompClient?.send(destination, payload)?.subscribe(
-            {
-                _errorMessages.tryEmit("PerformMovement")
-            },
-            { error -> _errorMessages.tryEmit("Error from trying to get all Players: ${error.message}") })
-        //subscribeGetGameData(lobbyId)
-
+        stompClient?.send(destination, payload)?.subscribe()
     }
 
     fun subscribeToMovementUpdates(lobbyId: String, callback: (GameData) -> Unit) {
@@ -602,13 +565,7 @@ class WebSocketService {
                 _gameDataState.value = tempGameState
             }
         }
-        stompClient?.send(destination, payload)?.subscribe(
-            {
-            },
-            { error ->
-                _errorMessages.tryEmit("Failed to leave lobby: ${error.message}")
-            }
-        )
+        stompClient?.send(destination, payload)?.subscribe()
     }
 
     @SuppressLint("CheckResult")
@@ -617,37 +574,15 @@ class WebSocketService {
         val request = IsWallRequest(x, y)
         val payload = gson.toJson(request)
         val destination = "$APP_IS_WALL$lobbyId"
-        stompClient?.send(destination, payload)?.subscribe(
-            {
-
-            },
-            { error ->
-                _errorMessages.tryEmit("Failed to leave lobby: ${error.message}")
-            }
-        )
+        stompClient?.send(destination, payload)?.subscribe()
     }
 
     @SuppressLint("CheckResult")
     fun subscribeIsWall(lobbyId: String, onResult: (Boolean) -> Unit) {
-        val source = "$TOPIC_IS_WALL$lobbyId"
-        var disposable: Disposable? = null
-        disposable = stompClient?.topic(source)?.subscribe({ stompMessage ->
-            try {
-                val response = gson.fromJson(stompMessage.payload, Boolean::class.java)
-                Log.d("Debug", "Wall: $response")
-                onResult(response)
-            } catch (e: Exception) {
-                logMessage("Error parsing isWall message: ${e.message}")
-                onResult(false)
-            } finally {
-                // Abo nach *einer* Nachricht entfernen
-                disposable?.dispose()
-            }
-        }, { error ->
-            logMessage("Error in isWall subscription: ${error.message}")
-            onResult(false)
-            disposable?.dispose()
-        })
+        stompClient?.topic("$TOPIC_IS_WALL$lobbyId")?.subscribe { stompMessage ->
+            val response = gson.fromJson(stompMessage.payload, Boolean::class.java)
+            onResult(response)
+        }
     }
 
     @SuppressLint("CheckResult")

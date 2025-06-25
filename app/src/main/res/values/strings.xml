@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Cluedo</string>
     <string name="main_menu">Main Menu</string>
-    <string name="main_menu_sub_text">SE2 Project</string>
     <string name="lobby">Lobby</string>
     <string name="settings">Settings</string>
     <string name="create_lobby">Create Lobby</string>
@@ -11,9 +10,7 @@
     <string name="dice_roller">Dice Roller</string>
     <string name="roll_dice">Roll Dice</string>
     <string name="start_game">Start Game</string>
-    <string name="game_started">Game Started</string>
     <string name="not_enough_players">Not enough players to start the game. Need at least 3 players.</string>
-    <string name="can_start_game">Game can be started! You have enough players.</string>
     <string name="game">Game</string>
     <string name="game_in_progress">Game in progress…</string>
     <string name="players">Players:</string>
@@ -38,10 +35,28 @@
     <string name="suspects">Suspects</string>
     <string name="weapons">Weapons</string>
     <string name="rooms">Rooms</string>
+    <string name="no_players_available">No players available</string>
+    <string name="active_lobby_id">Active Lobby ID: %1$s</string>
+    <string name="active_lobby_id_empty">Active Lobby ID: -</string>
+    <string name="lobby_info_format">Lobby ID: %1$s\nHost: %2$s (%3$s, %4$s)\nPlayers (%5$d):\n%6$s</string>
+    <string name="lobby_info_empty">-</string>
+    <string name="player_list_item">  - %1$s (%2$s, %3$s)</string>
+    <string name="default_player_name">Player%1$d</string>
+    <string name="found_active_lobby">Found active lobby: %1$s</string>
+    <string name="joining_lobby">Joining lobby: %1$s</string>
+    <string name="no_active_lobby_found">No active lobby found. Please create a new lobby first.</string>
+    <string name="game_started_navigating">Game started! Navigating to game screen…</string>
+    <string name="error_navigating_to_game">Error navigating to game: %1$s</string>
+    <string name="version_text">v%1$s</string>
     <string name="solve_case">Solve the case</string>
     <string name="suspect">Suspect</string>
     <string name="notes">Notes</string>
     <string name="solve">Solve</string>
     <string name="make_a_suspicion">Make a suspicion</string>
-
+    <string name="version_number">v3.0</string>
+    <string name="active_lobby_id_text">Active Lobby ID: %1$s</string>
+    <plurals name="game_state_players">
+        <item quantity="one">Game state received with %1$d player</item>
+        <item quantity="other">Game state received with %1$d players</item>
+    </plurals>
 </resources>

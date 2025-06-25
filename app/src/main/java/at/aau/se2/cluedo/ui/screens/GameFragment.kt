@@ -13,7 +13,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import at.aau.se2.cluedo.data.models.BasicCard
 import at.aau.se2.cluedo.data.models.GameStartedResponse
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -40,7 +40,7 @@ class GameFragment : Fragment() {
 
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
-    private val lobbyViewModel: LobbyViewModel by activityViewModels()
+    private val lobbyViewModel: LobbyViewmodel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -190,61 +190,70 @@ class GameFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observe game state changes
-                launch {
-                    lobbyViewModel.gameState.collect { gameState ->
-                        if (gameState != null) {
-                            lobbyViewModel.logMessage("Game state updated: ${gameState.players.size} players in lobby ${gameState.lobbyId}")
-                            updatePlayersUI(gameState)
-                        } else {
-                            lobbyViewModel.logMessage("Game state is null in collector")
-                            binding.playersListTextView.text = "No players available"
-                            binding.gameStatusTextView.text = getString(R.string.game_in_progress)
-
-                            // Try to check if a game has started
-                            lobbyViewModel.checkGameStarted()
-                        }
-                    }
-                }
-
-                // Also observe the gameStarted flag
-                launch {
-                    lobbyViewModel.gameStarted.collect { gameStarted ->
-                        if (gameStarted) {
-                            lobbyViewModel.logMessage("Game started flag is true")
-                            // If the game is started but we don't have game state, try to get it
-                            if (lobbyViewModel.gameState.value == null) {
-                                lobbyViewModel.logMessage("Game started but no game state, trying to get it")
-                                // Try to use the lobby state players as a fallback
-                                val lobbyState = lobbyViewModel.lobbyState.value
-                                if (lobbyState != null) {
-                                    lobbyViewModel.logMessage("Using lobby state as fallback with ${lobbyState.players.size} players")
-                                    val playersList = lobbyState.players.joinToString("\n") { player ->
-                                        "  - ${player.name} (${player.character})"
-                                    }
-                                    binding.playersListTextView.text = playersList
-                                }
-                            }
-                        }
-                    }
-                }
-
-                launch {
-                    lobbyViewModel.errorMessages.collect { errorMessage ->
-                        showToast(errorMessage)
-                    }
-                }
-
-                launch {
-                    lobbyViewModel.lobbyState.collect { lobby ->
-                        val currentPlayer = lobby?.players?.find { it.isCurrentPlayer == true }
-                        val isInRoom = roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
-                        binding.makeSuspicionButton.isEnabled = isInRoom
-                    }
-                }
-
-
+                launch { handleGameStateChanges() }
+                launch { handleGameStartedChanges() }
+                launch { handleErrorMessages() }
+                launch { handleLobbyStateChanges() }
             }
+        }
+    }
+
+    private suspend fun handleGameStateChanges() {
+        lobbyViewModel.gameState.collect { gameState ->
+            if (gameState != null) {
+                lobbyViewModel.logMessage("Game state updated: ${gameState.players.size} players in lobby ${gameState.lobbyId}")
+                updatePlayersUI(gameState)
+            } else {
+                handleNullGameState()
+            }
+        }
+    }
+
+    private fun handleNullGameState() {
+        lobbyViewModel.logMessage("Game state is null in collector")
+        binding.playersListTextView.text = getString(R.string.no_players_available)
+        binding.gameStatusTextView.text = getString(R.string.game_in_progress)
+        lobbyViewModel.checkGameStarted()
+    }
+
+    private suspend fun handleGameStartedChanges() {
+        lobbyViewModel.gameStarted.collect { gameStarted ->
+            if (gameStarted) {
+                lobbyViewModel.logMessage("Game started flag is true")
+                handleGameStartedWithoutState()
+            }
+        }
+    }
+
+    private fun handleGameStartedWithoutState() {
+        if (lobbyViewModel.gameState.value == null) {
+            lobbyViewModel.logMessage("Game started but no game state, trying to get it")
+            useLobbyStateAsFallback()
+        }
+    }
+
+    private fun useLobbyStateAsFallback() {
+        val lobbyState = lobbyViewModel.lobbyState.value
+        if (lobbyState != null) {
+            lobbyViewModel.logMessage("Using lobby state as fallback with ${lobbyState.players.size} players")
+            val playersList = lobbyState.players.joinToString("\n") { player ->
+                "  - ${player.name} (${player.character})"
+            }
+            binding.playersListTextView.text = playersList
+        }
+    }
+
+    private suspend fun handleErrorMessages() {
+        lobbyViewModel.errorMessages.collect { errorMessage ->
+            showToast(errorMessage)
+        }
+    }
+
+    private suspend fun handleLobbyStateChanges() {
+        lobbyViewModel.lobbyState.collect { lobby ->
+            val currentPlayer = lobby?.players?.find { it.isCurrentPlayer == true }
+            val isInRoom = roomCoordinates.contains(Pair(currentPlayer?.x, currentPlayer?.y))
+            binding.makeSuspicionButton.isEnabled = isInRoom
         }
     }
 
