@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.collection.IntIntPair
 import at.aau.se2.cluedo.data.GameData
@@ -234,13 +235,15 @@ class GameBoard @JvmOverloads constructor(
 
         // Überprüfe, ob das Grid vorhanden und nicht leer ist
         if (grid == null || grid.isEmpty()) {
-            WebSocketService.getInstance().subscribeGetGameData(id.toString()) { gameData ->
+            WebSocketService.getInstance().subscribeGetGameBoard(id!!) { gameBoard ->
                 post {
-                    updateGameData(gameData)
+                    println("Gameboard found")
+
                 }
             }
             WebSocketService.getInstance().getGameBoard(id.toString())
-            return true // Verhindere Bewegung, wenn das Board noch nicht geladen ist.
+            Log.d("Debug", "GameBoard nicht vorhanden")
+            return isWall() // Verhindere Bewegung, wenn das Board noch nicht geladen ist.
         }
 
 
@@ -256,6 +259,7 @@ class GameBoard @JvmOverloads constructor(
 
         if(targetCell.cellType.equals(CellType.DOOR)){
             walkiIntoRoom(targetCell.room)
+            Log.d("Debug", "Bewegdich")
         }
         return (targetCell.cellType.equals(CellType.ROOM))||(targetCell.cellType.equals(CellType.WALL));
     }
@@ -267,7 +271,9 @@ class GameBoard @JvmOverloads constructor(
         //val coord: IntIntPair=gm.placeInRoom(players?.get(playerArrPos)!!,room, players!!)
         inRoom=true
     }
-
+    fun walkingOutOfRoom(){
+        inRoom=false;
+    }
     fun leaveRoom(){
         //WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.room!!.playerLeavesRoom(players?.get(playerArrPos)!!)
         playerPosY=outsideCoordY
@@ -314,8 +320,7 @@ class GameBoard @JvmOverloads constructor(
 
     fun updateGameData(gameData: GameData?) {
         this.players = gameData?.players ?: emptyList()
-
-        if(firstRound&& players != null && players!!.isNotEmpty()) {
+        if((firstRound||inRoom)&& players != null && players!!.isNotEmpty()) {
             playerPosX = players!!.get(playerArrPos).x
             playerPosY = players!!.get(playerArrPos).y
             firstRound=false
