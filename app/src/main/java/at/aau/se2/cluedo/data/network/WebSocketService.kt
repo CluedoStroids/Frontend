@@ -58,6 +58,11 @@ class WebSocketService {
         private const val TOPIC_DICE_RESULT = "/topic/diceResult"
         private const val APP_ROLL_DICE = "/app/rollDice"
 
+        // Cheating related constants
+        private const val TOPIC_CHEATING_PREFIX = "/topic/cheating/"
+        private const val TOPIC_PLAYER_RESET_PREFIX = "/topic/playerReset/"
+        private const val TOPIC_ELIMINATION_PREFIX = "/topic/elimination/"
+
         @Volatile
         private var instance: WebSocketService? = null
 
@@ -85,7 +90,7 @@ class WebSocketService {
     val lobbyState: StateFlow<Lobby?> = _lobbyState.asStateFlow()
 
     private var _gameDataState = MutableStateFlow<GameData?>(null)
-    val gameDataState = _gameDataState.asStateFlow()
+    val gameDataState: StateFlow<GameData?> = _gameDataState.asStateFlow()
 
     private var _player = MutableStateFlow<Player?>(null)           //Client player object
     val player: StateFlow<Player?> = _player.asStateFlow()  //Client player object
@@ -104,6 +109,10 @@ class WebSocketService {
 
     private var _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
     val errorMessages: SharedFlow<String> = _errorMessages.asSharedFlow()
+
+    // Cheating response flow
+    private var _cheatingResponse = MutableSharedFlow<Map<String, Any>>(replay = 0, extraBufferCapacity = 10)
+    val cheatingResponse: SharedFlow<Map<String, Any>> = _cheatingResponse.asSharedFlow()
 
     init {
         setupStompClient()
@@ -257,7 +266,11 @@ class WebSocketService {
         // Subscribe to turn-based topics for this lobby
         turnBasedService.subscribeToTurnBasedTopics(lobbyId)
 
+        // Subscribe to cheating-related topics
+        subscribeToCheatingTopics(lobbyId)
     }
+
+
 
     private fun subscribeToSpecificPlayerTopics(lobbyId: String, playerId: String) {
         logMessage("Subscribing to topics for player: $playerId")
@@ -597,6 +610,7 @@ class WebSocketService {
         }
     }
 
+
     @SuppressLint("CheckResult")
     fun subscribeGetGameData(lobbyId: String, callback: (GameData) -> Unit) {
         val gameStartedTopicPath = "$TOPIC_GAME_DATA_PREFIX$lobbyId"
@@ -628,20 +642,173 @@ class WebSocketService {
         })
     }
 
-        fun reportCheating(lobbyId: String, suspect: String, accuser: String) {
-            val message = SuspectCheating(
-                lobbyId = lobbyId,
-                suspect = suspect,
-                accuser = accuser
-            )
 
-            val payload = gson.toJson(message)
-            stompClient?.send("/app/cheating", payload)?.subscribe()
+
+    @SuppressLint("CheckResult")
+    private fun subscribeToCheatingTopics(lobbyId: String) {
+        // Subscribe to cheating reports
+        val cheatingTopic = "$TOPIC_CHEATING_PREFIX$lobbyId"
+        stompClient?.topic(cheatingTopic)?.subscribe({ stompMessage: StompMessage ->
+            try {
+                val response = gson.fromJson(stompMessage.payload, Map::class.java) as Map<String, Any>
+                Log.d("CHEATING", "Received cheating response: $response")
+
+                val type = response["type"] as? String
+                val suspect = response["suspect"] as? String
+                val accuser = response["accuser"] as? String
+                val valid = response["valid"] as? Boolean
+                val reason = response["reason"] as? String
+
+                Log.i("CHEATING", "=== CHEATING REPORT RESULT ===")
+                Log.i("CHEATING", "Type: $type")
+                Log.i("CHEATING", "Suspect: $suspect")
+                Log.i("CHEATING", "Accuser: $accuser")
+                Log.i("CHEATING", "Valid Report: $valid")
+                Log.i("CHEATING", "Reason: $reason")
+                Log.i("CHEATING", "==============================")
+
+                _cheatingResponse.tryEmit(response)
+
+                // Create enhanced message based on the result
+                val enhancedMessage = createCheatingReportMessage(accuser, suspect, valid, reason)
+                _errorMessages.tryEmit(enhancedMessage)
+
+            } catch (e: Exception) {
+                Log.e("CHEATING", "Error parsing cheating response: ${e.message}")
+                _errorMessages.tryEmit("Error processing cheating response: ${e.message}")
+            }
+        }, { error ->
+            Log.e("CHEATING", "Error in cheating subscription: ${error.message}")
+        })
+
+        // Subscribe to player reset notifications
+        val playerResetTopic = "$TOPIC_PLAYER_RESET_PREFIX$lobbyId"
+        stompClient?.topic(playerResetTopic)?.subscribe({ stompMessage: StompMessage ->
+            try {
+                val response = gson.fromJson(stompMessage.payload, Map::class.java) as Map<String, Any>
+                val playerName = response["player"] as? String
+                val x = (response["x"] as? Double)?.toInt()
+                val y = (response["y"] as? Double)?.toInt()
+
+                Log.i("PLAYER_RESET", "=== PLAYER RESET ===")
+                Log.i("PLAYER_RESET", "Player: $playerName")
+                Log.i("PLAYER_RESET", "New Position: ($x, $y)")
+                Log.i("PLAYER_RESET", "===================")
+
+                val resetMessage = "🔄 Player $playerName was reset to position ($x, $y) due to cheating violation"
+                _errorMessages.tryEmit(resetMessage)
+            } catch (e: Exception) {
+                Log.e("PLAYER_RESET", "Error parsing player reset: ${e.message}")
+            }
+        }, { error ->
+            Log.e("PLAYER_RESET", "Error in player reset subscription: ${error.message}")
+        })
+
+        // Subscribe to elimination notifications
+        val eliminationTopic = "$TOPIC_ELIMINATION_PREFIX$lobbyId"
+        stompClient?.topic(eliminationTopic)?.subscribe({ stompMessage: StompMessage ->
+            try {
+                val response = gson.fromJson(stompMessage.payload, Map::class.java) as Map<String, Any>
+                val playerName = response["player"] as? String
+                val reason = response["reason"] as? String
+
+                Log.i("ELIMINATION", "=== PLAYER ELIMINATED ===")
+                Log.i("ELIMINATION", "Player: $playerName")
+                Log.i("ELIMINATION", "Reason: $reason")
+                Log.i("ELIMINATION", "========================")
+
+                val eliminationMessage = "Player $playerName has been eliminated from the game for $reason"
+                _errorMessages.tryEmit(eliminationMessage)
+            } catch (e: Exception) {
+                Log.e("ELIMINATION", "Error parsing elimination: ${e.message}")
+            }
+        }, { error ->
+            Log.e("ELIMINATION", "Error in elimination subscription: ${error.message}")
+        })
+    }
+
+    /**
+     * Creates an enhanced cheating report message with detailed information
+     */
+    private fun createCheatingReportMessage(
+        accuser: String?,
+        suspect: String?,
+        valid: Boolean?,
+        reason: String?
+    ): String {
+        val accuserName = accuser ?: "Unknown"
+        val suspectName = suspect ?: "Unknown"
+
+        return when {
+            valid == true -> {
+                val reasonText = when (reason) {
+                    "SUCCESS" -> "making multiple suggestions in the same room"
+                    else -> reason ?: "cheating behavior detected"
+                }
+                "✅ CheatingReport: $accuserName accuses $suspectName of cheating which was TRUE - Reason: $reasonText"
+            }
+            valid == false -> {
+                val reasonText = when (reason) {
+                    "NOT_IN_ROOM" -> "$accuserName is not in a room and cannot report cheating"
+                    "NOT_IN_SAME_ROOM" -> "$accuserName and $suspectName are not in the same room"
+                    "SUCCESS" -> "no cheating behavior was detected"
+                    else -> "the accusation was unfounded"
+                }
+                "❌ CheatingReport: $accuserName accuses $suspectName of cheating which was FALSE - Reason: $reasonText"
+            }
+            else -> {
+                "❓ CheatingReport: $accuserName accuses $suspectName of cheating - Status: UNKNOWN"
+            }
         }
-        fun subscribe(topic: String, callback: (String) -> Unit) {
-        stompClient?.topic(topic)?.subscribe { stompMessage ->
-            callback(stompMessage.payload)
+    }
+
+    // Also enhance the reportCheating method to show initial report:
+    @SuppressLint("CheckResult")
+    fun reportCheating(lobbyId: String, suspect: String, accuser: String) {
+        Log.d("CHEATING", "Preparing to report cheating - Lobby: $lobbyId, Suspect: $suspect, Accuser: $accuser")
+
+        if (!_isConnected.value) {
+            Log.e("CHEATING", "Cannot report cheating: Not connected to server")
+            _errorMessages.tryEmit("Cannot report cheating: Not connected to server")
+            return
         }
+
+        val message = SuspectCheating(
+            lobbyId = lobbyId,
+            suspect = suspect,
+            accuser = accuser
+        )
+
+        val payload = gson.toJson(message)
+        Log.d("CHEATING", "Sending cheating report payload: $payload")
+
+        stompClient?.send("/app/cheating", payload)?.subscribe(
+            {
+                Log.i("CHEATING", "Cheating report sent successfully")
+                // Enhanced initial report message
+                _errorMessages.tryEmit("📋 CheatingReport: $accuser has reported $suspect for suspected cheating. Investigating...")
+            },
+            { error ->
+                Log.e("CHEATING", "Failed to send cheating report: ${error.message}", error)
+                _errorMessages.tryEmit("Failed to send cheating report: ${error.message}")
+            }
+        )
+    }
+
+    @SuppressLint("CheckResult")
+    fun subscribe(topic: String, callback: (String) -> Unit) {
+        Log.d("WEBSOCKET", "Subscribing to generic topic: $topic")
+
+        stompClient?.topic(topic)?.subscribe(
+            { stompMessage ->
+                Log.d("WEBSOCKET", "Received message on topic $topic: ${stompMessage.payload}")
+                callback(stompMessage.payload)
+            },
+            { error ->
+                Log.e("WEBSOCKET", "Error subscribing to topic $topic: ${error.message}", error)
+                _errorMessages.tryEmit("Error subscribing to $topic: ${error.message}")
+            }
+        )
     }
 
 }
