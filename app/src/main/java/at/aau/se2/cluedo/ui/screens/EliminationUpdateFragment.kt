@@ -61,7 +61,6 @@ class EliminationUpdateFragment : Fragment() {
                 Toast.makeText(context, "Main menu not found.", Toast.LENGTH_SHORT).show()
             }
         }
-
         exitButton.setOnClickListener {
             requireActivity().finishAffinity()
         }

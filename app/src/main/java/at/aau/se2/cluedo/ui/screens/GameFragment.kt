@@ -91,7 +91,6 @@ class GameFragment : Fragment() {
             } else {
                 lobbyViewModel.logMessage("Both game state and lobby state are null")
             }
-
             // Try to check if a game has started
             lobbyViewModel.checkGameStarted()
         }

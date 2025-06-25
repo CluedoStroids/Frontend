@@ -46,14 +46,5 @@ class LobbyRequestsTests {
         assertEquals(player, request.player)
     }
 
-    @Test
-    fun testIsWallRequest() {
-        val defaultRequest = IsWallRequest()
-        assertEquals(0, defaultRequest.x)
-        assertEquals(0, defaultRequest.y)
 
-        val customRequest = IsWallRequest(x = 5, y = 10)
-        assertEquals(5, customRequest.x)
-        assertEquals(10, customRequest.y)
-    }
 }

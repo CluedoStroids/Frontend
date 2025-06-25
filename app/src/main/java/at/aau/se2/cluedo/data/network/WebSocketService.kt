@@ -9,9 +9,9 @@ import at.aau.se2.cluedo.data.models.ActiveLobbiesResponse
 import at.aau.se2.cluedo.data.models.CanStartGameResponse
 import at.aau.se2.cluedo.data.models.CreateLobbyRequest
 import at.aau.se2.cluedo.data.models.DiceResult
+import at.aau.se2.cluedo.data.models.GameBoardCell
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.GetActiveLobbiesRequest
-import at.aau.se2.cluedo.data.models.IsWallRequest
 import at.aau.se2.cluedo.data.models.JoinLobbyRequest
 import at.aau.se2.cluedo.data.models.LeaveLobbyRequest
 import at.aau.se2.cluedo.data.models.Lobby
@@ -22,6 +22,7 @@ import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.models.StartGameRequest
 import at.aau.se2.cluedo.data.models.SuspectCheating
 import com.google.gson.Gson
+import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -52,8 +53,8 @@ class WebSocketService {
         private const val TOPIC_GAME_DATA_PREFIX = "/topic/gameData/"
         private const val APP_GET_GAME_DATA = "/app/getGameData/"
 
-        private const val APP_IS_WALL = "/app/isWall/"
-        private const val TOPIC_IS_WALL = "/topic/isWall/"
+        private const val APP_GET_GAMEBOARD="/app/getGameBoardGrid/"
+        private const val TOPIC_GAMEBOARD="/topic/gameBoard/"
 
         private const val TOPIC_DICE_RESULT = "/topic/diceResult"
         private const val APP_ROLL_DICE = "/app/rollDice"
@@ -68,7 +69,7 @@ class WebSocketService {
 
         private const val TOPIC_GET_PLAYERS = "/topic/players"
         private const val APP_GET_PLAYERS = "/app/players"
-        private const val APP_PERFORM_MOVE = "/app/performMovement/"
+        private const val   APP_PERFORM_MOVE = "/app/performMovement/"
     }
 
     private val gson = Gson()
@@ -134,8 +135,8 @@ class WebSocketService {
 
                         // Initialize turn-based service
                         turnBasedService.initialize(stompClient!!)
-                        _player.value?.name?.let { playerName ->
-                            turnBasedService.setCurrentPlayer(_player.value!!)
+                        _player.value?.let { player ->
+                            turnBasedService.setCurrentPlayer(player)
                         }
 
                         subscribeToGeneralTopics()
@@ -290,7 +291,7 @@ class WebSocketService {
                     Log.i("START", "Player in game: ${player.name} (${player.character})")
                 }
 
-                subscribeToSpecificPlayerTopics(lobbyId, player.value?.playerID.toString())
+                subscribeToSpecificPlayerTopics(lobbyId, _player.value?.playerID ?: "")
 
                 // Force a delay to ensure UI updates before navigation
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -363,7 +364,6 @@ class WebSocketService {
             }
         }
         _player.value = player
-
         turnBasedService.setCurrentPlayer(player)
         sendRequest(destination, payload)
     }
@@ -553,7 +553,7 @@ class WebSocketService {
     }
 
 
-    fun gameData(lobbyId: String, player: Player) {
+    fun getGameData(lobbyId: String, player: Player) {
         if (!_isConnected.value || lobbyId.isBlank()) {
             _errorMessages.tryEmit("Cannot get game Data: Not connected or invalid lobby ID")
             return
@@ -581,21 +581,45 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    fun isWall(lobbyId: String, x: Int, y: Int) {
+    fun getGameBoard(lobbyId:String) {
+        val destination = "$APP_GET_GAMEBOARD$lobbyId"
+        stompClient?.send(destination)?.subscribe(
+            {
 
-        val request = IsWallRequest(x, y)
-        val payload = gson.toJson(request)
-        val destination = "$APP_IS_WALL$lobbyId"
-        stompClient?.send(destination, payload)?.subscribe()
+            },
+            { error ->
+                _errorMessages.tryEmit("Failed to leave lobby: ${error.message}")
+            }
+        )
     }
 
     @SuppressLint("CheckResult")
-    fun subscribeIsWall(lobbyId: String, onResult: (Boolean) -> Unit) {
-        stompClient?.topic("$TOPIC_IS_WALL$lobbyId")?.subscribe { stompMessage ->
-            val response = gson.fromJson(stompMessage.payload, Boolean::class.java)
-            onResult(response)
+
+    fun subscribeGetGameBoard(lobbyId: String,onResult: (Array<Array<GameBoardCell>>) -> Unit) {
+        val source = "$TOPIC_GAMEBOARD$lobbyId"
+
+        var disposable: Disposable? = null
+            disposable=stompClient?.topic(source)?.subscribe({ stompMessage ->
+            try {
+                val response = gson.fromJson(stompMessage.payload, Array<Array<GameBoardCell>>::class.java)
+                Log.d("Debug", "GameBoard: $response")
+                gameDataState.value?.grid = response
+                println(gameDataState.value?.grid!!)
+
+            } catch (e: Exception) {
+                logMessage("Error parsing GameBoard message: ${e.message}")
+                //onResult(none)
+            } finally {
+                // Abo nach *einer* Nachricht entfernen
+                disposable?.dispose()
+            }
+        }, { error ->
+            logMessage("Error in isWall subscription: ${error.message}")
+            //onResult(false)
+            disposable?.dispose()
+        })
+
         }
-    }
 
     @SuppressLint("CheckResult")
     fun subscribeGetGameData(lobbyId: String, callback: (GameData) -> Unit) {

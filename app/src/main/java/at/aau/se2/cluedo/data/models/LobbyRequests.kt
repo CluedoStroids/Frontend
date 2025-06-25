@@ -21,7 +21,3 @@ data class GetActiveLobbiesRequest(
 data class StartGameRequest(
     @SerializedName("player") override val player: Player
 ) : PlayerRequest
-data class IsWallRequest(
-    @SerializedName("x") var x: Int = 0,
-    @SerializedName("y") var y: Int = 0
-)

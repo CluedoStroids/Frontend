@@ -5,12 +5,16 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.media.MediaDrm.LogMessage
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import androidx.collection.IntIntPair
 import at.aau.se2.cluedo.data.GameData
+import at.aau.se2.cluedo.data.models.CellType
+import at.aau.se2.cluedo.data.models.GameBoard
+import at.aau.se2.cluedo.data.models.GameBoardCell
 import at.aau.se2.cluedo.data.models.Player
+import at.aau.se2.cluedo.data.models.Room
 import at.aau.se2.cluedo.data.network.WebSocketService
 import com.example.myapplication.R
 
@@ -25,6 +29,7 @@ class GameBoard @JvmOverloads constructor(
     private var gameBoardBitmap:Bitmap? = null
     private val playersBitmap= arrayListOf<Bitmap>()
 
+
     //Player and Board variables
     private var playerX: Float = 0f
     private var playerY: Float = 0f
@@ -32,40 +37,56 @@ class GameBoard @JvmOverloads constructor(
     private var boardPosY:Float = 0f
     private var sizeX:Int=1080
     private var sizeY:Int=1080
-    private var gridScale:Float= 0.9f
+    private var gridScale:Float= 0.8f
     private var playerPosX=24
     private var playerPosY=10
-    private var gridPosX=playerPosX
-    private var gridPosY=playerPosY
     var gridSize= sizeX*gridScale
-    var move:Boolean=false
     private var playerSizeX=(gridSize/25).toInt()
     private var playerSizeY=(gridSize/25).toInt()
+
 
     private var players:List<Player>?= ArrayList()
     private var moves= arrayListOf<String>()
 
     private var playerArrPos:Int=0
     private var firstRound:Boolean=true
+    private var inRoom: Boolean=false
+    private var inDoor: Boolean=false
+    private var leaveRoom: Boolean=false
+    private var outsideCoordX=0
+    private var outsideCoordY=0
+    var id:String? =""
     //Button
 
     fun init() {
         //WebSocketService.getInstance().players()
-        var id = WebSocketService.getInstance().lobbyState.value?.id
+        id = WebSocketService.getInstance().lobbyState.value?.id
         var player = WebSocketService.getInstance().getPlayer()
         WebSocketService.getInstance().subscribeGetGameData(id!!) { gameData ->
             post {
                 updateGameData(gameData)
             }
         }
+
         WebSocketService.getInstance().subscribeToMovementUpdates(id!!) { gameData ->
             post {
                 updateGameData(gameData)
+                if (inRoom&&leaveRoom){
+                    updateGameData(gameData)
+                }
             }
         }
 
+        WebSocketService.getInstance().getGameBoard(id!!)
+
+        WebSocketService.getInstance().subscribeGetGameBoard(id!!){
+            gameBoard-> post{
+            println("Gameboard found")
+        }
+        }
+
         if (player != null&&id!=null) {
-            WebSocketService.getInstance().gameData(id,player)
+            WebSocketService.getInstance().getGameData(id!!,player)
         }
 
 
@@ -101,130 +122,209 @@ class GameBoard @JvmOverloads constructor(
         for(b in 0..(playersBitmap.size-1)){
             playersBitmap[b]=playersBitmap.get(b).let { Bitmap.createScaledBitmap(it,playerSizeX,playerSizeY,false) }
         }
-        gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
 
+        gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
     }
 
     @SuppressLint("SuspiciousIndentation")
     fun moveUp() {
-        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
-        playerPosY--
-
-        // Grenzen prüfen
-        if (playerPosY < 0) {
-            playerPosY = 0
+        if(inRoom&&!inDoor) {
+            leaveRoom()
+            moves.add("W")
+            WebSocketService.getInstance().performMovement(id!!, moves)
             invalidate()
             return
         }
-
-        // Wand-Abfrage auslösen
-        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
-
-        // Einmalige Antwort verarbeiten
-        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
-            if (isWall) {
-                playerPosY++ // Bewegung rückgängig machen
-            } else {
-                moves.add("W") // Bewegung merken
-            }
-
-            invalidate() // Zeichenfläche aktualisieren
+        else{
+            inDoor=false
         }
+        playerPosY--
+        // Einmalige Antwort verarbeiten
+            if(isWall()) {
+                playerPosY++
+            }else{
+                moves.add("W") // Bewegung merken
+                // Grenzen prüfen
+                if (playerPosY < 0) {
+                    playerPosY = 0
+                }
+                WebSocketService.getInstance().performMovement(id!!, moves)
+                if(!inRoom){
+                    safeCoord()
+                }
+            }
+            moves=ArrayList()
+            invalidate() // Zeichenfläche aktualisieren
     }
-    fun moveDown(){
-        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
-        playerPosY++
 
-        // Grenzen prüfen
+    fun moveDown(){
+
+        if(inRoom&&!inDoor) {
+            leaveRoom()
+            moves.add("S")
+            WebSocketService.getInstance().performMovement(id!!, moves)
+            invalidate()
+            return
+        }
+        else{
+            inDoor=false
+        }
+        playerPosY++
         if (playerPosY > 25) {
             playerPosY = 24
+        }
+        // Einmalige Antwort verarbeite
+            if (isWall()) {
+                playerPosY--
+            }else{
+                moves.add("S") // Bewegung merken
+                WebSocketService.getInstance().performMovement(id!!, moves)
+                if(!inRoom){
+                    safeCoord()
+                }
+            }
+            moves=ArrayList()
+            invalidate() // Zeichenfläche aktualisieren
+
+    }
+
+    fun moveLeft(){
+
+        if(inRoom&&!inDoor) {
+            leaveRoom()
+            moves.add("A")
+            WebSocketService.getInstance().performMovement(id!!, moves)
+
             invalidate()
             return
         }
-
-        // Wand-Abfrage auslösen
-        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
-
-        // Einmalige Antwort verarbeiten
-        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
-            if (isWall) {
-                playerPosY-- // Bewegung rückgängig machen
-            } else {
-                moves.add("S") // Bewegung merken
-            }
-
-            invalidate() // Zeichenfläche aktualisieren
+        else{
+            inDoor=false
         }
-    }
-    fun moveLeft(){
-        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
         playerPosX--
-
-        // Grenzen prüfen
         if (playerPosX < 0) {
             playerPosX = 0
+        }
+            if (isWall()) {
+                playerPosX++
+            }
+            else{
+                moves.add("A") // Bewegung merken
+                // Grenzen prüfen
+                WebSocketService.getInstance().performMovement(id!!, moves)
+                if(!inRoom){
+                    safeCoord()
+                }
+            }
+            moves=ArrayList()
+            invalidate() // Zeichenfläche aktualisieren
+    }
+
+    fun moveRight(){
+
+        if(inRoom&&!inDoor) {
+            leaveRoom()
+            moves.add("D")
+            WebSocketService.getInstance().performMovement(id!!, moves)
             invalidate()
             return
         }
-
-        // Wand-Abfrage auslösen
-        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
-
-        // Einmalige Antwort verarbeiten
-        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
-            if (isWall) {
-                playerPosX++ // Bewegung rückgängig machen
-            } else {
-                moves.add("A") // Bewegung merken
-            }
-
-            invalidate() // Zeichenfläche aktualisieren
+        else{
+            inDoor=false
         }
-    }
-    fun moveRight(){
-        val lobbyId = WebSocketService.getInstance().lobbyState.value?.id ?: return
         playerPosX++
-
         // Grenzen prüfen
         if (playerPosX > 25) {
             playerPosX = 24
-            invalidate()
-            return
         }
-
-        // Wand-Abfrage auslösen
-        WebSocketService.getInstance().isWall(lobbyId, playerPosX, playerPosY)
-
         // Einmalige Antwort verarbeiten
-        WebSocketService.getInstance().subscribeIsWall(lobbyId) { isWall ->
-            if (isWall) {
-                playerPosX-- // Bewegung rückgängig machen
-            } else {
+            if (isWall()) {
+                playerPosX--
+            }else{
                 moves.add("D") // Bewegung merken
+                WebSocketService.getInstance().performMovement(id!!, moves)
+                if(!inRoom){
+                    safeCoord()
+                }
             }
-
+            moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
         }
-    }
+
     fun performMoveClicked(){
         //gridScale=2f
-        calcSize()
         //move=true
+        calcSize()
         moves=ArrayList()
         invalidate()
     }
 
 
+    fun isWall(): Boolean{
+        val gameData = WebSocketService.getInstance().gameDataState.value
+        val grid = gameData?.grid // Get the grid, can be null
+        // Überprüfe, ob das Grid vorhanden und nicht leer ist
+        if (grid == null || grid.isEmpty()) {
+            WebSocketService.getInstance().subscribeGetGameBoard(id!!) { gameBoard ->
+                post {
+                    println("Gameboard found")
+
+                }
+            }
+            WebSocketService.getInstance().getGameBoard(id.toString())
+            Log.d("Debug", "GameBoard nicht vorhanden")
+            return isWall() // Verhindere Bewegung, wenn das Board noch nicht geladen ist.
+        }
+
+
+
+        val column = grid[playerPosX] // Jetzt ist column ein Array
+
+        // Und jetzt die y-Koordinate prüfen
+        val y = playerPosY+1  // Beachten Sie die Anmerkung zu +1
+
+
+        // Jetzt ist der Zugriff sicher
+        val targetCell = grid[playerPosX][y]
+
+        if(targetCell.cellType.equals(CellType.DOOR)){
+            walkiIntoRoom(targetCell.room)
+            inDoor=true
+            Log.d("Debug", "Bewegdich")
+        }
+        return (targetCell.cellType.equals(CellType.ROOM))||(targetCell.cellType.equals(CellType.WALL));
+    }
+
+
+    fun walkiIntoRoom(room: Room)
+    {
+        //val gm: GameBoard = GameBoard();
+        //val coord: IntIntPair=gm.placeInRoom(players?.get(playerArrPos)!!,room, players!!)
+        inRoom=true
+    }
+
+    fun leaveRoom(){
+        //WebSocketService.getInstance().gameDataState.value?.grid[playerPosX][playerPosY]?.room!!.playerLeavesRoom(players?.get(playerArrPos)!!)
+        inRoom=false;
+        leaveRoom=true
+        invalidate()
+    }
+
+    fun safeCoord(){
+        outsideCoordY=playerPosY;
+        outsideCoordX=playerPosX;
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         // Update position if view size changes
-
         playerBitmap?.let {
             playerX = (width - it.width) / 2f
             playerY = (height - it.height) / 2f
         }
 
     }
+
     fun calcSize(){
         gridSize= sizeX*gridScale
         playerSizeX=(gridSize/25).toInt()
@@ -239,21 +339,31 @@ class GameBoard @JvmOverloads constructor(
         gameBoardBitmap = gameBoardBitmap?.let { Bitmap.createScaledBitmap(it,(sizeX*gridScale).toInt(),(sizeY*gridScale).toInt(),false) }
     }
     fun done(){
-        var id = WebSocketService.getInstance().lobbyState.value?.id
+        var lobbyId = WebSocketService.getInstance().lobbyState.value?.id
 
-        if (id != null) {
-            WebSocketService.getInstance().performMovement(id,moves)
+        if (lobbyId != null) {
+            WebSocketService.getInstance().performMovement(lobbyId, moves)
         }
 
         invalidate()
     }
+
     fun updateGameData(gameData: GameData?) {
         this.players = gameData?.players ?: emptyList()
-        if(firstRound&& players != null && players!!.isNotEmpty()) {
+        if((firstRound||inRoom||leaveRoom)&& players != null && players!!.isNotEmpty()) {
             playerPosX = players!!.get(playerArrPos).x
             playerPosY = players!!.get(playerArrPos).y
             firstRound=false
+            //if(leaveRoom==true)
+                //inDoor=true;
+            leaveRoom=false
+
         }
+        if(playerPosX != players!!.get(playerArrPos).x || playerPosY != players!!.get(playerArrPos).y ){
+            playerPosX = players!!.get(playerArrPos).x
+            playerPosY = players!!.get(playerArrPos).y
+        }
+
         // ggf. Bitmap aktualisieren oder andere Werte setzen
         invalidate()
     }
@@ -261,8 +371,6 @@ class GameBoard @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         calcSize()
-
-
             gameBoardBitmap?.let {
                 boardPosX = (canvas.width - it.width) / 2f
                 boardPosY = (canvas.height - it.height) / 2f
@@ -291,13 +399,6 @@ class GameBoard @JvmOverloads constructor(
                     canvas.drawBitmap(it, playersx, playersy, null) // Draw the bitmap
                 }
             }
-    }
-
-    // Method to update player position (example)
-    fun setPlayerPosition(x: Float, y: Float) {
-        playerX = x
-        playerY = y
-        invalidate() // Request a redraw of the view
     }
 
 }
