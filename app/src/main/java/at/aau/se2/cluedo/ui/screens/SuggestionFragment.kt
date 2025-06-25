@@ -38,8 +38,6 @@ class SuggestionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val currentPlayer = lobbyViewModel.lobbyState.value?.players?.find { it.isCurrentPlayer == true }
-
         /*
         if (!lobbyViewModel.isPlayerInRoom(currentPlayer) || !lobbyViewModel.canMakeSuggestion()) {
             Toast.makeText(context, "You can't make another suggestion in this room.", Toast.LENGTH_LONG).show()
