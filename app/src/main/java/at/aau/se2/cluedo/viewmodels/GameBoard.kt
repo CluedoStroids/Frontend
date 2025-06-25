@@ -36,7 +36,7 @@ class GameBoard @JvmOverloads constructor(
     private var boardPosY:Float = 0f
     private var sizeX:Int=1080
     private var sizeY:Int=1080
-    private var gridScale:Float= 0.9f
+    private var gridScale:Float= 0.8f
     private var playerPosX=24
     private var playerPosY=10
     var gridSize= sizeX*gridScale
@@ -52,11 +52,12 @@ class GameBoard @JvmOverloads constructor(
     private var inRoom: Boolean=false
     private var outsideCoordX=0
     private var outsideCoordY=0
+    var id:String? =""
     //Button
 
     fun init() {
         //WebSocketService.getInstance().players()
-        var id = WebSocketService.getInstance().lobbyState.value?.id
+        id = WebSocketService.getInstance().lobbyState.value?.id
         var player = WebSocketService.getInstance().getPlayer()
         WebSocketService.getInstance().subscribeGetGameData(id!!) { gameData ->
             post {
@@ -74,10 +75,15 @@ class GameBoard @JvmOverloads constructor(
         }
 
         WebSocketService.getInstance().getGameBoard(id!!)
-        WebSocketService.getInstance().subscribeGetGameBoard(id!!)
+
+        WebSocketService.getInstance().subscribeGetGameBoard(id!!){
+            gameBoard-> post{
+            println("Gameboard found")
+        }
+        }
 
         if (player != null&&id!=null) {
-            WebSocketService.getInstance().getGameData(id,player)
+            WebSocketService.getInstance().getGameData(id!!,player)
         }
 
 
@@ -135,9 +141,8 @@ class GameBoard @JvmOverloads constructor(
                 if (playerPosY < 0) {
                     playerPosY = 0
                 }
-                if (id != null) {
-                    WebSocketService.getInstance().performMovement(moves)
-                }
+                WebSocketService.getInstance().performMovement(moves)
+
             }
             moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
@@ -159,10 +164,8 @@ class GameBoard @JvmOverloads constructor(
                 playerPosY--
             }else{
                 moves.add("S") // Bewegung merken
+                WebSocketService.getInstance().performMovement(moves)
 
-                if (id != null) {
-                    WebSocketService.getInstance().performMovement(moves)
-                }
             }
             moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
@@ -186,9 +189,8 @@ class GameBoard @JvmOverloads constructor(
             else{
                 moves.add("A") // Bewegung merken
                 // Grenzen prüfen
-                if (id != null) {
-                    WebSocketService.getInstance().performMovement(moves)
-                }
+                WebSocketService.getInstance().performMovement(moves)
+
             }
             moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
@@ -211,11 +213,8 @@ class GameBoard @JvmOverloads constructor(
                 playerPosX--
             }else{
                 moves.add("D") // Bewegung merken
-                if (id != null) {
-                    WebSocketService.getInstance().performMovement(moves)
-                }
+                WebSocketService.getInstance().performMovement(moves)
             }
-
             moves=ArrayList()
             invalidate() // Zeichenfläche aktualisieren
         }
@@ -230,15 +229,35 @@ class GameBoard @JvmOverloads constructor(
 
 
     fun isWall(): Boolean{
-        var grid:Array<Array<GameBoardCell>> = WebSocketService.getInstance().gameDataState.value?.grid!!
-            val y = playerPosY+1
-            if(grid.get(playerPosX).get(y).cellType.equals(
-                    CellType.DOOR)){
-                walkiIntoRoom(grid.get(playerPosX).get(y).room)
+        val gameData = WebSocketService.getInstance().gameDataState.value
+        val grid = gameData?.grid // Get the grid, can be null
+
+        // Überprüfe, ob das Grid vorhanden und nicht leer ist
+        if (grid == null || grid.isEmpty()) {
+            WebSocketService.getInstance().subscribeGetGameData(id.toString()) { gameData ->
+                post {
+                    updateGameData(gameData)
+                }
             }
-            return (grid.get(playerPosX).get(y).cellType.equals(
-                CellType.ROOM))||(grid.get(playerPosX).get(y).cellType.equals(
-                CellType.WALL));
+            WebSocketService.getInstance().getGameBoard(id.toString())
+            return true // Verhindere Bewegung, wenn das Board noch nicht geladen ist.
+        }
+
+
+
+        val column = grid[playerPosX] // Jetzt ist column ein Array
+
+        // Und jetzt die y-Koordinate prüfen
+        val y = playerPosY  // Beachten Sie die Anmerkung zu +1
+
+
+        // Jetzt ist der Zugriff sicher
+        val targetCell = grid[playerPosX][y]
+
+        if(targetCell.cellType.equals(CellType.DOOR)){
+            walkiIntoRoom(targetCell.room)
+        }
+        return (targetCell.cellType.equals(CellType.ROOM))||(targetCell.cellType.equals(CellType.WALL));
     }
 
 

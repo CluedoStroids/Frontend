@@ -71,7 +71,7 @@ class WebSocketService {
 
         private const val TOPIC_GET_PLAYERS = "/topic/players"
         private const val APP_GET_PLAYERS = "/app/players"
-        private const val APP_PERFORM_MOVE = "/app/performMovement/"
+        private const val   APP_PERFORM_MOVE = "/app/performMovement/"
     }
 
     private val gson = Gson()
@@ -639,9 +639,10 @@ class WebSocketService {
     }
 
     @SuppressLint("CheckResult")
-    // onResult: (Array<Array<GameBoardCell>>) -> Unit
-    fun subscribeGetGameBoard(lobbyId: String) {
+
+    fun subscribeGetGameBoard(lobbyId: String,onResult: (Array<Array<GameBoardCell>>) -> Unit) {
         val source = "$TOPIC_GAMEBOARD$lobbyId"
+
         var disposable: Disposable? = null
             disposable=stompClient?.topic(source)?.subscribe({ stompMessage ->
             try {
