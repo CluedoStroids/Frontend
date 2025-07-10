@@ -7,8 +7,8 @@ data class AccusationRequest(
     @SerializedName("lobbyId")
     val lobbyId: String = "",
 
-    @SerializedName("playerName")
-    val playerName: String = "",
+    @SerializedName("username")
+    val username: String = "",
 
     @SerializedName("suspect")
     val suspect: String = "",

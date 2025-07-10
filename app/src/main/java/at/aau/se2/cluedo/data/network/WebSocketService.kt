@@ -19,11 +19,9 @@ import at.aau.se2.cluedo.data.models.LobbyStatus
 import at.aau.se2.cluedo.data.models.PerformMoveResponse
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.PlayerColor
-import at.aau.se2.cluedo.data.models.AccusationRequest
 import at.aau.se2.cluedo.data.models.StartGameRequest
 import at.aau.se2.cluedo.data.models.SuspectCheating
 import com.google.gson.Gson
-import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -55,8 +53,8 @@ class WebSocketService {
         private const val TOPIC_GAME_DATA_PREFIX = "/topic/gameData/"
         private const val APP_GET_GAME_DATA = "/app/getGameData/"
 
-        private const val APP_GET_GAMEBOARD="/app/getGameBoardGrid/"
-        private const val TOPIC_GAMEBOARD="/topic/gameBoard/"
+        private const val APP_IS_WALL = "/app/isWall/"
+        private const val TOPIC_IS_WALL = "/topic/isWall/"
 
         private const val TOPIC_DICE_RESULT = "/topic/diceResult"
         private const val APP_ROLL_DICE = "/app/rollDice"
@@ -81,31 +79,31 @@ class WebSocketService {
     // Turn-based functionality
     private val turnBasedService = TurnBasedWebSocketService.getInstance()
 
-    private val _isConnected = MutableStateFlow(false)
+    private var _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
-    private val _lobbyState = MutableStateFlow<Lobby?>(null)
+    private var _lobbyState = MutableStateFlow<Lobby?>(null)
     val lobbyState: StateFlow<Lobby?> = _lobbyState.asStateFlow()
 
-    private val _gameDataState = MutableStateFlow<GameData?>(null)
+    private var _gameDataState = MutableStateFlow<GameData?>(null)
     val gameDataState = _gameDataState.asStateFlow()
 
-    val _player = MutableStateFlow<Player?>(null)           //Client player object
+    private var _player = MutableStateFlow<Player?>(null)           //Client player object
     val player: StateFlow<Player?> = _player.asStateFlow()  //Client player object
 
-    private val _createdLobbyId = MutableStateFlow<String?>(null)
+    private var _createdLobbyId = MutableStateFlow<String?>(null)
     val createdLobbyId: StateFlow<String?> = _createdLobbyId.asStateFlow()
 
-    private val _canStartGame = MutableStateFlow(false)
+    private var _canStartGame = MutableStateFlow(false)
     val canStartGame: StateFlow<Boolean> = _canStartGame.asStateFlow()
 
-    private val _gameStarted = MutableStateFlow(false)
+    private var _gameStarted = MutableStateFlow(false)
     val gameStarted: StateFlow<Boolean> = _gameStarted.asStateFlow()
 
-    private val _gameState = MutableStateFlow<GameStartedResponse?>(null)
+    private var _gameState = MutableStateFlow<GameStartedResponse?>(null)
     val gameState: StateFlow<GameStartedResponse?> = _gameState.asStateFlow()
 
-    private val _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
+    private var _errorMessages = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 10)
     val errorMessages: SharedFlow<String> = _errorMessages.asSharedFlow()
 
     init {
@@ -119,7 +117,7 @@ class WebSocketService {
 
     public fun setPlayer(p: Player) {
         this._player.value = p
-        turnBasedService.setCurrentPlayer(p.name)
+        turnBasedService.setCurrentPlayer(p)
     }
 
     @SuppressLint("CheckResult")
@@ -138,7 +136,7 @@ class WebSocketService {
                         // Initialize turn-based service
                         turnBasedService.initialize(stompClient!!)
                         _player.value?.name?.let { playerName ->
-                            turnBasedService.setCurrentPlayer(playerName)
+                            turnBasedService.setCurrentPlayer(_player.value!!)
                         }
 
                         subscribeToGeneralTopics()
@@ -159,6 +157,7 @@ class WebSocketService {
                 }
             },
             { resetConnectionState() }
+
         )
     }
 
@@ -258,6 +257,13 @@ class WebSocketService {
 
         // Subscribe to turn-based topics for this lobby
         turnBasedService.subscribeToTurnBasedTopics(lobbyId)
+
+    }
+
+    private fun subscribeToSpecificPlayerTopics(lobbyId: String, playerId: String) {
+        logMessage("Subscribing to topics for player: $playerId")
+
+        turnBasedService.subscribeToTurnBasedPlayerTopics(lobbyId,playerId)
     }
 
     @SuppressLint("CheckResult")
@@ -279,11 +285,15 @@ class WebSocketService {
 
                 // Log all players in the game
                 response.players.forEach { player ->
+                if(player.name!=null){
                     if (player.name.equals(_player.value?.name)) {
                         _player.value = player
                     }
+                }
                     Log.i("START", "Player in game: ${player.name} (${player.character})")
                 }
+
+                subscribeToSpecificPlayerTopics(lobbyId, player.value?.playerID.toString())
 
                 // Force a delay to ensure UI updates before navigation
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -364,7 +374,8 @@ class WebSocketService {
             }
         }
         _player.value = player
-        turnBasedService.setCurrentPlayer(username)
+
+        turnBasedService.setCurrentPlayer(player)
         sendRequest(destination, payload)
     }
 
@@ -558,19 +569,6 @@ class WebSocketService {
 
 
     @SuppressLint("CheckResult")
-    fun sendAccusation(
-        lobbyId: String,
-        username: String,
-        suspect: String,
-        room: String,
-        weapon: String
-    ) {
-        val request = AccusationRequest(lobbyId, username, suspect, room, weapon)
-        val payload = gson.toJson(request)
-        stompClient?.send("/app/solve-case", payload)?.subscribe()
-    }
-
-    @SuppressLint("CheckResult")
     fun sendSuggestion(suspect: String, weapon: String, room: String) {
         val currentPlayer = _player.value ?: return
         val lobbyId = _lobbyState.value?.id ?: return
@@ -707,5 +705,11 @@ class WebSocketService {
             val payload = gson.toJson(message)
             stompClient?.send("/app/cheating", payload)?.subscribe()
         }
+        fun subscribe(topic: String, callback: (String) -> Unit) {
+        stompClient?.topic(topic)?.subscribe { stompMessage ->
+            callback(stompMessage.payload)
+        }
     }
+
+}
 

@@ -4,14 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/purple_700"
     tools:context="at.aau.se2.cluedo.ui.screens.SplashActivity">
 
     <TextView
         android:id="@+id/appTitleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Cluedo"
+        android:text="@string/app_name"
         android:textColor="@color/white"
         android:textSize="48sp"
         android:textStyle="bold"
@@ -37,7 +36,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        android:text="v1.0"
+        android:text="@string/version_text"
+        tools:text="v1.0"
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

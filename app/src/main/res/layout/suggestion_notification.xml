@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/suspicion_notification_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#DD000000"
+    android:elevation="8dp"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:translationY="-200dp"
+    android:visibility="gone">
+
+    <TextView
+        android:id="@+id/notification_title_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Player suspects: "
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/notification_message_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Charachter with Weapon in Room"
+        android:textColor="@android:color/white"
+        android:textSize="16sp" />
+
+</LinearLayout>

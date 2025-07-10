@@ -8,6 +8,7 @@ import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import at.aau.se2.cluedo.ui.MainActivity
 import com.example.myapplication.databinding.ActivitySplashBinding
+import com.example.myapplication.R
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
@@ -21,9 +22,10 @@ class SplashActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         try {
-            binding.versionTextView.text = "v${packageManager.getPackageInfo(packageName, 0).versionName}"
+            val versionName = packageManager.getPackageInfo(packageName, 0).versionName
+            binding.versionTextView.text = getString(R.string.version_text, versionName)
         } catch (e: Exception) {
-            binding.versionTextView.text = "v2.5"
+            binding.versionTextView.text = getString(R.string.version_text, "1.0")
         }
 
         Handler(Looper.getMainLooper()).postDelayed({

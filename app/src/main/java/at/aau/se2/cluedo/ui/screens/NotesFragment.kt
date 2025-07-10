@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import com.example.myapplication.databinding.FragmentNotesBinding
-import at.aau.se2.cluedo.viewmodels.LobbyViewModel
+import at.aau.se2.cluedo.viewmodels.LobbyViewmodel
 import androidx.fragment.app.activityViewModels
 import androidx.core.graphics.toColorInt
 import com.example.myapplication.R
@@ -20,7 +20,7 @@ import com.example.myapplication.R
 
 class NotesFragment : Fragment() {
 
-    private val lobbyViewModel: LobbyViewModel by activityViewModels()
+    private val lobbyViewModel: LobbyViewmodel by activityViewModels()
 
     private lateinit var binding: FragmentNotesBinding
 
