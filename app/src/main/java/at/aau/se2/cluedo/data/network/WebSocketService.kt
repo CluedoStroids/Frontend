@@ -22,6 +22,7 @@ import at.aau.se2.cluedo.data.models.PlayerColor
 import at.aau.se2.cluedo.data.models.StartGameRequest
 import at.aau.se2.cluedo.data.models.SuspectCheating
 import com.google.gson.Gson
+import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -48,13 +49,12 @@ class WebSocketService {
         private const val APP_CAN_START_GAME_PREFIX = "/app/canStartGame/"
         private const val TOPIC_CAN_START_GAME_PREFIX = "/topic/canStartGame/"
         private const val APP_START_GAME_PREFIX = "/app/startGame/"
-        private const val APP_ACCUSATION = "/app/accusation"
         private const val TOPIC_GAME_STARTED_PREFIX = "/topic/gameStarted/"
         private const val TOPIC_GAME_DATA_PREFIX = "/topic/gameData/"
         private const val APP_GET_GAME_DATA = "/app/getGameData/"
 
-        private const val APP_IS_WALL = "/app/isWall/"
-        private const val TOPIC_IS_WALL = "/topic/isWall/"
+        private const val APP_GET_GAMEBOARD = "/app/getGameBoardGrid/"
+        private const val TOPIC_GAMEBOARD = "/topic/gameBoard/"
 
         private const val TOPIC_DICE_RESULT = "/topic/diceResult"
         private const val APP_ROLL_DICE = "/app/rollDice"
@@ -347,7 +347,7 @@ class WebSocketService {
         _lobbyState.value =
             Lobby(id = LobbyStatus.CREATING.text, host = player, players = listOf(player))
         _player.value = player
-        turnBasedService.setCurrentPlayer(username)
+        turnBasedService.setCurrentPlayer(player)
         _createdLobbyId.value = null
         sendRequest(APP_CREATE_LOBBY, payload)
     }

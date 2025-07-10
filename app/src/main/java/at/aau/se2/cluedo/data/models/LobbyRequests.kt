@@ -22,15 +22,4 @@ data class StartGameRequest(
     @SerializedName("player") val player: Player
 )
 
-data class CanStartGameResponse(
-    @SerializedName("canStart") val canStart: Boolean = false
-)
 
-data class GameStartedResponse(
-    @SerializedName("lobbyId") val lobbyId: String = "",
-    @SerializedName("players") var players: List<Player> = listOf()
-)
-data class PerformMoveResponse(
-    @SerializedName("player") var player:Player = Player(),
-    @SerializedName("moves") var moves:List<String> = arrayListOf<String>()
-)

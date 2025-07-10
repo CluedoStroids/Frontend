@@ -24,4 +24,4 @@ data class GameStartedResponse(
 data class PerformMoveResponse(
     @SerializedName("player") var player: Player = Player(),
     @SerializedName("moves") var moves: List<String> = arrayListOf()
-) 
+)
