@@ -12,6 +12,7 @@ coreKtxVersion = "1.13.1"
 coreSplashscreen = "1.0.1"
 coreTesting = "2.2.0"
 coreTestingVersion = "2.1.0"
+emoji2 = "1.5.0"
 espressoCoreVersion = "3.6.1"
 fragmentKtx = "1.8.6"
 gson = "2.10.1"
@@ -73,6 +74,9 @@ androidx-core-ktx-v1131 = { module = "androidx.core:core-ktx", version.ref = "co
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
 androidx-core-testing-v210 = { module = "androidx.arch.core:core-testing", version.ref = "coreTestingVersion" }
+androidx-emoji2 = { module = "androidx.emoji2:emoji2", version.ref = "emoji2" }
+androidx-emoji2-views = { module = "androidx.emoji2:emoji2-views", version.ref = "emoji2" }
+androidx-emoji2-views-helper = { module = "androidx.emoji2:emoji2-views-helper", version.ref = "emoji2" }
 androidx-espresso-core-v361 = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCoreVersion" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "androidFragmentVersion" }
 androidx-fragment-ktx-v186 = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }

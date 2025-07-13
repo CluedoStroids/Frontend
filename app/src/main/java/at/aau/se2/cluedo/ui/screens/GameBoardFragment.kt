@@ -760,8 +760,6 @@ class GameBoardFragment : Fragment() {
 
     }
 
-
-
     override fun onResume() {
         super.onResume()
         accelerometer?.also { acc ->
