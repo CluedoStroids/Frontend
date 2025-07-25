@@ -13,7 +13,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -122,6 +125,10 @@ class GameBoardFragment : Fragment() {
     }
 
     private fun setupActionButtons() {
+        binding.sendEmojiButton.setOnClickListener {
+            sendEmoji()
+        }
+
         binding.notesButton.setOnClickListener {
             findNavController().navigate(R.id.action_gameBoardIMG_to_notesFragment)
         }
@@ -760,6 +767,58 @@ class GameBoardFragment : Fragment() {
 
     }
 
+    /**
+     * Sends Emoji to selected player
+     */
+    @SuppressLint("SetTextI18n")
+    fun sendEmoji() {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.emoji_sender_popup, null)
+        val confirmButton = dialogView.findViewById<Button>(R.id.btnConfirmSelection)
+        val userSpinner = dialogView.findViewById<Spinner>(R.id.playerSpinner)
+
+        val playerOptions = lobbyViewModel.lobbyState.value?.players?.map { it -> it.name }
+
+        if (playerOptions != null) {
+
+            val adapter = ArrayAdapter(
+                dialogView.context,
+                android.R.layout.simple_spinner_item,
+                playerOptions
+            )
+
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            userSpinner.adapter = adapter
+
+            userSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    val selectedPlayerName = parent?.getItemAtPosition(position).toString()
+                    val selectedPlayer = playerOptions[position] // Access the Player object directly if needed
+
+                    Log.d("EMOJI","Selected $selectedPlayer")
+
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    // Do nothing
+                }
+            }
+        } else {
+            Log.d("EMOJI","Players Null")
+        }
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        confirmButton.setOnClickListener {
+            dialog.dismiss()
+
+        }
+
+        dialog.show()
+    }
+
     override fun onResume() {
         super.onResume()
         accelerometer?.also { acc ->
@@ -776,5 +835,7 @@ class GameBoardFragment : Fragment() {
         super.onPause()
         sensorManager.unregisterListener(shakeListener)
     }
+
+
 
 }

@@ -190,6 +190,17 @@
             android:text="Cheating"
             app:layout_constraintBottom_toBottomOf="@+id/solveCaseButton"
             app:layout_constraintEnd_toEndOf="parent" />
+
+        <Button
+            android:id="@+id/sendEmojiButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:layout_marginEnd="33dp"
+            android:text="Send Emoji"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- BOTTOM SHEET AS DIRECT CHILD OF COORDINATORLAYOUT -->

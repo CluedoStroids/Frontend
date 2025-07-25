@@ -150,6 +150,7 @@ dependencies {
     implementation(libs.androidx.emoji2)
     implementation(libs.androidx.emoji2.views)
     implementation(libs.androidx.emoji2.views.helper)
+    //implementation(libs.androidx.emojipicker)
 
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
