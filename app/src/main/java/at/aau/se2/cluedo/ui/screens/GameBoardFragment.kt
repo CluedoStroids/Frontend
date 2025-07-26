@@ -21,6 +21,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.NestedScrollView
+import androidx.emoji2.emojipicker.EmojiPickerView
+import androidx.emoji2.text.DefaultEmojiCompatConfig
+import androidx.emoji2.text.EmojiCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -773,8 +776,11 @@ class GameBoardFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     fun sendEmoji() {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.emoji_sender_popup, null)
+
         val confirmButton = dialogView.findViewById<Button>(R.id.btnConfirmSelection)
         val userSpinner = dialogView.findViewById<Spinner>(R.id.playerSpinner)
+        val textView = dialogView.findViewById<TextView>(R.id.textView)
+        val emojiPickerView = dialogView.findViewById<EmojiPickerView>(R.id.emojiPickerView)
 
         val playerOptions = lobbyViewModel.lobbyState.value?.players?.map { it -> it.name }
 
@@ -805,6 +811,11 @@ class GameBoardFragment : Fragment() {
         } else {
             Log.d("EMOJI","Players Null")
         }
+
+        emojiPickerView.setOnEmojiPickedListener {
+            textView.text = it.emoji
+        }
+
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
