@@ -13,6 +13,7 @@ coreSplashscreen = "1.0.1"
 coreTesting = "2.2.0"
 coreTestingVersion = "2.1.0"
 emoji2 = "1.5.0"
+emoji2Appcompat = "1.0.0-alpha01"
 emojipicker = "1.4.0"
 espressoCoreVersion = "3.6.1"
 fragmentKtx = "1.8.6"
@@ -76,6 +77,7 @@ androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", versi
 androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
 androidx-core-testing-v210 = { module = "androidx.arch.core:core-testing", version.ref = "coreTestingVersion" }
 androidx-emoji2 = { module = "androidx.emoji2:emoji2", version.ref = "emoji2" }
+androidx-emoji2-appcompat = { module = "androidx.emoji2:emoji2-appcompat", version.ref = "emoji2Appcompat" }
 androidx-emoji2-emojipicker = { module = "androidx.emoji2:emoji2-emojipicker", version.ref = "emoji2" }
 androidx-emoji2-views = { module = "androidx.emoji2:emoji2-views", version.ref = "emoji2" }
 androidx-emoji2-views-helper = { module = "androidx.emoji2:emoji2-views-helper", version.ref = "emoji2" }

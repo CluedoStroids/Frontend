@@ -9,6 +9,7 @@ import at.aau.se2.cluedo.data.models.TurnStateResponse
 import at.aau.se2.cluedo.data.models.TurnState
 import at.aau.se2.cluedo.data.models.SuggestionRequest
 import at.aau.se2.cluedo.data.models.AccusationRequest
+import at.aau.se2.cluedo.data.models.EmojiRequest
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.SkipTurnRequest
 import at.aau.se2.cluedo.data.models.SuggestionResponse
@@ -41,6 +42,7 @@ class TurnBasedWebSocketService private constructor() {
         private const val TOPIC_ACCUSATION_MADE = "/topic/accusationMade/"
         private const val APP_SKIP_TURN = "/app/skipTurn/"
         private const val TOPIC_TURN_SKIPPED = "/topic/turnSkipped/"
+        private const val TOPIC_RECEIVE_EMOJI= "/topic/receiveEmoji/"
 
         @Volatile
         private var instance: TurnBasedWebSocketService? = null
@@ -76,6 +78,9 @@ class TurnBasedWebSocketService private constructor() {
 
     private var _resultSuggestion = MutableStateFlow<SuggestionResponse?>(null)
     val resultSuggestion: StateFlow<SuggestionResponse?> = _resultSuggestion
+
+    private var _receivedEmojis = MutableStateFlow<EmojiRequest?>(null)
+    val receivedEmojis: StateFlow<EmojiRequest?> = _receivedEmojis
 
     private var currentPlayerName: String? = null
     private var currentPlayer: Player? = null
@@ -149,6 +154,7 @@ class TurnBasedWebSocketService private constructor() {
             _currentTurnState.value = turnState
             updatePlayerTurnStatus(turnState)
         }
+
     }
 
     /**
@@ -167,6 +173,13 @@ class TurnBasedWebSocketService private constructor() {
             val responseMap = gson.fromJson(message.payload, Map::class.java)
             _resultSuggestion.value = SuggestionResponse(playerName = responseMap["sendingPlayer"] as String,
                                                          cardName = responseMap["receivedCard"]as String)
+        }
+
+        stompClient?.topic("$TOPIC_RECEIVE_EMOJI$lobbyId/$playerId")?.subscribe { message ->
+            Log.d("EMOJI", "WS: Received: ${message.payload}")
+            val responseMap = gson.fromJson(message.payload, Map::class.java)
+            _receivedEmojis.value = EmojiRequest(username = responseMap["username"] as String,
+                                                 text = responseMap["text"] as String)
         }
 
     }
@@ -352,6 +365,16 @@ class TurnBasedWebSocketService private constructor() {
         Log.d("SUGGEST","Sent!: ${suspect} ,${weapon},"+
                 " ${room} , ${playerName} , $playerId")
         stompClient?.send("$APP_MAKE_SUGGESTION$lobbyId", payload)?.subscribe()
+    }
+
+    fun sendEmojis(lobbyId:String, playerName: String, playerId: String, text:String){
+        val request = EmojiRequest(
+            username = playerName,
+            text = text
+        )
+        val payload = gson.toJson(request)
+        Log.d("EMOJI","WS: Send $text to $playerName")
+        stompClient?.send("$TOPIC_RECEIVE_EMOJI$lobbyId/$playerId",payload)?.subscribe()
     }
 
     @SuppressLint("CheckResult")

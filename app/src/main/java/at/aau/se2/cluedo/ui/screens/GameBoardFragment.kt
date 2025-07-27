@@ -16,6 +16,7 @@ import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -34,6 +35,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import at.aau.se2.cluedo.data.models.GameStartedResponse
+import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.TurnState
 import at.aau.se2.cluedo.data.models.TurnStateResponse
 import at.aau.se2.cluedo.data.network.WebSocketService
@@ -47,6 +49,7 @@ import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentGameBoardBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.launch
+import kotlin.toString
 
 /**
  * A simple [Fragment] subclass.
@@ -779,17 +782,17 @@ class GameBoardFragment : Fragment() {
 
         val confirmButton = dialogView.findViewById<Button>(R.id.btnConfirmSelection)
         val userSpinner = dialogView.findViewById<Spinner>(R.id.playerSpinner)
-        val textView = dialogView.findViewById<TextView>(R.id.textView)
-        val emojiPickerView = dialogView.findViewById<EmojiPickerView>(R.id.emojiPickerView)
+        val textView = dialogView.findViewById<EditText>(R.id.textView)
+        //val emojiPickerView = dialogView.findViewById<EmojiPickerView>(R.id.emojiPickerView) doesn't display Emojis
 
-        val playerOptions = lobbyViewModel.lobbyState.value?.players?.map { it -> it.name }
-
+        val playerOptions = lobbyViewModel.lobbyState.value?.players
+        var selectedPlayer: Player? = null
         if (playerOptions != null) {
 
             val adapter = ArrayAdapter(
                 dialogView.context,
                 android.R.layout.simple_spinner_item,
-                playerOptions
+                playerOptions.map { it -> it.name }
             )
 
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -797,24 +800,23 @@ class GameBoardFragment : Fragment() {
 
             userSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    val selectedPlayerName = parent?.getItemAtPosition(position).toString()
-                    val selectedPlayer = playerOptions[position] // Access the Player object directly if needed
-
-                    Log.d("EMOJI","Selected $selectedPlayer")
-
+                    selectedPlayer = playerOptions[position]
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
-                    // Do nothing
+                    // not needed
                 }
             }
         } else {
             Log.d("EMOJI","Players Null")
         }
 
+        /*
         emojiPickerView.setOnEmojiPickedListener {
             textView.text = it.emoji
         }
+
+         */
 
 
         val dialog = AlertDialog.Builder(requireContext())
@@ -823,12 +825,16 @@ class GameBoardFragment : Fragment() {
             .create()
 
         confirmButton.setOnClickListener {
+            val lobbyId = lobbyViewModel.lobbyState.value?.id.toString()
+            gameViewModel.sendEmojis(lobbyId,selectedPlayer,textView.text.toString())
             dialog.dismiss()
 
         }
 
         dialog.show()
     }
+
+
 
     override fun onResume() {
         super.onResume()
