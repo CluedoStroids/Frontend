@@ -85,7 +85,7 @@ class GameViewModel(
         if(player != null){
             Log.d("EMOJI","VM: Send $text to ${player.name}")
             turnBasedWebSocketService.sendEmojis(lobbyId = lobbyId,
-                                                 playerName = player.name,
+                                                 playerName = webSocketService.player.value?.name.toString(),
                                                  playerId = player.playerID,
                                                  text = text)
         }

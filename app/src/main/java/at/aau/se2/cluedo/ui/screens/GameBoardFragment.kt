@@ -22,9 +22,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.NestedScrollView
-import androidx.emoji2.emojipicker.EmojiPickerView
-import androidx.emoji2.text.DefaultEmojiCompatConfig
-import androidx.emoji2.text.EmojiCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -34,6 +31,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import at.aau.se2.cluedo.data.models.EmojiRequest
 import at.aau.se2.cluedo.data.models.GameStartedResponse
 import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.TurnState
@@ -397,7 +395,15 @@ class GameBoardFragment : Fragment() {
                  */
                 launch{ observeResultSuggestion() }
 
+                launch{ observeReceivedEmojis()}
             }
+        }
+    }
+
+    private suspend fun observeReceivedEmojis(){
+        gameViewModel.receivedEmojis.collect { emojiRequest ->
+            Log.d("EMOJI","Received: $emojiRequest")
+            showReceivedEmojis(emojiRequest)
         }
     }
 
@@ -832,6 +838,21 @@ class GameBoardFragment : Fragment() {
         }
 
         dialog.show()
+    }
+
+    fun showReceivedEmojis(emojiRequest: EmojiRequest?){
+        if(emojiRequest != null){
+            var dialogBuilder = AlertDialog.Builder(requireContext())
+
+            dialogBuilder.setTitle("${emojiRequest.username} sends you: ")
+            dialogBuilder.setMessage(emojiRequest.text)
+
+            dialogBuilder.setPositiveButton("Acknowledge") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+           dialogBuilder.create().show()
+        }
     }
 
 
