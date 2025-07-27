@@ -147,6 +147,10 @@ dependencies {
     implementation(libs.rxandroid)
     implementation(libs.androidx.navigation.runtime.android)
     implementation(libs.androidx.cardview)
+    implementation(libs.androidx.emoji2)
+    implementation(libs.androidx.emoji2.views)
+    implementation(libs.androidx.emoji2.views.helper)
+    implementation(libs.androidx.emoji2.emojipicker)
 
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)

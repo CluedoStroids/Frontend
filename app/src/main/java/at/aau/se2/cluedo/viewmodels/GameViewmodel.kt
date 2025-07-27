@@ -1,8 +1,11 @@
 package at.aau.se2.cluedo.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.aau.se2.cluedo.data.models.BasicCard
+import at.aau.se2.cluedo.data.models.EmojiRequest
+import at.aau.se2.cluedo.data.models.Player
 import at.aau.se2.cluedo.data.models.SuggestionRequest
 import at.aau.se2.cluedo.data.models.SuggestionResponse
 import at.aau.se2.cluedo.data.network.TurnBasedWebSocketService
@@ -25,6 +28,9 @@ class GameViewModel(
     private val _resultSuggestion = MutableStateFlow<SuggestionResponse?>(null)
     val resultSuggestion: StateFlow<SuggestionResponse?> = _resultSuggestion
 
+    private val _receivedEmojis = MutableStateFlow<EmojiRequest?>(null)
+    val receivedEmojis: StateFlow<EmojiRequest?> = _receivedEmojis
+
     init {
         viewModelScope.launch {
             turnBasedWebSocketService.suggestionData.collect { suggestion ->
@@ -41,6 +47,12 @@ class GameViewModel(
         viewModelScope.launch {
             turnBasedWebSocketService.resultSuggestion.collect { result ->
                 _resultSuggestion.value = result
+            }
+        }
+
+        viewModelScope.launch {
+            turnBasedWebSocketService.receivedEmojis.collect { result ->
+                _receivedEmojis.value = result
             }
         }
 
@@ -67,6 +79,16 @@ class GameViewModel(
     fun sendSuggestionResponse(lobbyId: String, cardName: String){
         var playerId: String = suggestionNotificationData.value?.playerId.toString()
         turnBasedWebSocketService.makeSuggestionResponse(lobbyId, playerId,cardName)
+    }
+
+    fun sendEmojis(lobbyId: String, player: Player?, text: String){
+        if(player != null){
+            Log.d("EMOJI","VM: Send $text to ${player.name}")
+            turnBasedWebSocketService.sendEmojis(lobbyId = lobbyId,
+                                                 playerName = webSocketService.player.value?.name.toString(),
+                                                 playerId = player.playerID,
+                                                 text = text)
+        }
     }
 
 }
